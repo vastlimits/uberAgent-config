@@ -1,0 +1,43 @@
+#
+# Automated robot to update uberAgent ESA sigma rukes automatically.
+#
+pool:
+  vmImage: 'ubuntu-latest'
+
+trigger: none
+
+schedules:
+- cron: "40 12 * * *"
+  displayName: Nightly automated update annotation_mitre_attack.csv update
+  branches:
+    include:
+    - develop
+
+
+variables:
+- name: branch_develop
+  value: develop
+- name: pr_mail
+  value: sven@vastlimits.com
+- name: pr_name
+  value: Sven Scharmentke
+
+steps:
+
+- checkout: self
+  path: Agent
+  persistCredentials: true
+  displayName: Checkout uberAgent Source
+
+- bash: |
+    cd /tmp
+    git clone https://github.com/vastlimits/uberAgent-ESA-rules.git
+    cd ubeAgent-ESA-rules
+    git clone https://github.com/vastlimits/sigma.git
+    cd sigma
+    git checkout feature/ame-7.0
+    cd tools
+    pip install -r sigma\backends\uberagent-requirements.txt
+    python sigma/sigmac.py -I --target uberagent -r ../rules/
+
+  displayName: Checkout ESA sigma rules and SIMGA repository
