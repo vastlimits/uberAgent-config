@@ -35,11 +35,10 @@ jobs:
         pip install termcolor
         pip install sigma
         python sigmac -I --target uberagent -r ../rules/
-        pwd
-        cp -v uberAgent-ESA-am-sigma-critical.conf ../../uberAgent-ESA-rules/rules/
-        cp -v uberAgent-ESA-am-sigma-high.conf ../../uberAgent-ESA-rules/rules/
-        cp -v uberAgent-ESA-am-sigma-low.conf ../../uberAgent-ESA-rules/rules/
-        cp -v uberAgent-ESA-am-sigma-medium.conf ../../uberAgent-ESA-rules/rules/
+        cp -v uberAgent-ESA-am-sigma-critical.conf ../../rules/
+        cp -v uberAgent-ESA-am-sigma-high.conf ../../rules/
+        cp -v uberAgent-ESA-am-sigma-low.conf ../../rules/
+        cp -v uberAgent-ESA-am-sigma-medium.conf ../../rules/
     - name: push
       uses: actions-x/commit@v6
       with:
