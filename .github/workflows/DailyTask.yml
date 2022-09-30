@@ -34,7 +34,7 @@ jobs:
         pip install ruamel.yaml
         pip install termcolor
         pip install sigma
-        python sigma/sigmac.py -I --target uberagent -r ../rules/
+        python sigmac -I --target uberagent -r ../rules/
     - name: push
       uses: actions-x/commit@v6
       with:
