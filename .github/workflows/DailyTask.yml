@@ -25,7 +25,12 @@ jobs:
         cd sigma
         git checkout feature/ame-7.0
         cd tools
-        pip install -r sigma/backends/uberagent-requirements.txt
+        pip install PyYAML
+        pip install pymisp
+        pip install progressbar2
+        pip install ruamel.yaml
+        pip install termcolor
+        pip install sigma
         python sigma/sigmac.py -I --target uberagent -r ../rules/
     - name: push
       uses: actions-x/commit@v6
