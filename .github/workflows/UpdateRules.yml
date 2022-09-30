@@ -1,0 +1,40 @@
+name: Automated robot to update uberAgent ESA sigma rules automatically
+
+on:
+  workflow_dispatch:
+  schedule:
+    # UTC time
+    # 'Minute' 'Hour' 'Day of month' 'Month of the year' 'Day of the week [0,6] with 0 = sunday'
+    - cron:  '5 8 * * *'
+    - cron:  '5 10 * * *'
+  
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+        pip install markdown
+        pip install markdown-link-attr-modifier
+    - name: build
+      run: |
+        git clone https://github.com/vastlimits/sigma.git
+        cd sigma
+        git checkout feature/ame-7.0
+        cd tools
+        pip install -r sigma\backends\uberagent-requirements.txt
+        python sigma/sigmac.py -I --target uberagent -r ../rules/
+    - name: push
+      uses: actions-x/commit@v6
+      with:
+        files: uberAgent-ESA-am-sigma-low.conf, uberAgent-ESA-am-sigma-medium.conf, uberAgent-ESA-am-sigma-high.conf, uberAgent-ESA-am-sigma-critical.conf
+        
