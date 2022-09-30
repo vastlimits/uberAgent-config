@@ -1,6 +1,9 @@
 name: Automated robot to update uberAgent ESA sigma rules automatically
 
-on: [push]
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 2 * * *'
   
 jobs:
   build:
