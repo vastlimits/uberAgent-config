@@ -42,5 +42,5 @@ jobs:
     - name: push
       uses: actions-x/commit@v6
       with:
-        files: uberAgent-ESA-rules/rules/uberAgent-ESA-am-sigma-low.conf, uberAgent-ESA-rules/rules/uberAgent-ESA-am-sigma-medium.conf, uberAgent-ESA-rules/rules/uberAgent-ESA-am-sigma-high.conf, uberAgent-ESA-rules/rules/uberAgent-ESA-am-sigma-critical.conf
+        files: uberAgent-ESA-rules/rules/uberAgent-ESA-am-sigma-*
         
