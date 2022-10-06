@@ -26,10 +26,8 @@ jobs:
         pip install markdown-link-attr-modifier
     - name: build
       run: |
-        git clone https://github.com/vastlimits/sigma.git
-        cd sigma
-        git checkout feature/ame-7.0
-        cd tools
+        git clone https://github.com/SigmaHQ/sigma.git
+        cd sigma/tools
         pip install -r sigma\backends\uberagent-requirements.txt
         python sigma/sigmac.py -I --target uberagent -r ../rules/
     - name: push
