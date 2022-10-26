@@ -44,4 +44,4 @@ jobs:
       uses: actions-x/commit@v6
       with:
         files: rules/uberAgent-ESA-am-sigma-*
-        repo-token: ${{ secrets.VLSVC_PAT }}
+        token: ${{ secrets.VLSVC_PAT }}
