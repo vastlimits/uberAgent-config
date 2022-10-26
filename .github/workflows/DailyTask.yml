@@ -47,12 +47,8 @@ jobs:
         cp -v uberAgent-ESA-am-sigma-low.conf ../../rules/
         cp -v uberAgent-ESA-am-sigma-medium.conf ../../rules/
 
-    - name: Update git
-      run: |
-        git push
-
-    # - name: push
-    #   uses: actions-x/commit@v6
-    #   with:
-    #     files: rules/uberAgent-ESA-am-sigma-*
-    #     token: ${{ secrets.VLSVC_PAT }}
+    - name: push
+      uses: actions-x/commit@v6
+      with:
+        files: rules/uberAgent-ESA-am-sigma-*
+        token: ${{ secrets.VLSVC_PAT }}
