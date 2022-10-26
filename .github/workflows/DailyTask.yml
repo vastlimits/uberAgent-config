@@ -12,13 +12,12 @@ jobs:
 
     env:
       PYTHONUNBUFFERED: 1
-      VLTOKEN: ${{ secrets.VLSVC_PAT }}
 
     steps:
     - name: Checkout main branch
       uses: actions/checkout@v2
       with:
-        token: $VLTOKEN
+        token: ${{ secrets.VLSVC_PAT }}
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v2
@@ -48,8 +47,12 @@ jobs:
         cp -v uberAgent-ESA-am-sigma-low.conf ../../rules/
         cp -v uberAgent-ESA-am-sigma-medium.conf ../../rules/
 
-    - name: push
-      uses: actions-x/commit@v6
-      with:
-        files: rules/uberAgent-ESA-am-sigma-*
-        token: $VLTOKEN
+    - name: Update git
+      run: |
+        git push
+
+    # - name: push
+    #   uses: actions-x/commit@v6
+    #   with:
+    #     files: rules/uberAgent-ESA-am-sigma-*
+    #     token: ${{ secrets.VLSVC_PAT }}
