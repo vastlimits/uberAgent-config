@@ -1,4 +1,4 @@
-name: Automated robot to update uberAgent ESA sigma rules automatically
+name: Update uberAgent ESA sigma rules
 
 on:
   workflow_dispatch:
@@ -7,11 +7,16 @@ on:
   
 jobs:
   build:
-
+    strategy:
+      matrix:
+        branch: [ develop, version/6.2, version/7.0 ]
+    
     runs-on: ubuntu-latest
 
     env:
       PYTHONUNBUFFERED: 1
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets.VLSVC_PAT}}
 
     steps:
     - name: Checkout main branch
@@ -24,31 +29,6 @@ jobs:
       with:
         python-version: 3.9
 
-    - name: dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests
-        pip install markdown
-        pip install markdown-link-attr-modifier
+    - name: Convert sigma rules to uberAgent ESA rules
+      run: bash ./convert-sigma-rules.sh "${{ matrix.branch }}"
 
-    - name: build
-      run: |
-        git clone https://github.com/SigmaHQ/sigma.git
-        cd sigma/tools
-        pip install PyYAML
-        pip install pymisp
-        pip install progressbar2
-        pip install ruamel.yaml
-        pip install termcolor
-        pip install sigma
-        python sigmac -I --target uberagent -r ../rules/
-        cp -v uberAgent-ESA-am-sigma-critical.conf ../../rules/
-        cp -v uberAgent-ESA-am-sigma-high.conf ../../rules/
-        cp -v uberAgent-ESA-am-sigma-low.conf ../../rules/
-        cp -v uberAgent-ESA-am-sigma-medium.conf ../../rules/
-
-    - name: push
-      uses: actions-x/commit@v6
-      with:
-        files: rules/uberAgent-ESA-am-sigma-*
-        token: ${{ secrets.VLSVC_PAT }}
