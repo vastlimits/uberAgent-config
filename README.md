@@ -11,8 +11,8 @@ This repository is the home for the Activity Monitoring detection rules and rela
 
 | uberAgent Version | Link |
 | ------- | --------------------- |
-| `7.0` | [version/7.0](../../tree/main) |
-| `6.2 - 6.2.3` | [version/6.2](../../tree/version/6.2.0) |
+| `7.0` | [version/7.0](../../tree/version/7.0) |
+| `6.2 - 6.2.3` | [version/6.2](../../tree/version/6.2) |
 | `development (beta)` | [develop](../../tree/develop) |
 
 ## Getting Started
