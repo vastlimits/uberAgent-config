@@ -1,25 +1,30 @@
 # uberAgent ESA Rules
+
 This repository is the home for the Activity Monitoring detection rules and related configuration used by [uberAgent ESA](https://uberagent.com/). 
 
+## Getting Started
+
+1. Select the Git branch that matches your installed uberAgent version.
+2. Clone this repository to your machine.
+3. Update the files in your [uberAgent configuration](https://uberagent.com/docs/uberagent/latest/planning/configuration-options/) with the files from this repository.
+
 ## Repository Structure
+
+### uberAgent Versions & Git Branches
+
+This repository is organized in such a way that uberAgent releases are represented by Git branches. Each Git branch contains rules that are compatible with the matching uberAgent release.
+
+| uberAgent version | Git branch |
+| ------- | --------------------- |
+| `development (beta)` | [develop](../../tree/develop) |
+| `7.0.x` | [version/7.0](../../tree/version/7.0) |
+| `6.2.x` | [version/6.2](../../tree/version/6.2) |
+
+### Folder Structure
 
 | Folder  | Description           |
 | ------- | --------------------- |
 | `rules` | Root folder for rules |
-
-## Rules for specific uberAgent versions
-
-| uberAgent Version | Link |
-| ------- | --------------------- |
-| `7.0` | [version/7.0](../../tree/version/7.0) |
-| `6.2 - 6.2.3` | [version/6.2](../../tree/version/6.2) |
-| `development (beta)` | [develop](../../tree/develop) |
-
-## Getting Started
-
-1. Clone this repository to your machine.
-2. Eventually, switch the Git branch to match your installed uberAgent version.
-3. Update the files in your [uberAgent configuration](https://uberagent.com/docs/uberagent/latest/planning/configuration-options/) with the rules from this repository.
 
 ## Help and Support
 
