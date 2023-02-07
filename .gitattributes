@@ -1,2 +1,2 @@
 # Enable syntax highlighting for .conf files in GitHub web (docs: https://github.com/github/linguist/blob/master/docs/overrides.md)
-*.conf linguist-language=INI linguist-detectable
+*.conf linguist-language=INI
