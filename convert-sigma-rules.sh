@@ -103,7 +103,7 @@ echo "  password $GITHUB_TOKEN" >> "$HOME/.netrc"
 git add rules/*.conf
 git commit -m "Updated converted sigma rules for version $CURRENT_BRANCH"
 
-git config --global --add --bool push.autoSetupRemote true
+git config --global --add --bool push.autoSetupRemote true || true
 git push
 
 echo "info: Convert sigma rules to uberAgent ESA rules for version $CURRENT_BRANCH finished"
