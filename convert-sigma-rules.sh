@@ -39,6 +39,10 @@ git fetch sigma
 # rebase our working copy on the latest sigma branch
 git rebase sigma/master
 
+# remove files causing crashes
+rm rules/windows/builtin/security/win_security_successful_external_remote_rdp_login.yml
+rm rules/windows/builtin//security/win_security_successful_external_remote_smb_login.yml
+
 # navigate to sigmac
 cd tools
 
