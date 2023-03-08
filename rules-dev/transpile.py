@@ -67,7 +67,7 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                 transpiled_path = os.path.join(output_folder, subfolder, filename)
                 transpiled_path_dir = os.path.join(output_folder, subfolder)
                 
-                #create subfolders if missing
+                # Create subfolders if missing
                 if not os.path.exists(transpiled_path_dir):
                     os.makedirs(transpiled_path_dir)
                     
