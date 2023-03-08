@@ -2,7 +2,11 @@ name: Transpile Script
 
 on:
   push:
-    branches: [ develop-action-test ]
+    branches:
+      - '*'
+      - '!main'
+      - '!version/7.0'
+      - '!version/6.2'
 
 jobs:
   transpile:
