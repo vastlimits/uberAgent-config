@@ -2,9 +2,9 @@ import os
 import re
 
 # Path to the folder to search
-folder_path = 'rules-dev\\Security inventory\\Windows'
-include_folder = 'rules-dev\\Security inventory\\Windows\\Shared'
-output_folder = 'rules\\Security inventory\\Windows'
+folder_path = 'Security inventory\\Windows'
+include_folder = 'Security inventory\\Windows\\Shared'
+output_folder = '..\\rules\\Security inventory\\Windows'
 
 # Create the "transpiled" directory-structure if it doesn't exist
 if not os.path.exists(output_folder):
