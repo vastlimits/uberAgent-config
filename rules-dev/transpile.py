@@ -74,3 +74,5 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                 print("Writing file: ", transpiled_path)
                 with open(transpiled_path, 'w') as transpiled_file:
                     transpiled_file.write(content)
+        else:
+            print("Skipping: ", file_path)
