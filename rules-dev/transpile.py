@@ -7,10 +7,12 @@ folder_path = os.path.join(working_dir, 'rules-dev/Security inventory/Windows')
 include_folder = os.path.join(working_dir, 'rules-dev/Security inventory/Windows/Shared')
 output_folder = os.path.join(working_dir, 'rules/Security inventory/Windows')
 
+print("-------------------------------------")
 print("Current working dir: ", working_dir)
 print("Using input: ", folder_path)
 print("Using include: ", include_folder)
 print("Using output: ", output_folder)
+print("-------------------------------------")
 
 # Create the "transpiled" directory-structure if it doesn't exist
 if not os.path.exists(output_folder):
