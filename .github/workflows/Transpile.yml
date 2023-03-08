@@ -14,13 +14,10 @@ jobs:
       - name: Setup Python environment
         uses: actions/setup-python@v2
         with:
-          python-version: 3.x
+          python-version: 3.11
 
       - name: Run Python script
         run: python rules-dev/transpile.py
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: transpile-output
-          path: rules/
+      - name: Push output
+        uses: stefanzweifel/git-auto-commit-action@v4
