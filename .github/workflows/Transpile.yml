@@ -18,3 +18,9 @@ jobs:
 
       - name: Run Python script
         run: python rules-dev/transpile.py
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: transpile-output
+          path: rules/
