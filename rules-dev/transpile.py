@@ -3,11 +3,11 @@ import re
 
 # Path to the folder to search
 working_dir = os.getcwd()
-folder_path = os.path.join(working_dir, 'rules-dev\\Security inventory\\Windows')
-include_folder = os.path.join(working_dir, 'rules-dev\\Security inventory\\Windows\\Shared')
-output_folder = os.path.join(working_dir, 'rules\\Security inventory\\Windows')
+folder_path = os.path.join(working_dir, 'rules-dev/Security inventory/Windows')
+include_folder = os.path.join(working_dir, 'rules-dev/Security inventory/Windows/Shared')
+output_folder = os.path.join(working_dir, 'rules/Security inventory/Windows')
 
-print("Current working dir: ", )
+print("Current working dir: ", working_dir)
 print("Using input: ", folder_path)
 print("Using include: ", include_folder)
 print("Using output: ", output_folder)
