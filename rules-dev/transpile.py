@@ -6,6 +6,11 @@ folder_path = 'Security inventory\\Windows'
 include_folder = 'Security inventory\\Windows\\Shared'
 output_folder = '..\\rules\\Security inventory\\Windows'
 
+print("Current working dir: ", os.getcwd())
+print("Using input: ", folder_path)
+print("Using include: ", include_folder)
+print("Using output: ", output_folder)
+
 # Create the "transpiled" directory-structure if it doesn't exist
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
