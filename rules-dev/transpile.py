@@ -33,11 +33,10 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
     
     for filename in filenames:
         file_path = os.path.join(dirpath, filename)
-        
-        print("Processing: ", file_path )
-    
+            
         # Check if it's a .ps1 file and not in an excluded folder
         if filename.endswith('.ps1') and not any(exclude_folder in file_path for exclude_folder in exclude_folders):
+            print("Processing: ", file_path )
             with open(file_path, 'r') as file:
                 # Read the contents of the file
                 content = file.read()
@@ -45,7 +44,7 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                 # Search for includes
                 includes = re.findall(r'(?<=Shared\\)[^\\]+\.ps1', content, flags=re.IGNORECASE)
                 
-                print("Found: ", len(includes), " includes")
+                print("Found: ", len(includes), " include(s)")
     
                 # Loop through all found includes
                 for include in includes:
