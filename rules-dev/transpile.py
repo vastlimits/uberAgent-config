@@ -33,6 +33,8 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
     
     for filename in filenames:
         file_path = os.path.join(dirpath, filename)
+        
+        print("Processing: ", file_path )
     
         # Check if it's a .ps1 file and not in an excluded folder
         if filename.endswith('.ps1') and not any(exclude_folder in file_path for exclude_folder in exclude_folders):
@@ -42,6 +44,8 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
     
                 # Search for includes
                 includes = re.findall(r'(?<=Shared\\)[^\\]+\.ps1', content, flags=re.IGNORECASE)
+                
+                print("Found: ", len(includes), " includes")
     
                 # Loop through all found includes
                 for include in includes:
@@ -67,5 +71,6 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                 if not os.path.exists(transpiled_path_dir):
                     os.makedirs(transpiled_path_dir)
                     
+                print("Writing file: ", transpiled_file)
                 with open(transpiled_path, 'w') as transpiled_file:
                     transpiled_file.write(content)
