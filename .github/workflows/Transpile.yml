@@ -17,4 +17,4 @@ jobs:
           python-version: 3.x
 
       - name: Run Python script
-        run: python rules-dev\transpile.py
+        run: python rules-dev/transpile.py
