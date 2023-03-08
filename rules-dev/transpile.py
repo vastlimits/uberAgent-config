@@ -71,6 +71,6 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                 if not os.path.exists(transpiled_path_dir):
                     os.makedirs(transpiled_path_dir)
                     
-                print("Writing file: ", transpiled_file)
+                print("Writing file: ", transpiled_path)
                 with open(transpiled_path, 'w') as transpiled_file:
                     transpiled_file.write(content)
