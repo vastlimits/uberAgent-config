@@ -1,0 +1,20 @@
+name: Transpile Script
+
+on:
+  push:
+    branches: [ develop-action-test ]
+
+jobs:
+  transpile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Run Python script
+        run: python transpile.py
