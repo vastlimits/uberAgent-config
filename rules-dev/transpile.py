@@ -78,7 +78,7 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                                     
                                 content = re.sub(r'.*#Requires -Version.*(\r?\n)?', '', content, flags=re.IGNORECASE)
                         except:
-                            print("\tError: Could not open file: ", file_path)
+                            print("\tError: Could not open include file: ", include_path)
         
                     # Extract subfolder name
                     subfolder = os.path.relpath(os.path.dirname(file_path), folder_path)
@@ -92,13 +92,13 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                         os.makedirs(transpiled_path_dir)
                         
                     print("\tWriting file: ", transpiled_path)
-                    
+
                     # Handle exceptions when opening the file
                     try:
                         with open(transpiled_path, 'w') as transpiled_file:
                             transpiled_file.write(content)
                     except:
-                        print("\tError: Could not open file: ", file_path)
+                        print("\tError: Could not open transpiled file: ", transpiled_path)
             except:
                 print("\tError: Could not open file: ", file_path)
         else:
