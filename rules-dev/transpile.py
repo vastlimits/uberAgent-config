@@ -20,6 +20,9 @@ if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     except:
         print("Error: Could not create output folder: ", output_folder)
+
+        # Exit the script
+        exit()
     
 # Clean old output
 for dirpath, dirnames, filenames in os.walk(output_folder):
@@ -32,6 +35,9 @@ for dirpath, dirnames, filenames in os.walk(output_folder):
                 os.remove(file_path)
             except:
                 print("Error: Could not delete file: ", file_path)
+
+                # Exit the script
+                exit()
 
 # List of folders to exclude
 exclude_folders = ['Shared']
