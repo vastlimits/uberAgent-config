@@ -16,7 +16,10 @@ print("-------------------------------------")
 
 # Create the "transpiled" directory-structure if it doesn't exist
 if not os.path.exists(output_folder):
-    os.makedirs(output_folder)
+    try:
+        os.makedirs(output_folder)
+    except:
+        print("Error: Could not create output folder: ", output_folder)
     
 # Clean old output
 for dirpath, dirnames, filenames in os.walk(output_folder):
@@ -24,8 +27,11 @@ for dirpath, dirnames, filenames in os.walk(output_folder):
         file_path = os.path.join(dirpath, filename)
         # Check if file_path  contains a file
         if os.path.isfile(file_path):
-            # Delete file
-            os.remove(file_path)
+            try:
+                # Delete file
+                os.remove(file_path)
+            except:
+                print("Error: Could not delete file: ", file_path)
 
 # List of folders to exclude
 exclude_folders = ['Shared']
