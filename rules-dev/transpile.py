@@ -62,6 +62,12 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                         include_path = os.path.join(include_folder, include)
                         with open(include_path, 'r') as include_file:
                             include_content = include_file.read()
+
+                            # Read the contents of the file and check if the content was read successfully
+                            if not include_content:
+                                print("\tError: Could not read include file: ", include_path)
+                                continue
+
                             includes_ex = re.findall(r'.*(?<=Shared\\)' + re.escape(include) + r'.*', content, flags=re.IGNORECASE)
                             
                             if len(includes_ex) > 0:
