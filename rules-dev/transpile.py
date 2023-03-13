@@ -1,8 +1,15 @@
 import os
 import re
 
-# Path to the folder to search
-working_dir = os.getcwd()
+try:
+    # Path to the folder to search
+    working_dir = os.getcwd()
+except:
+    print("Error: Could not get current working directory")
+
+    # Exit the script
+    exit()
+
 folder_path = os.path.join(working_dir, 'rules-dev/Security inventory/Windows')
 include_folder = os.path.join(working_dir, 'rules-dev/Security inventory/Windows/Shared')
 output_folder = os.path.join(working_dir, 'rules/Security inventory/Windows')
@@ -112,7 +119,14 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                     # Handle exceptions when opening the file
                     try:
                         with open(transpiled_path, 'w') as transpiled_file:
-                            transpiled_file.write(content)
+                            #check if the content was successfully written
+                            num_written = transpiled_file.write(content)
+                            if num_written == 0:
+                                print("\tError: Could not write to file: ", transpiled_path)
+                            elif num_written != len(content):
+                                print("\tError: Could not write all content to file: ", transpiled_path)
+                            else:
+                                print("\tSuccess: ", num_written, " bytes written")
                     except:
                         print("\tError: Could not open transpiled file: ", transpiled_path)
             except:
