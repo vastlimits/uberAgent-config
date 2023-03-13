@@ -23,7 +23,7 @@ jobs:
           python-version: 3.11
 
       - name: Run Python script
-        run: python rules-dev/transpile.py
+        run: python config-dev/transpile.py
 
       - name: Push output
         uses: stefanzweifel/git-auto-commit-action@v4
