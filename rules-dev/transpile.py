@@ -60,20 +60,25 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                     for include in includes:
                         # Replace the include with the contents of the corresponding file
                         include_path = os.path.join(include_folder, include)
-                        with open(include_path, 'r') as include_file:
-                            include_content = include_file.read()
 
-                            # Read the contents of the file and check if the content was read successfully
-                            if not include_content:
-                                print("\tError: Could not read include file: ", include_path)
-                                continue
+                        # Handle exceptions when opening the file
+                        try:
+                            with open(include_path, 'r') as include_file:
+                                include_content = include_file.read()
 
-                            includes_ex = re.findall(r'.*(?<=Shared\\)' + re.escape(include) + r'.*', content, flags=re.IGNORECASE)
-                            
-                            if len(includes_ex) > 0:
-                                content = content.replace(includes_ex[0], include_content)
+                                # Read the contents of the file and check if the content was read successfully
+                                if not include_content:
+                                    print("\tError: Could not read include file: ", include_path)
+                                    continue
+
+                                includes_ex = re.findall(r'.*(?<=Shared\\)' + re.escape(include) + r'.*', content, flags=re.IGNORECASE)
                                 
-                            content = re.sub(r'.*#Requires -Version.*(\r?\n)?', '', content, flags=re.IGNORECASE)
+                                if len(includes_ex) > 0:
+                                    content = content.replace(includes_ex[0], include_content)
+                                    
+                                content = re.sub(r'.*#Requires -Version.*(\r?\n)?', '', content, flags=re.IGNORECASE)
+                        except:
+                            print("\tError: Could not open file: ", file_path)
         
                     # Extract subfolder name
                     subfolder = os.path.relpath(os.path.dirname(file_path), folder_path)
@@ -87,8 +92,13 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                         os.makedirs(transpiled_path_dir)
                         
                     print("\tWriting file: ", transpiled_path)
-                    with open(transpiled_path, 'w') as transpiled_file:
-                        transpiled_file.write(content)
+                    
+                    # Handle exceptions when opening the file
+                    try:
+                        with open(transpiled_path, 'w') as transpiled_file:
+                            transpiled_file.write(content)
+                    except:
+                        print("\tError: Could not open file: ", file_path)
             except:
                 print("\tError: Could not open file: ", file_path)
         else:
