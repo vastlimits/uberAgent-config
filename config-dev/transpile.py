@@ -10,9 +10,9 @@ except:
     # Exit the script
     exit()
 
-folder_path = os.path.join(working_dir, 'rules-dev/Security inventory/Windows')
-include_folder = os.path.join(working_dir, 'rules-dev/Security inventory/Windows/Shared')
-output_folder = os.path.join(working_dir, 'rules/Security inventory/Windows')
+folder_path = os.path.join(working_dir, 'config-dev/Security inventory/Windows')
+include_folder = os.path.join(working_dir, 'config-dev/Security inventory/Windows/Shared')
+output_folder = os.path.join(working_dir, 'config/Security inventory/Windows')
 
 print("-------------------------------------")
 print("Current working dir: ", working_dir)
