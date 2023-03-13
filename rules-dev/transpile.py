@@ -101,7 +101,11 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                     
                     # Create subfolders if missing
                     if not os.path.exists(transpiled_path_dir):
-                        os.makedirs(transpiled_path_dir)
+                        try:
+                            os.makedirs(transpiled_path_dir)
+                        except:
+                            print("\tError: Could not create output folder: ", transpiled_path_dir)
+                            continue
                         
                     print("\tWriting file: ", transpiled_path)
 
