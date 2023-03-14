@@ -45,6 +45,12 @@ rm rules/windows/builtin/security/win_security_successful_external_remote_smb_lo
 # navigate to sigmac
 cd tools
 
+# set target directory
+TARGET_DIR=config
+if [[ "$CURRENT_BRANCH" == "version/6.2" || "$CURRENT_BRANCH" == "version/7.0" ]]; then
+    TARGET_DIR=rules
+fi
+
 # set target version
 if [[ "$CURRENT_BRANCH" == "develop" ]]; then
     echo "info: Use $CURRENT_BRANCH as output version"
@@ -83,13 +89,13 @@ cd ../../
 
 # delete any earlier sigma rule files first
 # this is required to easily support file name changes and delete orphaned files
-git rm config/uberAgent-ESA-am-sigma-*.conf || true
+git rm $TARGET_DIR/uberAgent-ESA-am-sigma-*.conf || true
 
 # new branches, create directory if it does not yet exist
-mkdir -p config
+mkdir -p $TARGET_DIR
 
 # copy current converted configuration
-cp -v sigma/tools/uberAgent-ESA-am-sigma-*.conf config/
+cp -v sigma/tools/uberAgent-ESA-am-sigma-*.conf $TARGET_DIR/
 
 # clean up sigma checkout
 rm -f -r sigma/
@@ -103,7 +109,7 @@ echo "machine api.github.com" >> "$HOME/.netrc"
 echo "  login $GITHUB_ACTOR" >> "$HOME/.netrc"
 echo "  password $GITHUB_TOKEN" >> "$HOME/.netrc"
 
-git add config/*.conf
+git add $TARGET_DIR/*.conf
 git commit -m "Updated converted sigma rules for version $CURRENT_BRANCH"
 
 git config --global --add --bool push.autoSetupRemote true || true
