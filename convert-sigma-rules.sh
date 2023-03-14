@@ -1,11 +1,10 @@
 #!/bin/sh
 
-# Any subsequent command that fail cause the shellscript to exit immediately.
+# Any subsequent commands that fail cause the shellscript to exit immediately.
 set -e
 
 # The default GitHub action schedule runs this on the default branch.
-# In our action we run this script multiple times for any branch that requires converted rules for a specific
-# uberAgent version.
+# In our action we run this script multiple times for any branch that requires converted rules for a specific uberAgent version.
 # Determine the current branch and switch if needed.
 CURRENT_BRANCH=`git rev-parse --abbrev-ref HEAD`
 
@@ -82,15 +81,15 @@ python sigmac -I --target uberagent -r ../rules/ --backend-config config/uberage
 # navigate back
 cd ../../
 
-# delete any automatically created sigma rule first
+# delete any earlier sigma rule files first
 # this is required to easily support file name changes and delete orphaned files
-git rm rules/uberAgent-ESA-am-sigma-*.conf || true
+git rm config/uberAgent-ESA-am-sigma-*.conf || true
 
 # new branches, create directory if it does not yet exist
-mkdir -p rules
+mkdir -p config
 
 # copy current converted configuration
-cp -v sigma/tools/uberAgent-ESA-am-sigma-*.conf rules/
+cp -v sigma/tools/uberAgent-ESA-am-sigma-*.conf config/
 
 # clean up sigma checkout
 rm -f -r sigma/
@@ -104,7 +103,7 @@ echo "machine api.github.com" >> "$HOME/.netrc"
 echo "  login $GITHUB_ACTOR" >> "$HOME/.netrc"
 echo "  password $GITHUB_TOKEN" >> "$HOME/.netrc"
 
-git add rules/*.conf
+git add config/*.conf
 git commit -m "Updated converted sigma rules for version $CURRENT_BRANCH"
 
 git config --global --add --bool push.autoSetupRemote true || true
