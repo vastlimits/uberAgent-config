@@ -3,6 +3,9 @@
 # Any subsequent commands that fail cause the shellscript to exit immediately.
 set -e
 
+# Print the commands that are executed
+set -x
+
 # The default GitHub action schedule runs this on the default branch.
 # In our action we run this script multiple times for any branch that requires converted rules for a specific uberAgent version.
 # Determine the current branch and switch if needed.
@@ -109,8 +112,9 @@ echo "machine api.github.com" >> "$HOME/.netrc"
 echo "  login $GITHUB_ACTOR" >> "$HOME/.netrc"
 echo "  password $GITHUB_TOKEN" >> "$HOME/.netrc"
 
+# Git add and commit - don't fail if there's nothing to commit ("|| true" is necessary because of set -e)
 git add $TARGET_DIR/*.conf
-git commit -m "Updated converted sigma rules for version $CURRENT_BRANCH"
+git commit -m "Updated converted sigma rules for version $CURRENT_BRANCH" || true
 
 git config --global --add --bool push.autoSetupRemote true || true
 git push
