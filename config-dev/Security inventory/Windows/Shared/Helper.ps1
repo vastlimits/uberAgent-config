@@ -1,5 +1,8 @@
 #Requires -Version 3.0
 
+#define global variable that contains a list of timers.
+$global:debug_timers = @()
+
 function Get-vlOsArchitecture {
     <#
     .SYNOPSIS
@@ -13,10 +16,30 @@ function Get-vlOsArchitecture {
     .OUTPUTS
         A string containing the OS architecture. Valid values are "32-bit" and "64-bit"
     .EXAMPLE
-        return New-vlResultObject($result)
+        return Get-vlOsArchitecture
     #>
 
     return (Get-CimInstance Win32_operatingsystem).OSArchitecture
+}
+
+function Get-vlIsWindows7 {
+    <#
+    .SYNOPSIS
+        Check if the OS is Windows 7
+    .DESCRIPTION
+        Check if the OS is Windows 7
+    .OUTPUTS
+        A boolean indicating if the OS is Windows 7
+    .EXAMPLE
+        return Get-vlIsWindows7
+    #>
+
+    $osVersion = (Get-WmiObject -Class Win32_OperatingSystem).Version
+    if ($osVersion -match "^6\.1") {
+        return $true
+    } else {
+        return $false
+    }
 }
 
 function New-vlErrorObject {
@@ -115,7 +138,7 @@ function Get-vlRegValue {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU")]
+        [ValidateSet("HKLM", "HKU", "HKCU", "HKCR")]
         [string]$Hive,
         [Parameter(Mandatory = $true)]
         [string]$Path,
@@ -140,6 +163,13 @@ function Get-vlRegValue {
             }
             elseif ($hive -eq "HKU") {
                 $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path);
+                if ($null -ne $regKey) {
+                    $regKeyValue = $regKey.GetValue($Value);
+                }
+                return $regKeyValue;
+            }
+            elseif ($hive -eq "HKCR") {
+                $regKey = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey($Path);
                 if ($null -ne $regKey) {
                     $regKeyValue = $regKey.GetValue($Value);
                 }
@@ -382,6 +412,182 @@ function Get-vlRegKeyValues {
             if ($null -ne $regKey) {
                 $regKey.Dispose()
             }
+        }
+    }
+    
+    end {
+    
+    }
+}
+
+##### Debugging utilities #####
+
+function Add-vlTimer {
+    <#
+    .SYNOPSIS
+        Start a timer
+    .DESCRIPTION
+        Start a timer
+    .PARAMETER Name
+        The name of the timer
+    .LINK
+        https://uberagent.com
+    .OUTPUTS
+        
+    .EXAMPLE
+        Start-vlTimer -Name "timer1"
+    #>
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+    begin {
+
+    }
+    
+    process {
+        $timer = New-Object -TypeName psobject -Property @{
+            Name  = $Name
+            Start = (Get-Date)
+        }
+        $global:debug_timers += $timer
+    }
+    
+    end {
+    
+    }
+}
+
+function Restart-vlTimer {
+    <#
+    .SYNOPSIS
+        Restart a timer
+    .DESCRIPTION
+        Restart a timer
+    .PARAMETER Name
+        The name of the timer
+    .LINK
+        https://uberagent.com
+    .OUTPUTS
+        
+    .EXAMPLE
+        Restart-vlTimer -Name "timer1"
+    #>
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+    begin {
+
+    }
+    
+    process {
+        $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
+        if ($null -ne $timer) {
+            $timer.Start = (Get-Date)
+        }
+    }
+    
+    end {
+    
+    }
+}
+
+function Get-vlTimerElapsedTime {
+    <#
+    .SYNOPSIS
+        Get the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
+    .DESCRIPTION
+        Get the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
+    .PARAMETER Name
+        The name of the timer
+    .PARAMETER Unit
+        The unit of time to return. Valid values are "sec" and "ms"
+    .LINK
+        https://uberagent.com
+    .OUTPUTS
+        
+    .EXAMPLE
+        Get-vlTimerElapsedTime -Name "timer1"
+    #>
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+        [ValidateSet("sec", "ms")]
+        [string]$Unit = "ms"
+    )
+    begin {
+
+    }
+    
+    process {
+        $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
+        if ($null -ne $timer) {
+            $elapsed = (Get-Date) - $timer.Start
+            if ($Unit -eq "sec") {
+                return $elapsed.TotalSeconds
+            }
+            else {
+                return $elapsed.TotalMilliseconds
+            }
+        }
+        else {
+            return 0
+        }
+    }
+    
+    end {
+    
+    }
+}
+
+function Write-vlTimerElapsedTime {
+    <#
+    .SYNOPSIS
+        Write the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
+    .DESCRIPTION
+        Write the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
+    .PARAMETER Name
+        The name of the timer
+    .PARAMETER Unit
+        The unit of time to return. Valid values are "sec" and "ms"
+    .PARAMETER UseFile
+        Write the elapsed time to a file
+    .LINK
+        https://uberagent.com
+    .OUTPUTS
+        
+    .EXAMPLE
+        Write-vlTimerElapsedTime -Name "timer1"
+    #>
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+        [Parameter(Mandatory = $false)]
+        [bool]$UseFile = $false,
+        [Parameter(Mandatory = $false)]
+        [ValidateSet("sec", "ms")]
+        [string]$Unit = "ms"
+    )
+    begin {
+
+    }
+    
+    process {
+        $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
+        if ($UseFile) {
+            Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
+        }
+        else {
+            Write-Host "${Name}: $elapsed $Unit"
         }
     }
     
