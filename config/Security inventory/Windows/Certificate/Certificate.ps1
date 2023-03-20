@@ -1167,7 +1167,11 @@ function Get-vlCheckSyncTimes {
         # worse score would be 1 if all 3 are not synced in the last 14 days
         $score += Get-vlTimeScore -time $lastCTLSyncTime
         $score += Get-vlTimeScore -time $lastCRLSyncTime
-        $score += Get-vlTimeScore -time $lastPRLSyncTime
+
+        # on windows 7 there is no PRL
+        if( (Get-vlIsWindows7) -eq $false) {
+            $score += Get-vlTimeScore -time $lastPRLSyncTime
+        }
         
         # Create the result object
         $result = [PSCustomObject]@{
