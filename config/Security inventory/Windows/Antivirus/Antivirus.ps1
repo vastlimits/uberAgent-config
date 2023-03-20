@@ -1,4 +1,3 @@
-#Requires -RunAsAdministrator
 
 
 function Get-vlOsArchitecture {

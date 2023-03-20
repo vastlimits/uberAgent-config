@@ -95,7 +95,7 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                                 if len(includes_ex) > 0:
                                     content = content.replace(includes_ex[0], include_content)
                                     
-                                content = re.sub(r'.*#Requires -Version.*(\r?\n)?', '', content, flags=re.IGNORECASE)
+                                content = re.sub(r'.*#Requires.*(\r?\n)?', '', content, flags=re.IGNORECASE)
                         except:
                             print("\tError: Could not open include file: ", include_path)
         
