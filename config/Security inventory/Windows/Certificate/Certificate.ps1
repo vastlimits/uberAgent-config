@@ -1250,7 +1250,7 @@ function Get-vlCertificateCheck {
         $protectedRoots = Get-vlRootCertificateInstallationCheck
         $Output += [PSCustomObject]@{
             Name         = "CProtRoot"
-            DisplayName  = "Protected Root Certificates"
+            DisplayName  = "Protected root certificates"
             Description  = "Checks if root certificates can be installed by a user."
             Score        = $protectedRoots.Score
             ResultData   = $protectedRoots.Result
@@ -1263,7 +1263,7 @@ function Get-vlCertificateCheck {
         $protectedRoots = Get-vlExpiredCertificateCheck   
         $Output += [PSCustomObject]@{
             Name         = "CExpCerts"
-            DisplayName  = "Expired Certificates"
+            DisplayName  = "Expired certificates"
             Description  = "Checks if there are expired certificates installed."
             Score        = $protectedRoots.Score
             ResultData   = $protectedRoots.Result
@@ -1276,7 +1276,7 @@ function Get-vlCertificateCheck {
         $autoCertUpdateCheck = Get-vlAutoCertificateUpdateCheck
         $Output += [PSCustomObject]@{
             Name         = "CAuCerUp"
-            DisplayName  = "Auto Certificate Update"
+            DisplayName  = "Auto certificate update"
             Description  = "Checks if the auto certificate update is enabled."
             Score        = $autoCertUpdateCheck.Score
             ResultData   = $autoCertUpdateCheck.Result
@@ -1289,7 +1289,7 @@ function Get-vlCertificateCheck {
         $lastSync = Get-vlCheckSyncTimes
         $Output += [PSCustomObject]@{
             Name         = "CLaSync"
-            DisplayName  = "Certificate Last Sync"
+            DisplayName  = "Certificate last sync"
             Description  = "Checks when the certificates were last synced."
             Score        = $lastSync.Score
             ResultData   = $lastSync.Result

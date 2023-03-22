@@ -731,7 +731,7 @@ function Get-vlLocalUsersAndGroupsCheck {
         $uac = Get-vlUACState
         $Output += [PSCustomObject]@{
             Name       = "LUMUac"
-            DisplayName  = "User Account Control"
+            DisplayName  = "User account control"
             Description  = "Checks if the User Account Control is enabled."
             Score      = $uac.Score
             ResultData = $uac.Result
@@ -744,7 +744,7 @@ function Get-vlLocalUsersAndGroupsCheck {
         $laps = Get-vlLAPSSettings
         $Output += [PSCustomObject]@{
             Name       = "LUMLaps"
-            DisplayName  = "Local Administrator Password Solution"
+            DisplayName  = "Local administrator password solution"
             Description  = "Checks if the Local Administrator Password Solution is enabled."
             Score      = $laps.Score
             ResultData = $laps.Result
@@ -757,7 +757,7 @@ function Get-vlLocalUsersAndGroupsCheck {
         $secrets = Get-vlSecrets
         $Output += [PSCustomObject]@{
             Name       = "LUMSecrets"
-            DisplayName  = "Local Security Authority Secrets"
+            DisplayName  = "Local security authority secrets"
             Description  = "Checks if LSA secrets are available."
             Score      = $secrets.Score
             ResultData = $secrets.Result
@@ -770,7 +770,7 @@ function Get-vlLocalUsersAndGroupsCheck {
         $windowsHelloStatus = Get-vlWindowsHelloStatusLocalUser
         $Output += [PSCustomObject]@{
             Name       = "LUMWinBio"
-            DisplayName  = "Windows Hello / Biometrics"
+            DisplayName  = "Windows Hello / biometrics"
             Description  = "Checks if Windows Hello is enabled and what factors are available."
             Score      = $windowsHelloStatus.Score
             ResultData = $windowsHelloStatus.Result

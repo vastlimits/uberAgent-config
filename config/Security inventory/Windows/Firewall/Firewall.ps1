@@ -644,7 +644,7 @@ function Get-vlFirewallCheck {
         $firewallEnabled = Get-vlIsFirewallEnabled    
         $Output += [PSCustomObject]@{
             Name       = "FWState"
-            DisplayName  = "Firewall Status"
+            DisplayName  = "Firewall status"
             Description  = "Checks if the firewall is enabled."
             Score      = $firewallEnabled.Score
             ResultData = $firewallEnabled.Result
@@ -658,7 +658,7 @@ function Get-vlFirewallCheck {
         $openPorts = Get-vlOpenFirewallPorts
         $Output += [PSCustomObject]@{
             Name       = "FWPorts"
-            DisplayName  = "Open Firewall Ports"
+            DisplayName  = "Open firewall ports"
             Description  = "Checks if there are open firewall ports and returns the list of open ports."
             Score      = $openPorts.Score
             ResultData = $openPorts.Result
