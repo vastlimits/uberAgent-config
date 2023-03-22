@@ -148,7 +148,7 @@ function Get-vlWindowsHelloStatusLocalUser() {
     $currentUserSID = (whoami /user /fo csv | convertfrom-csv).SID
 
     # Registry path to credential provider belonging for the PIN. A PIN is required with Windows Hello
-    $registryItems = Get-vlRegSubkeys2 -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{D6886603-9D2F-4EB2-B667-1971041FA96B}"
+    $registryItems = Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{D6886603-9D2F-4EB2-B667-1971041FA96B}"
     if (-not $registryItems ) {
         $result = [PSCustomObject]@{
             WindowsHelloEnabled = $false
@@ -235,10 +235,12 @@ function Get-vlLocalUsersAndGroupsCheck {
     
     $Output = @()
 
-    if ($params.Contains("all") -or $params.Contains("islocaladmin")) {
+    if ($params.Contains("all") -or $params.Contains("LUUIsAdmin")) {
         $isLocalAdmin = Get-vlIsLocalAdmin
         $Output += [PSCustomObject]@{
-            Name         = "islocaladmin"
+            Name         = "LUUIsAdmin"
+            DisplayName  = "Local User is Admin"
+            Description  = "Checks if the local user is a member of the local Administrators group."
             Score        = $isLocalAdmin.Score
             ResultData   = $isLocalAdmin.Result
             RiskScore    = 70
@@ -246,10 +248,12 @@ function Get-vlLocalUsersAndGroupsCheck {
             ErrorMessage = $isLocalAdmin.ErrorMessage
         }
     }
-    if ($params.Contains("all") -or $params.Contains("userwinhellostatus")) {
+    if ($params.Contains("all") -or $params.Contains("LUUWinBio")) {
         $windowsHelloStatus = Get-vlWindowsHelloStatusLocalUser
         $Output += [PSCustomObject]@{
-            Name         = "userwinhellostatus"
+            Name         = "LUUWinBio"
+            DisplayName  = "Local User Windows Hello / Biometrics"
+            Description  = "Checks if Windows Hello is enabled and if the local user has enrolled factors."
             Score        = $windowsHelloStatus.Score
             ResultData   = $windowsHelloStatus.Result
             RiskScore    = 30

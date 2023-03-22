@@ -23,7 +23,7 @@ function Get-vlServiceLocations {
    process {
        try {
             $ServiceArray = @()
-            Get-vlRegSubkeys2 -Hive HKLM -Path 'SYSTEM\CurrentControlSet\Services' | Where-Object {$_.ImagePath} | ForEach-Object -process {
+            Get-vlRegSubkeys -Hive HKLM -Path 'SYSTEM\CurrentControlSet\Services' | Where-Object {$_.ImagePath} | ForEach-Object -process {
                $ImagePath = $PSItem.ImagePath
                if ($ImagePath -inotmatch '^(\\\?\?\\)?\\?SystemRoot.*$|^(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\WINDOWS\\(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\Program Files( \(x86\))?\\.*$|^(\\\?\?\\)?"?C:\\WINDOWS\\Microsoft\.NET\\.*$|^(\\\?\?\\)?"?C:\\ProgramData\\Microsoft\\Windows Defender\\.*$') {
                   $ServiceArray += $ImagePath

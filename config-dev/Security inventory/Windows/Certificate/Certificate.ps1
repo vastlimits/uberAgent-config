@@ -39,14 +39,14 @@ function Get-vlRootCertificateInstallationCheck {
 
         if ($protectedRoots -eq 1) {
             $result = [PSCustomObject]@{
-                enabled = $false
+                Enabled = $false
             }
             # Root certificate installation is disabled
             return New-vlResultObject -result $result -score 10
         }
         else {
             $result = [PSCustomObject]@{
-                enabled = $true
+                Enabled = $true
             }
             # Root certificate installation is enabled
             return New-vlResultObject -result $result -score 2
@@ -82,14 +82,14 @@ function Get-vlAutoCertificateUpdateCheck {
 
         if ($disableRootAutoUpdate -eq 1) {
             $result = [PSCustomObject]@{
-                enabled = $false
+                Enabled = $false
             }
             # Updates are disabled
             return New-vlResultObject -result $result  -score 2
         }
         else {
             $result = [PSCustomObject]@{
-                enabled = $true
+                Enabled = $true
             }
             # Updates are enabled
             return New-vlResultObject -result $result -score 10
@@ -525,10 +525,12 @@ function Get-vlCertificateCheck {
     $params = if ($global:args) { $global:args } else { "all" }
     $Output = @()
 
-    if ($params.Contains("all") -or $params.Contains("protectedRoots")) {
-        $protectedRoots = Get-vlRootCertificateInstallationCheck    
+    if ($params.Contains("all") -or $params.Contains("CProtRoot")) {
+        $protectedRoots = Get-vlRootCertificateInstallationCheck
         $Output += [PSCustomObject]@{
-            Name         = "Certificate - protectedRoots"
+            Name         = "CProtRoot"
+            DisplayName  = "Protected Root Certificates"
+            Description  = "Checks if the root certificates can be installed by a user."
             Score        = $protectedRoots.Score
             ResultData   = $protectedRoots.Result
             RiskScore    = 80
@@ -536,10 +538,12 @@ function Get-vlCertificateCheck {
             ErrorMessage = $protectedRoots.ErrorMessage
         }
     }
-    if ($params.Contains("all") -or $params.Contains("expiredCerts")) {
-        $protectedRoots = Get-vlExpiredCertificateCheck    
+    if ($params.Contains("all") -or $params.Contains("CExpCerts")) {
+        $protectedRoots = Get-vlExpiredCertificateCheck   
         $Output += [PSCustomObject]@{
-            Name         = "Certificate - expiredCerts"
+            Name         = "CExpCerts"
+            DisplayName  = "Expired Certificates"
+            Description  = "Checks if there are expired certificates installed."
             Score        = $protectedRoots.Score
             ResultData   = $protectedRoots.Result
             RiskScore    = 20
@@ -547,10 +551,12 @@ function Get-vlCertificateCheck {
             ErrorMessage = $protectedRoots.ErrorMessage
         }
     }
-    if ($params.Contains("all") -or $params.Contains("autoCertUpdate")) {
-        $autoCertUpdateCheck = Get-vlAutoCertificateUpdateCheck  
+    if ($params.Contains("all") -or $params.Contains("CAuCerUp")) {
+        $autoCertUpdateCheck = Get-vlAutoCertificateUpdateCheck
         $Output += [PSCustomObject]@{
-            Name         = "Certificate - autoCertUpdate"
+            Name         = "CAuCerUp"
+            DisplayName  = "Auto Certificate Update"
+            Description  = "Checks if the auto certificate update is enabled."
             Score        = $autoCertUpdateCheck.Score
             ResultData   = $autoCertUpdateCheck.Result
             RiskScore    = 80
@@ -558,10 +564,12 @@ function Get-vlCertificateCheck {
             ErrorMessage = $autoCertUpdateCheck.ErrorMessage
         }
     }
-    if ($params.Contains("all") -or $params.Contains("lastSync")) {
+    if ($params.Contains("all") -or $params.Contains("CLaSync")) {
         $lastSync = Get-vlCheckSyncTimes
         $Output += [PSCustomObject]@{
-            Name         = "Certificate - lastSync"
+            Name         = "CLaSync"
+            DisplayName  = "Certificate Last Sync"
+            Description  = "Checks when the certificates were last synced."
             Score        = $lastSync.Score
             ResultData   = $lastSync.Result
             RiskScore    = $lastSync.RiskScore
@@ -569,10 +577,12 @@ function Get-vlCertificateCheck {
             ErrorMessage = $lastSync.ErrorMessage
         }
     }
-    if ($params.Contains("all") -or $params.Contains("trustedByWindows")) {
+    if ($params.Contains("all") -or $params.Contains("CTrByWin")) {
         $ctlCheck = Get-vlGetCTLCheck
         $Output += [PSCustomObject]@{
-            Name         = "Certificate - trustedByWindows"
+            Name         = "CTrByWin"
+            DisplayName  = "Certificates trusted by Windows"
+            Description  = "Checks if the certificates are trusted by Windows using the CTL."
             Score        = $ctlCheck.Score
             ResultData   = $ctlCheck.Result
             RiskScore    = $ctlCheck.RiskScore
@@ -583,5 +593,6 @@ function Get-vlCertificateCheck {
     
     return $output
 }
+
 
 Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
