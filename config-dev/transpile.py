@@ -98,7 +98,11 @@ def extract_values(data):
 
 def append_mapping_info(data):
     # Write the extracted values to a CSV file
-    csv_writer.writerow([data['Name'], data['DisplayName'], data['Description']])
+    try:
+        print("\tAppending to csv: ", data['Name'], data['DisplayName'], data['Description'])
+        csv_writer.writerow([data['Name'], data['DisplayName'], data['Description']])
+    except:
+        print("\tError: Could not write to csv file")
 
 # Extracts the DisplayName and Description from a buffer
 def extract_mapping_info(data):
