@@ -179,8 +179,12 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                         except:
                             print("\tError: Could not open include file: ", include_path)
         
-                    # Extract DisplayName and Description
-                    display_name, description = extract_mapping_info(content)
+                    try:
+                        # Extract DisplayName and Description
+                        display_name, description = extract_mapping_info(content)
+                    except:
+                        print("\tError: Failed to extract mapping info: ", file_path)
+                        continue
 
                     # Extract subfolder name
                     subfolder = os.path.relpath(os.path.dirname(file_path), folder_path)
