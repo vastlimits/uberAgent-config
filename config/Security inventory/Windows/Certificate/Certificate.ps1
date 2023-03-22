@@ -1251,7 +1251,7 @@ function Get-vlCertificateCheck {
         $Output += [PSCustomObject]@{
             Name         = "CProtRoot"
             DisplayName  = "Protected Root Certificates"
-            Description  = "Checks if the root certificates can be installed by a user."
+            Description  = "Checks if root certificates can be installed by a user."
             Score        = $protectedRoots.Score
             ResultData   = $protectedRoots.Result
             RiskScore    = 80

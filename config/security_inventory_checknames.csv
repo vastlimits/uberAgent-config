@@ -5,7 +5,7 @@ PSCL,PowerShell Common Language Mode,Checks if PowerShell Common Language Mode i
 PSVersion,PowerShell Version,Current used PowerShell Version
 PSPolicy,PowerShell Policy,Checks and evaluates the PowerShell Execution Policy
 PSLogging,PowerShell Logging,Checks if PowerShell Logging is enabled
-CProtRoot,Protected Root Certificates,Checks if the root certificates can be installed by a user.
+CProtRoot,Protected Root Certificates,Checks if root certificates can be installed by a user.
 CExpCerts,Expired Certificates,Checks if there are expired certificates installed.
 CAuCerUp,Auto Certificate Update,Checks if the auto certificate update is enabled.
 CLaSync,Certificate Last Sync,Checks when the certificates were last synced.
