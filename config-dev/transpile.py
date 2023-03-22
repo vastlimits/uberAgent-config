@@ -101,8 +101,12 @@ def extract_mapping_info(data):
 
     keywords = ["Name", "DisplayName", "Description", "Score", "ResultData", "RiskScore", "ErrorCode", "ErrorMessage"]
     
-    pattern = r'\[PSCustomObject\]@\{[^{}]*(((?<=[^{}])\{[^{}]*(((?<=[^{}])\{[^{}]*(((?<=[^{}])\{[^{}]*\})[^{}]*)*\})[^{}]*)*\})[^{}]*)*\}'
-    matches = re.finditer(pattern, data, re.MULTILINE | re.DOTALL)
+    try:
+        pattern = r'\[PSCustomObject\]@\{[^{}]*(((?<=[^{}])\{[^{}]*(((?<=[^{}])\{[^{}]*(((?<=[^{}])\{[^{}]*\})[^{}]*)*\})[^{}]*)*\})[^{}]*)*\}'
+        matches = re.finditer(pattern, data, re.MULTILINE | re.DOTALL)
+    except:
+        print("Error: Could not find PSCustomObject for pattern")
+        raise Exception
 
     for match in matches:
         try:
@@ -123,10 +127,13 @@ def extract_mapping_info(data):
                         append_mapping_info(extracted_values)
                     else:
                         print("Not all keywords are present in the block.")
+                        raise Exception
                 except:
                     print("Error: Could not extract values from block: ", block)
+                    raise Exception
         except:
             print("Error: Failed match.group: ", data)
+            raise Exception
 
 
 # Loop through all files in the folder
@@ -181,7 +188,7 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
         
                     try:
                         # Extract DisplayName and Description
-                        display_name, description = extract_mapping_info(content)
+                        extract_mapping_info(content)
                     except:
                         print("\tError: Failed to extract mapping info: ", file_path)
                         continue
