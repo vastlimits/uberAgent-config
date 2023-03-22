@@ -1,0 +1,34 @@
+SecurityInventoryName,SecurityInventoryDisplayName,SecurityInventoryNameDescription
+PSV2,PowerShell V2,Checks if PowerShell V2 is enabled
+PSRemoting,PowerShell Remoting,Checks if PowerShell Remoting is enabled
+PSCL,PowerShell Common Language Mode,Checks if PowerShell Common Language Mode is enabled
+PSVersion,PowerShell Version,Current used PowerShell Version
+PSPolicy,PowerShell Policy,Checks and evaluates the PowerShell Execution Policy
+PSLogging,PowerShell Logging,Checks if PowerShell Logging is enabled
+CProtRoot,Protected Root Certificates,Checks if the root certificates can be installed by a user.
+CExpCerts,Expired Certificates,Checks if there are expired certificates installed.
+CAuCerUp,Auto Certificate Update,Checks if the auto certificate update is enabled.
+CLaSync,Certificate Last Sync,Checks when the certificates were last synced.
+CTrByWin,Certificates trusted by Windows,Checks if the certificates are trusted by Windows using the CTL.
+NCSMBv1,Network Configuration SMBv1,Checks whether SMBv1 is enabled.
+NCSMBSign,Network Configuration SMB Signing,Checks whether SMB signing is enabled.
+NCNetBIOS,Network Configuration NetBIOS,Checks whether NetBIOS is enabled.
+NCWINS,Network Configuration WINS,Checks whether WINS is enabled.
+NCSSLTLS,Network Configuration SSL/TLS,Checks whether outdated SSL and TLS versions are enabled.
+Locations,Uncommon locations,Checks whether services are running in uncommon locations
+Service.dll,Uncommon locations of service.dll,Checks whether services use service.dll in uncommon locations
+WCHta,WindowsConfiguration HTA,Checks if HTA execution is enabled on the system.
+WCBitlocker,WindowsConfiguration Bitlocker,Checks if Bitlocker is enabled on the system.
+WCComHijacking,WindowsConfiguration COM Hijacking,Checks if COM is hijacked.
+WCTimeProvHijacking,WindowsConfiguration time provider Hijacking,Checks if the time provider is hijacked.
+FWState,Firewall Status,Checks if the firewall is enabled.
+FWPorts,Open Firewall Ports,Checks if there are open firewall ports and returns the list of open ports.
+FWListPorts,Listening Firewall Ports,Checks if there are ports with the status LISTENING and returns the list of listening ports.
+LUMUac,User Account Control,Checks if the User Account Control is enabled.
+LUMLaps,Local Administrator Password Solution,Checks if the Local Administrator Password Solution is enabled.
+LUMSecrets,Local Security Authority Secrets,Checks if LSA secrets are available.
+LUMWinBio,Windows Hello / Biometrics,Checks if Windows Hello is enabled and what factors are available.
+LUUIsAdmin,Local User is Admin,Checks if the local user is a member of the local Administrators group.
+LUUWinBio,Local User Windows Hello / Biometrics,Checks if Windows Hello is enabled and if the local user has enrolled factors.
+AVState,Antivirus Status,Checks if the antivirus is enabled and up to date.
+AVDefStat,Defender Status,Checks if the defender is enabled and up to date.
