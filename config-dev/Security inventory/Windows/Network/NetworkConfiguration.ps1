@@ -315,7 +315,7 @@ function Get-vlNetworkConfigurationCheck {
       $NetBIOS = Get-vlNetworkConfigurationNetBIOS    
       $Output += [PSCustomObject]@{
          Name         = "NCNetBIOS"
-         DisplayName  = "Network Configuration NetBIOS"
+         DisplayName  = "Network configuration NetBIOS"
          Description  = "Checks whether NetBIOS is enabled."
          Score        = $NetBIOS.Score
          ResultData   = $NetBIOS.Result
@@ -329,7 +329,7 @@ function Get-vlNetworkConfigurationCheck {
       $WINS = Get-vlNetworkConfigurationWINS    
       $Output += [PSCustomObject]@{
          Name         = "NCWINS"
-         DisplayName  = "Network Configuration WINS"
+         DisplayName  = "Network configuration WINS"
          Description  = "Checks whether WINS is enabled."
          Score        = $WINS.Score
          ResultData   = $WINS.Result
@@ -343,7 +343,7 @@ function Get-vlNetworkConfigurationCheck {
       $SSLTLS = Get-vlNetworkConfigurationSSLTLS    
       $Output += [PSCustomObject]@{
          Name         = "NCSSLTLS"
-         DisplayName  = "Network Configuration SSL/TLS"
+         DisplayName  = "Network configuration SSL/TLS"
          Description  = "Checks whether outdated SSL and TLS versions are enabled."
          Score        = $SSLTLS.Score
          ResultData   = $SSLTLS.Result

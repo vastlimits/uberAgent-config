@@ -593,7 +593,7 @@ function Get-vlPowerShellCheck {
         $Output += [PSCustomObject]@{
             Name         = "PSRemoting"
             DisplayName  = "PowerShell Remoting"
-            Description  = "Checks if PowerShell Remoting is enabled"
+            Description  = "Checks if PowerShell remoting is enabled"
             Score        = $powerShellRemoting.Score
             ResultData   = $powerShellRemoting.Result
             RiskScore    = $powerShellRemoting.RiskScore
@@ -607,7 +607,7 @@ function Get-vlPowerShellCheck {
         $powerShellMode = Get-vlPowerShellCL
         $Output += [PSCustomObject]@{
             Name         = "PSCL"
-            DisplayName  = "PowerShell Common Language Mode"
+            DisplayName  = "PowerShell common language mode"
             Description  = "Checks if PowerShell Common Language Mode is enabled"
             Score        = 10
             ResultData   = $powerShellMode.Result
@@ -621,7 +621,7 @@ function Get-vlPowerShellCheck {
         $powerShellMode = Get-vlPowerShellVersion
         $Output += [PSCustomObject]@{
             Name         = "PSVersion"
-            DisplayName  = "PowerShell Version"
+            DisplayName  = "PowerShell version"
             Description  = "Current used PowerShell Version"
             Score        = 10
             ResultData   = $powerShellMode.Result
@@ -635,7 +635,7 @@ function Get-vlPowerShellCheck {
         $powerShellExecutionPolicy = Get-vlPowerShellExecutionPolicy
         $Output += [PSCustomObject]@{
             Name         = "PSPolicy"
-            DisplayName  = "PowerShell Policy"
+            DisplayName  = "PowerShell policy"
             Description  = "Checks and evaluates the PowerShell Execution Policy"
             Score        = $powerShellExecutionPolicy.Score
             ResultData   = $powerShellExecutionPolicy.Result
@@ -649,7 +649,7 @@ function Get-vlPowerShellCheck {
         $powerShellLogging = Get-vlPowerShellLogging
         $Output += [PSCustomObject]@{
             Name         = "PSLogging"
-            DisplayName  = "PowerShell Logging"
+            DisplayName  = "PowerShell logging"
             Description  = "Checks if PowerShell Logging is enabled"
             Score        = $powerShellLogging.Score
             ResultData   = $powerShellLogging.Result

@@ -176,7 +176,7 @@ function Get-vlAntivirusCheck {
         $avStatus = Get-vlAntivirusStatus
         $Output += [PSCustomObject]@{
             Name       = "AVState"
-            DisplayName  = "Antivirus Status"
+            DisplayName  = "Antivirus status"
             Description  = "Checks if the antivirus is enabled and up to date."
             Score      = $avStatus.Score
             ResultData = $avStatus.Result
@@ -191,7 +191,7 @@ function Get-vlAntivirusCheck {
         $defenderStatus = Get-vlDefenderStatus
         $Output += [PSCustomObject]@{
             Name       = "AVDefStat"
-            DisplayName  = "Defender Status"
+            DisplayName  = "Defender status"
             Description  = "Checks if the defender is enabled and up to date."
             Score      = 0
             ResultData = $defenderStatus.Result

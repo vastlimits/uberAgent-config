@@ -310,7 +310,7 @@ function Get-WindowsConfigurationCheck {
         $COMHijacking = Get-COMHijacking
         $Output += [PSCustomObject]@{
             Name         = "WCComHijacking"
-            DisplayName  = "WindowsConfiguration COM Hijacking"
+            DisplayName  = "WindowsConfiguration COM hijacking"
             Description  = "Checks if COM is hijacked."
             Score        = $COMHijacking.Score
             ResultData   = $COMHijacking.Result
@@ -324,7 +324,7 @@ function Get-WindowsConfigurationCheck {
         $timeProviderHijacking = Get-vlTimeProviderHijacking
         $Output += [PSCustomObject]@{
             Name         = "WCTimeProvHijacking"
-            DisplayName  = "WindowsConfiguration time provider Hijacking"
+            DisplayName  = "WindowsConfiguration time provider hijacking"
             Description  = "Checks if the time provider is hijacked."
             Score        = $timeProviderHijacking.Score
             ResultData   = $timeProviderHijacking.Result

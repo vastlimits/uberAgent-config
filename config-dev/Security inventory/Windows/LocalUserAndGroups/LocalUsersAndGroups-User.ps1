@@ -239,7 +239,7 @@ function Get-vlLocalUsersAndGroupsCheck {
         $isLocalAdmin = Get-vlIsLocalAdmin
         $Output += [PSCustomObject]@{
             Name         = "LUUIsAdmin"
-            DisplayName  = "Local User is Admin"
+            DisplayName  = "Local user is admin"
             Description  = "Checks if the local user is a member of the local Administrators group."
             Score        = $isLocalAdmin.Score
             ResultData   = $isLocalAdmin.Result
@@ -252,7 +252,7 @@ function Get-vlLocalUsersAndGroupsCheck {
         $windowsHelloStatus = Get-vlWindowsHelloStatusLocalUser
         $Output += [PSCustomObject]@{
             Name         = "LUUWinBio"
-            DisplayName  = "Local User Windows Hello / Biometrics"
+            DisplayName  = "Local user Windows Hello / biometrics"
             Description  = "Checks if Windows Hello is enabled and if the local user has enrolled factors."
             Score        = $windowsHelloStatus.Score
             ResultData   = $windowsHelloStatus.Result
