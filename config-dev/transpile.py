@@ -81,14 +81,18 @@ except:
 print("-------------------------------------")
 
 def extract_values(data):
-    pattern = r'(Name|DisplayName|Description)\s*=\s*["\'](.*?)["\']'
-    matches = re.finditer(pattern, data, re.MULTILINE)
+    try:
+        pattern = r'(Name|DisplayName|Description)\s*=\s*["\'](.*?)["\']'
+        matches = re.finditer(pattern, data, re.MULTILINE)
 
-    extracted_values = {}
-    for match in matches:
-        key = match.group(1)
-        value = match.group(2)
-        extracted_values[key] = value
+        extracted_values = {}
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            extracted_values[key] = value
+    except:
+        print("Error: Could not find Name, DisplayName and Description for pattern")
+        raise Exception
 
     return extracted_values
 
@@ -105,7 +109,7 @@ def extract_mapping_info(data):
         pattern = r'\[PSCustomObject\]@\{[^{}]*(((?<=[^{}])\{[^{}]*(((?<=[^{}])\{[^{}]*(((?<=[^{}])\{[^{}]*\})[^{}]*)*\})[^{}]*)*\})[^{}]*)*\}'
         matches = re.finditer(pattern, data, re.MULTILINE | re.DOTALL)
     except:
-        print("Error: Could not find PSCustomObject for pattern")
+        print("\tError: Could not find PSCustomObject for pattern")
         raise Exception
 
     for match in matches:
@@ -126,13 +130,13 @@ def extract_mapping_info(data):
                     if len(extracted_values) == 3:
                         append_mapping_info(extracted_values)
                     else:
-                        print("Not all keywords are present in the block.")
+                        print("\tNot all keywords are present in the block.")
                         raise Exception
                 except:
-                    print("Error: Could not extract values from block: ", block)
+                    print("\tError: Could not extract values from block: ", block)
                     raise Exception
         except:
-            print("Error: Failed match.group: ", data)
+            print("\tError: Failed match.group")
             raise Exception
 
 
