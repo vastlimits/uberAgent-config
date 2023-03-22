@@ -606,4 +606,3 @@ function Get-vlWindowsServicesCheck {
 }
 
 Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
-
