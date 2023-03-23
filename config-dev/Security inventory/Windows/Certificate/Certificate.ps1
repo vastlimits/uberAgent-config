@@ -582,7 +582,7 @@ function Get-vlCertificateCheck {
         $Output += [PSCustomObject]@{
             Name         = "CTrByWin"
             DisplayName  = "Certificates trusted by Windows"
-            Description  = "Checks if the certificates are trusted by Windows using the CTL."
+            Description  = "Checks if the certificates are trusted by Windows using the Certificate Trust List."
             Score        = $ctlCheck.Score
             ResultData   = $ctlCheck.Result
             RiskScore    = $ctlCheck.RiskScore
