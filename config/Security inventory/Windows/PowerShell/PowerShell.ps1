@@ -1045,7 +1045,7 @@ function Get-vlPowerShellCheck {
         $Output += [PSCustomObject]@{
             Name         = "PSVersion"
             DisplayName  = "PowerShell version"
-            Description  = "Current used PowerShell Version"
+            Description  = "The PowerShell version in use"
             Score        = 10
             ResultData   = $powerShellMode.Result
             RiskScore    = 0

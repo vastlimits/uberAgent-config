@@ -2,14 +2,14 @@ SecurityInventoryName,SecurityInventoryDisplayName,SecurityInventoryNameDescript
 PSV2,PowerShell V2,Checks if PowerShell V2 is enabled
 PSRemoting,PowerShell Remoting,Checks if PowerShell remoting is enabled
 PSCL,PowerShell common language mode,Checks if PowerShell Common Language Mode is enabled
-PSVersion,PowerShell version,Current used PowerShell Version
+PSVersion,PowerShell version,The PowerShell version in use
 PSPolicy,PowerShell policy,Checks and evaluates the PowerShell Execution Policy
 PSLogging,PowerShell logging,Checks if PowerShell Logging is enabled
-CProtRoot,Protected root certificates,Checks if root certificates can be installed by a user.
+CProtRoot,Protected root certificates,Checks if root certificates can be installed by users.
 CExpCerts,Expired certificates,Checks if there are expired certificates installed.
 CAuCerUp,Auto certificate update,Checks if the auto certificate update is enabled.
 CLaSync,Certificate last sync,Checks when the certificates were last synced.
-CTrByWin,Certificates trusted by Windows,Checks if the certificates are trusted by Windows using the CTL.
+CTrByWin,Certificates trusted by Windows,Checks if the certificates are trusted by Windows using the Certificate Trust List.
 NCSMBv1,Network Configuration SMBv1,Checks whether SMBv1 is enabled.
 NCSMBSign,Network Configuration SMB Signing,Checks whether SMB signing is enabled.
 NCNetBIOS,Network configuration NetBIOS,Checks whether NetBIOS is enabled.
