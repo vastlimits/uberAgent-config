@@ -11,6 +11,10 @@ except:
     # Exit the script
     exit()
 
+counter_skipped = 0
+counter_success = 0
+counter_processed = 0
+
 folder_path = os.path.join(working_dir, 'config-dev/Security inventory/Windows')
 include_folder = os.path.join(working_dir, 'config-dev/Security inventory/Windows/Shared')
 output_folder = os.path.join(working_dir, 'config/Security inventory/Windows')
@@ -164,6 +168,7 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
         # Check if it's a .ps1 file and not in an excluded folder
         if filename.endswith('.ps1') and not any(exclude_folder in file_path for exclude_folder in exclude_folders):
             print("Processing: ", file_path )
+            counter_processed += 1
 
             # Handle exceptions when opening the file
             try:
@@ -244,8 +249,17 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                         print("\tError: Could not open transpiled file: ", transpiled_path)
             except:
                 print("\tError: Could not open file: ", file_path)
+
+            counter_success += 1
         else:
+            counter_skipped += 1
             print("Skipping: ", file_path)
+
+# Print counter statistics
+print("Processed: ", counter_processed, " files")
+print("Skipped: ", counter_skipped, " files")
+print("Success: ", counter_success, " files")
+print("Failed: ", counter_processed - counter_success, " files")
 
 # Close the CSV file
 csv_handle.close()
