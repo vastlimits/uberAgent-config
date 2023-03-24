@@ -29,7 +29,13 @@ print("Using output csv: ", output_csv_mapping)
 print("-------------------------------------")
 print("Cleaning old output...")
 
-# Count subfolders if the input folder
+if not os.path.exists(folder_path):
+    print("Error: Input folder does not exist: ", folder_path)
+
+    # Exit the script
+    exit()
+
+# Count subfolders
 subfolders = [f.path for f in os.scandir(folder_path) if f.is_dir()]
 subfolders_count = len(subfolders)
 
