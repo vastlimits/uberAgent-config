@@ -1,0 +1,25 @@
+name: Create config archive
+
+on:
+  push:
+    branches:
+    - develop
+
+jobs:
+  create-archive:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repo
+      uses: actions/checkout@3
+      with:
+        ref: ${{ github.ref_name }}
+    - name: Create archive file
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: 'zip'
+        directory: 'config/'
+        filename: 'uberAgent.uAConfig'
+    - name: Commit archive
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Updated config archive
