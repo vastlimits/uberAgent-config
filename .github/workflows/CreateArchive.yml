@@ -9,6 +9,11 @@ on:
 jobs:
   create-archive:
     runs-on: ubuntu-latest
+
+    env:
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets.VLSVC_PAT}}
+
     steps:
     - name: Check out repo
       uses: actions/checkout@v3
