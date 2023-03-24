@@ -1,0 +1,21 @@
+name: Create config archive
+
+on:
+  push:
+    branches:
+    - develop
+
+jobs:
+  create-archive:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repo
+      uses: actions/checkout@3
+      with:
+        path: repo
+    - name: Create archive file
+      uses: thedoctor0/zip-release@0.7.1
+      with:
+        type: 'zip'
+        directory: 'repo/config'
+        filename: 'uberAgent.uAConfig'
