@@ -113,23 +113,17 @@ function New-vlResultObject {
 function Get-vlRegValue {
     <#
     .SYNOPSIS
-        Generate a result object for the result of a function
+        Get the value of a registry key
     .DESCRIPTION
-        Generate a result object for the result of a function that can be returned to the caller
+        Get the value of a registry key
     .PARAMETER Hive
-        The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
+        The hive of the registry key. Valid values are "HKLM", "HKU", "HKCU" and "HKCR"
     .PARAMETER Path
         The path to the registry key
     .PARAMETER Value
         The name of the value to read
-    .NOTES
-        This function will return an empty string if the value does not exist.
-        Microsoft.Win32.Registry is part of the .NET Framework since version 1.0.
-        PowerShell added support NetFramework in version 2.0. So the min required version is of PowerShell is 2.0
-    .LINK
-        https://uberagent.com
     .OUTPUTS
-        A string containing the value of the registry key or an empty string if the value does not exist
+        The value of the registry key or an empty string if the key was not found
     .EXAMPLE
         Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Value "ProductName"
     #>
@@ -202,83 +196,6 @@ function Get-vlRegValue {
 function Get-vlRegSubkeys {
     <#
     .SYNOPSIS
-        Generate a result object for the result of a function
-    .DESCRIPTION
-        Generate a result object for the result of a function that can be returned to the caller
-    .PARAMETER Hive
-        The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
-    .PARAMETER Path
-        The path to the registry key
-    .NOTES
-        The result will be converted to JSON.
-        Microsoft.Win32.Registry is part of the .NET Framework since version 1.0.
-        PowerShell added support NetFramework in version 2.0. So the min required version is of PowerShell is 2.0
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A [psobject] containing the result, error code and error message will be set to empty
-    .EXAMPLE
-        return New-vlResultObject($result)
-    #>
-
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-    begin {
-
-    }
-    
-    process {
-        try {
-            Write-Verbose "Get-RegSubkeys: $Hive\$Path"
-            $regKey = $null
-
-            if ($Hive -eq "HKLM") {
-                $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path)
-            }
-            elseif ($Hive -eq "HKU") {
-                $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path)
-            }
-            else {
-                $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path)
-            }
-
-            if ($null -eq $regKey) {
-                Write-Verbose "Registry $Hive\$Path was not found"
-                return @()
-            }
-        
-            $subKeys = $regKey.GetSubKeyNames()
-
-            return $subKeys
-        }
-        catch {
-            Write-Verbose "Error reading registry $Hive\$Path"
-            Write-Verbose $_.Exception.Message
-
-            return @()
-        }
-        finally {
-            if ($null -ne $regKey) {
-                $regKey.Dispose()
-            }
-        }
-    }
-    
-    end {
-    
-    }
-}
-
-
-function Get-vlRegSubkeys2 {
-    <#
-    .SYNOPSIS
         Read all the subkeys from a registry path
     .DESCRIPTION
         Read all the subkeys from a registry path
@@ -291,7 +208,7 @@ function Get-vlRegSubkeys2 {
     .OUTPUTS
         
     .EXAMPLE
-        return Get-vlRegSubkeys2 -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+        return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
 
     [CmdletBinding()]
@@ -324,93 +241,6 @@ function Get-vlRegSubkeys2 {
             return @()
         }
         finally {
-        }
-    }
-    
-    end {
-    
-    }
-}
-
-
-function Get-vlRegKeyValues {
-    <#
-    .SYNOPSIS
-        Read all the keys from a registry path
-    .DESCRIPTION
-        Read all the keys from a registry path
-    .PARAMETER Hive
-        The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
-    .PARAMETER Path
-        The path to the registry key        
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        
-    .EXAMPLE
-        return Get-vlRegKeyValues -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-    #>
-
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-    begin {
-
-    }
-    
-    process {
-        try {
-            $registryItems = @()
-            Write-Verbose "Get-RegSubkeys: $Hive\$Path"
-            $regKey = $null
-    
-            if ($Hive -eq "HKLM") {
-                $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path)
-            }
-            elseif ($Hive -eq "HKU") {
-                $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path)
-            }
-            else {
-                $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path)
-            }
-    
-            if ($null -eq $regKey) {
-                Write-Verbose "Registry $Hive\$Path was not found"
-                return @()
-            }
-            
-            $valueNames = $regKey.GetValueNames()
-    
-            #check if $valueNames is empty
-            if ($null -eq $valueNames -or $valueNames.Count -eq 0) {
-                return @()
-            }
-
-            #loop through $valueNames and get the value
-            foreach ($valueName in $valueNames) {
-                $value = $regKey.GetValue($valueName)
-                $registryItems += New-Object -TypeName psobject -Property @{
-                    Name  = $valueName
-                    Value = $value
-                }
-            }
-            return $registryItems
-        }
-        catch {
-            Write-Verbose "Error reading registry $Hive\$Path"
-            Write-Verbose $_.Exception.Message
-
-            return @()
-        }
-        finally {
-            if ($null -ne $regKey) {
-                $regKey.Dispose()
-            }
         }
     }
     
@@ -930,14 +760,14 @@ function Get-vlRootCertificateInstallationCheck {
 
         if ($protectedRoots -eq 1) {
             $result = [PSCustomObject]@{
-                enabled = $false
+                Enabled = $false
             }
             # Root certificate installation is disabled
             return New-vlResultObject -result $result -score 10
         }
         else {
             $result = [PSCustomObject]@{
-                enabled = $true
+                Enabled = $true
             }
             # Root certificate installation is enabled
             return New-vlResultObject -result $result -score 2
@@ -973,14 +803,14 @@ function Get-vlAutoCertificateUpdateCheck {
 
         if ($disableRootAutoUpdate -eq 1) {
             $result = [PSCustomObject]@{
-                enabled = $false
+                Enabled = $false
             }
             # Updates are disabled
             return New-vlResultObject -result $result  -score 2
         }
         else {
             $result = [PSCustomObject]@{
-                enabled = $true
+                Enabled = $true
             }
             # Updates are enabled
             return New-vlResultObject -result $result -score 10
@@ -1416,10 +1246,12 @@ function Get-vlCertificateCheck {
     $params = if ($global:args) { $global:args } else { "all" }
     $Output = @()
 
-    if ($params.Contains("all") -or $params.Contains("protectedRoots")) {
-        $protectedRoots = Get-vlRootCertificateInstallationCheck    
+    if ($params.Contains("all") -or $params.Contains("CProtRoot")) {
+        $protectedRoots = Get-vlRootCertificateInstallationCheck
         $Output += [PSCustomObject]@{
-            Name         = "Certificate - protectedRoots"
+            Name         = "CProtRoot"
+            DisplayName  = "Protected root certificates"
+            Description  = "Checks if root certificates can be installed by users."
             Score        = $protectedRoots.Score
             ResultData   = $protectedRoots.Result
             RiskScore    = 80
@@ -1427,10 +1259,12 @@ function Get-vlCertificateCheck {
             ErrorMessage = $protectedRoots.ErrorMessage
         }
     }
-    if ($params.Contains("all") -or $params.Contains("expiredCerts")) {
-        $protectedRoots = Get-vlExpiredCertificateCheck    
+    if ($params.Contains("all") -or $params.Contains("CExpCerts")) {
+        $protectedRoots = Get-vlExpiredCertificateCheck   
         $Output += [PSCustomObject]@{
-            Name         = "Certificate - expiredCerts"
+            Name         = "CExpCerts"
+            DisplayName  = "Expired certificates"
+            Description  = "Checks if there are expired certificates installed."
             Score        = $protectedRoots.Score
             ResultData   = $protectedRoots.Result
             RiskScore    = 20
@@ -1438,10 +1272,12 @@ function Get-vlCertificateCheck {
             ErrorMessage = $protectedRoots.ErrorMessage
         }
     }
-    if ($params.Contains("all") -or $params.Contains("autoCertUpdate")) {
-        $autoCertUpdateCheck = Get-vlAutoCertificateUpdateCheck  
+    if ($params.Contains("all") -or $params.Contains("CAuCerUp")) {
+        $autoCertUpdateCheck = Get-vlAutoCertificateUpdateCheck
         $Output += [PSCustomObject]@{
-            Name         = "Certificate - autoCertUpdate"
+            Name         = "CAuCerUp"
+            DisplayName  = "Auto certificate update"
+            Description  = "Checks if the auto certificate update is enabled."
             Score        = $autoCertUpdateCheck.Score
             ResultData   = $autoCertUpdateCheck.Result
             RiskScore    = 80
@@ -1449,10 +1285,12 @@ function Get-vlCertificateCheck {
             ErrorMessage = $autoCertUpdateCheck.ErrorMessage
         }
     }
-    if ($params.Contains("all") -or $params.Contains("lastSync")) {
+    if ($params.Contains("all") -or $params.Contains("CLaSync")) {
         $lastSync = Get-vlCheckSyncTimes
         $Output += [PSCustomObject]@{
-            Name         = "Certificate - lastSync"
+            Name         = "CLaSync"
+            DisplayName  = "Certificate last sync"
+            Description  = "Checks when the certificates were last synced."
             Score        = $lastSync.Score
             ResultData   = $lastSync.Result
             RiskScore    = $lastSync.RiskScore
@@ -1460,10 +1298,12 @@ function Get-vlCertificateCheck {
             ErrorMessage = $lastSync.ErrorMessage
         }
     }
-    if ($params.Contains("all") -or $params.Contains("trustedByWindows")) {
+    if ($params.Contains("all") -or $params.Contains("CTrByWin")) {
         $ctlCheck = Get-vlGetCTLCheck
         $Output += [PSCustomObject]@{
-            Name         = "Certificate - trustedByWindows"
+            Name         = "CTrByWin"
+            DisplayName  = "Certificates trusted by Windows"
+            Description  = "Checks if the certificates are trusted by Windows using the Certificate Trust List."
             Score        = $ctlCheck.Score
             ResultData   = $ctlCheck.Result
             RiskScore    = $ctlCheck.RiskScore
@@ -1474,5 +1314,6 @@ function Get-vlCertificateCheck {
     
     return $output
 }
+
 
 Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)

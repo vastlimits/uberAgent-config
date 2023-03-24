@@ -217,10 +217,12 @@ function Get-vlFirewallCheck {
     $params = if ($global:args) { $global:args } else { "all" }
     $Output = @()
 
-    if ($params.Contains("all") -or $params.Contains("state")) {
+    if ($params.Contains("all") -or $params.Contains("FWState")) {
         $firewallEnabled = Get-vlIsFirewallEnabled    
         $Output += [PSCustomObject]@{
-            Name       = "Firewall - state"
+            Name       = "FWState"
+            DisplayName  = "Firewall status"
+            Description  = "Checks if the firewall is enabled."
             Score      = $firewallEnabled.Score
             ResultData = $firewallEnabled.Result
             RiskScore  = 100
@@ -229,10 +231,12 @@ function Get-vlFirewallCheck {
         }
     }
 
-    if ($params.Contains("all") -or $params.Contains("openPorts")) {
+    if ($params.Contains("all") -or $params.Contains("FWPorts")) {
         $openPorts = Get-vlOpenFirewallPorts
         $Output += [PSCustomObject]@{
-            Name       = "Firewall - openPorts"
+            Name       = "FWPorts"
+            DisplayName  = "Open firewall ports"
+            Description  = "Checks if there are open firewall ports and returns the list of open ports."
             Score      = $openPorts.Score
             ResultData = $openPorts.Result
             RiskScore  = 70
@@ -241,10 +245,14 @@ function Get-vlFirewallCheck {
         }
     }
 
-    if ($params.Contains("all") -or $params.Contains("listeningPorts")) {
+    <#
+    Disabled for now, because a port can have the status LISTENING and still be blocked by the firewall.
+    if ($params.Contains("all") -or $params.Contains("FWListPorts")) {
         $listeningPorts = Get-vlListeningPorts
         $Output += [PSCustomObject]@{
-            Name       = "Firewall - listeningPorts"
+            Name       = "FWListPorts"
+            DisplayName  = "Listening Firewall Ports"
+            Description  = "Checks if there are ports with the status LISTENING and returns the list of listening ports."
             Score      = $listeningPorts.Score
             ResultData = $listeningPorts.Result
             RiskScore  = 50
@@ -252,6 +260,7 @@ function Get-vlFirewallCheck {
             ErrorMessage   = $listeningPorts.ErrorMessage
         }
     }
+    #>
 
     return $output
 }

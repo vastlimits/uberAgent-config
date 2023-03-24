@@ -1,4 +1,5 @@
 
+
 #define global variable that contains a list of timers.
 $global:debug_timers = @()
 
@@ -425,267 +426,355 @@ function Write-vlTimerElapsedTime {
     }
 }
 
-[Flags()] enum FW_PROFILE {
-    Domain = 1
-    Private = 2
-    Public = 4
-}
 
-[Flags()] enum FW_IP_PROTOCOL_TCP {
-    TCP = 6
-    UDP = 17
-    ICMPv4 = 1
-    ICMPv6 = 58
-}
-
-[Flags()] enum FW_RULE_DIRECTION {
-    IN = 1
-    OUT = 2
-} 
-
-[Flags()] enum FW_ACTION {
-    BLOCK = 0
-    ALLOW = 1
-}
-
-
-# function to check if firewall is enabled
-function Get-vlIsFirewallEnabled {
+function Get-vlDefaultProgramForExtension {
     <#
     .SYNOPSIS
-        Function that checks if the firewall is enabled.
+        Gets the default program for a specific file extension
     .DESCRIPTION
-        Function that checks if the firewall is enabled. 
+        Gets the default program for a specific file extension
+    .OUTPUTS
+        A [string] containing the path to the default program
+    .EXAMPLE
+        Get-vlDefaultProgramForExtension
+    #>
+
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Extension
+    )
+
+    $progId = Get-vlRegValue -Hive "HKCR" -Path "\$Extension"
+    if ($progId -ne $null) {
+        $command1 = (Get-vlRegValue -Hive "HKCR" -Path "\$progId\shell\open\command")
+        $command2 = (Get-vlRegValue -Hive "HKCR" -Path "\$progId\shell\printto\command")
+
+        # select the one that is not null
+        $command = if ($command1 -ne $null -and $command1 -ne "") { $command1 } else { $command2 }
+        
+        if ($command -ne $null) {
+            return $command
+        }
+        else {
+            Write-Debug "No 'open' command found for program ID $progId."
+        }
+    }
+    else {
+        Write-Debug "No default program found for extension $Extension."
+    }
+}
+
+function Test-vlBlockedProgram {
+    <#
+    .SYNOPSIS
+        Tests if a program is blocked by the system.
+    .DESCRIPTION
+        Tests if a program is blocked by the system.
+    .OUTPUTS
+        A [bool] indicating if the program is blocked or not
+    .EXAMPLE
+        Test-vlBlockedProgram
+    #>
+
+    Param(
+        [string]$ProgramPath
+    )
+
+    $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $processStartInfo.FileName = $ProgramPath
+    $processStartInfo.RedirectStandardError = $true
+    $processStartInfo.RedirectStandardOutput = $true
+    $processStartInfo.UseShellExecute = $false
+    $processStartInfo.CreateNoWindow = $true
+
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $processStartInfo
+
+    $process.Start() | Out-Null
+    $process.WaitForExit()
+
+    $exitCode = $process.ExitCode
+
+    if ($exitCode -ne 0) {
+        # the program is blocked
+        return $true
+    }
+    else {
+        # the program is not blocked
+        return $false
+    }
+}
+
+function Get-CheckHTAEnabled {
+    <#
+    .SYNOPSIS
+        Checks if HTA is enabled on the system.
+    .DESCRIPTION
+        Checks if HTA is enabled on the system.
     .LINK
         https://uberagent.com
     .OUTPUTS
-        Returns a [psobject] containing the following properties:
-
-        Domain
-        Private
-        Public
-
-        The value of each property is a boolean indicating if the firewall is enabled for the specific profile.
-
+        PSCustomObject
+        enabled: true if enabled, false if not
     .EXAMPLE
-        Get-vlIsFirewallEnabled
+        Get-CheckHTAEnabled
     #>
 
     try {
-        $firewall = Get-NetFirewallProfile -All
+        $startProc = ""
+
+        #$htaExecuteStatus = Run-vlHtaCode $htacode
+        $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "mshta.exe"
+
+        $defaultLink = $true
+        $startCmd = (Get-vlDefaultProgramForExtension -Extension ".hta").ToLower()
+
+        if ($null -ne $startCmd -and $startCmd -ne "") {
+            $startProc = (Split-Path $startCmd -Leaf)
+
+            # check if $startProc contains space and if so, get the first part
+            if ($startProc.Contains(" ")) {
+                $startProc = $startProc.Split(" ")[0]
+            }
+        }
+        else {
+            $startProc = $null
+        }
+
+        # check if $status starts with "${env:SystemRoot}" and contains "mshta.exe"
+        $winDir = ("${env:SystemRoot}").ToLower()
+
+        if ($startCmd.StartsWith($winDir) -and $startCmd.Contains("mshta.exe")) {
+            $defaultLink = $true
+        }
+        else {
+            $defaultLink = $false
+        }
+
         $result = [PSCustomObject]@{
-            Domain = $firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled
-            Private = $firewall | where-object { $_.Profile -eq "Private" } | select-object -ExpandProperty Enabled
-            Public = $firewall | where-object { $_.Profile -eq "Public" } | select-object -ExpandProperty Enabled
+            RunBlocked  = $htaRunBlocked
+            OpenWith    = $startProc
+            DefaultLink = $defaultLink
         }
 
-        $score = 10
-
-        if($result.Domain -eq $false -or $result.Private -eq $false) {
-            $score = 5
-        }
-
-        if($result.Public -eq $false) {
-            $score = 0
-        }
-
-        return New-vlResultObject -result $result -score $score
+        return New-vlResultObject -result $result -score 10
     }
     catch {
-        return New-vlErrorObject($_)
+        return New-vlErrorObject -error $_
     }
 }
 
-Function Get-vlEnabledRules {
+function Get-BitlockerEnabled {
     <#
     .SYNOPSIS
-        Function that returns all enabled rules for a specific profile.
+        Checks if Bitlocker is enabled and used on the system.
     .DESCRIPTION
-        Function that returns all enabled rules for a specific profile.
-    .LINK
-        https://uberagent.com
-    .NOTES
-        This function is used by Get-vlOpenFirewallPorts. The results are filtered by the following properties:
-        Enabled = true
-        Profiles = $profile
-        Direction = IN
-        Action = ALLOW
-        ApplicationName or ServiceName or LocalPort or RemotePort = not null
-        
+        Checks if Bitlocker is enabled and used on the system.
     .OUTPUTS
-        Returns an array of objects containing the following properties:
-
-        Name
-        ApplicationName
-        LocalPorts
-        RemotePorts
-
+        PSCustomObject
+        enabled: true if enabled, false if not
     .EXAMPLE
-        Get-vlEnabledRules
-    #>
-
-    Param($profile)
-    $rules = (New-Object -comObject HNetCfg.FwPolicy2).rules
-    $rules = $rules | where-object { $_.Enabled -eq $true }
-    $rules = $rules | where-object { $_.Profiles -bAND $profile }
-    $rules = $rules | where-object { $_.Direction -bAND [FW_RULE_DIRECTION]::IN }
-    $rules = $rules | where-object { $_.Action -bAND [FW_ACTION]::ALLOW }
-    $rules = $rules | where-object { $_.ApplicationName -ne $null -or $_.ServiceName -ne $null  -or $_localPorts -ne $null -or $_.RemotePorts -ne $null }
-
-    #remove every property excepted Name, ApplicationName and LocalPorts and RemotePorts
-    $rules = $rules | select-object -Property Name, ApplicationName, LocalPorts, RemotePorts
-
-    return $rules
-}
-
-# function to check open firewall ports returns array of open ports
-function Get-vlOpenFirewallPorts {
-    <#
-    .SYNOPSIS
-        Function that iterates over all profiles and returns all enabled rules for all profiles.
-    .DESCRIPTION
-        Function that iterates over all profiles and returns all enabled rules for all profiles.
-    .LINK
-        https://uberagent.com
-        
-    .OUTPUTS
-        Returns an array of objects containing the following properties:
-
-        Name
-        ApplicationName
-        LocalPorts
-        RemotePorts
-
-    .EXAMPLE
-        Get-vlOpenFirewallPorts
+        Get-CheckHTAEnabled
     #>
 
     try {
-        $openPorts = [FW_PROFILE].GetEnumNames() | ForEach-Object { Get-vlEnabledRules -profile ([FW_PROFILE]::$_) }
+        #check if bitlocker is enabled using Get-BitLockerVolume
+        $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, PercentComplete
 
-        return New-vlResultObject -result $openPorts -score 10 
-    }
-    catch [Microsoft.Management.Infrastructure.CimException] {
-        return "[Get-vlOpenFirewallPorts] You need elevated privileges"
+        return New-vlResultObject -result $bitlockerEnabled 
     }
     catch {
-        return New-vlErrorObject($_)
+        return "Cannot get BitlockerEnabled"
     }
 }
 
-function Get-vlListeningPorts {
+function Get-COMHijacking {
     <#
     .SYNOPSIS
-        Function that returns all listening ports.
+        Checks if mmc.exe is hijacked
     .DESCRIPTION
-        Function that returns all listening ports.
-    .LINK
-        https://uberagent.com
-        
+        Checks if mmc.exe is hijacked
     .OUTPUTS
-        Returns an array of objects containing the following properties:
-
-        LocalAddress
-        LocalPort
-        OwningProcess
-        OwningProcessName
-        OwningProcessPath
-
+        PSCustomObject
+        detected: true if detected, false if not
     .EXAMPLE
-        Get-vlListeningPorts
+        Get-COMHijacking
+    #>
+    try {
+        
+        $expectedValue = "$($env:SystemRoot)\system32\mmc.exe ""%1"" %*"
+
+        $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Classes\mscfile\shell\open\command"
+
+        if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
+            $result = [PSCustomObject]@{
+                Detected = $false
+            }
+
+            return New-vlResultObject -result $result -score 10
+        }
+        else {
+            $result = [PSCustomObject]@{
+                Detected = $true
+            }
+            return New-vlResultObject -result $result -score 0
+        }
+    }
+    catch {
+        return New-vlErrorObject -error $_
+    }
+}
+
+function Get-vlTimeProviderHijacking {
+    <#
+    .SYNOPSIS
+        Checks if w32time.dll is hijacked
+    .DESCRIPTION
+        Checks if w32time.dll is hijacked
+    .OUTPUTS
+        PSCustomObject
+        detected: true if detected, false if not
+    .EXAMPLE
+        Get-vlTimeProviderHijacking
     #>
 
     try {
-        $listenApps = Get-NetTCPConnection -State Listen
+        $expectedValue = "$($env:SystemRoot)\system32\w32time.dll"
 
-        # use $listenApps and get local port, local address, process name
-        $listeningPorts = $listenApps | select-object -Property LocalAddress, LocalPort, OwningProcess, OwningProcessName, OwningProcessPath
+        $value = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer" -Value "DllName"
 
-        # use $openPorts and find out the name of the OwningProcess id and add it to the object as OwningProcessName and OwningProcessPath
-        $listeningPorts | ForEach-Object {
-            $process = Get-Process -Id $_.OwningProcess
-            $_.OwningProcessName = $process.Name
-            $_.OwningProcessPath = $process.Path
+        if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
+            $result = [PSCustomObject]@{
+                Detected = $false
+            }
+
+            return New-vlResultObject -result $result -score 10
         }
-
-        return New-vlResultObject -result $listeningPorts -score 10 
-    }
-    catch [Microsoft.Management.Infrastructure.CimException] {
-        return "[Get-vlListeningPorts] You need elevated privileges"
+        else {
+            $result = [PSCustomObject]@{
+                Detected = $true
+            }
+            return New-vlResultObject -result $result -score 0
+        }
     }
     catch {
-        return New-vlErrorObject($_)
+        return New-vlErrorObject -error $_
+    }
+}
+
+function Get-vlWindowsPersistanceCheck {
+    <#
+    .SYNOPSIS
+        Runs sfc /verifyonly and checks if CBS.log contains "corrupt" or "repaired"
+    .DESCRIPTION
+        Runs sfc /verifyonly and checks if CBS.log contains "corrupt" or "repaired"
+    .OUTPUTS
+        PSCustomObject
+        detected: true if detected, false if not
+    .EXAMPLE
+        Get-vlWindowsPersistanceCheck
+    #>
+    
+    try {
+        $log_file = "$($env:SystemRoot)\Logs\CBS\CBS.log"
+
+        #check if CBS Log exists and if so, delete it use %windir%\Logs\CBS\CBS.log
+        if (Test-Path -Path $log_file) {
+            Remove-Item -Path $log_file -Force
+        }
+
+        #run sfc /verifyonly and wait for it to finish run it hidden
+        $sfc = Start-Process -FilePath "sfc.exe" -ArgumentList "/verifyonly" -Wait -WindowStyle Hidden
+        
+        #read the log file and check if it contains "corrupt" or "repaired"
+        $defect = Get-Content $log_file | Select-String -Pattern "(corrupt|repaired)"
+        $ix = 0
+    }
+    catch {
+        $defect = $null
     }
 }
 
 
-function Get-vlFirewallCheck {
-    <#
-    .SYNOPSIS
-        Function that performs the Firewall check and returns the result to the uberAgent.
-    .DESCRIPTION
-        Function that performs the Firewall check and returns the result to the uberAgent.
-    .NOTES
-        The result will be converted to JSON. Each test returns a vlResultObject or vlErrorObject.
-        Specific tests can be called by passing the test name as a parameter to the script args.
-        Passing no parameters or -all to the script will run all tests.
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A list with vlResultObject | vlErrorObject [psobject] containing the test results
-    .EXAMPLE
-        Get-vlFirewallCheck
-    #>
 
+function Get-WindowsConfigurationCheck {
+    #set $params to $global:args or if empty default "all"
     $params = if ($global:args) { $global:args } else { "all" }
     $Output = @()
 
-    if ($params.Contains("all") -or $params.Contains("FWState")) {
-        $firewallEnabled = Get-vlIsFirewallEnabled    
+
+    if ($params.Contains("all") -or $params.Contains("WCHta")) {
+        $checkHtaEnabled = Get-CheckHTAEnabled
         $Output += [PSCustomObject]@{
-            Name       = "FWState"
-            DisplayName  = "Firewall status"
-            Description  = "Checks if the firewall is enabled."
-            Score      = $firewallEnabled.Score
-            ResultData = $firewallEnabled.Result
-            RiskScore  = 100
-            ErrorCode      = $firewallEnabled.ErrorCode
-            ErrorMessage   = $firewallEnabled.ErrorMessage
+            Name         = "WCHta"
+            DisplayName  = "WindowsConfiguration HTA"
+            Description  = "Checks if HTA execution is enabled on the system."
+            Score        = 0
+            ResultData   = $checkHtaEnabled.Result
+            RiskScore    = 100
+            ErrorCode    = $COMHijacking.ErrorCode
+            ErrorMessage = $COMHijacking.ErrorMessage
         }
     }
 
-    if ($params.Contains("all") -or $params.Contains("FWPorts")) {
-        $openPorts = Get-vlOpenFirewallPorts
+    if ($params.Contains("all") -or $params.Contains("WCBitlocker")) {
+        $checkBitlockerEnabled = Get-BitlockerEnabled
         $Output += [PSCustomObject]@{
-            Name       = "FWPorts"
-            DisplayName  = "Open firewall ports"
-            Description  = "Checks if there are open firewall ports and returns the list of open ports."
-            Score      = $openPorts.Score
-            ResultData = $openPorts.Result
-            RiskScore  = 70
-            ErrorCode      = $openPorts.ErrorCode
-            ErrorMessage   = $openPorts.ErrorMessage
+            Name         = "WCBitlocker"
+            DisplayName  = "WindowsConfiguration Bitlocker"
+            Description  = "Checks if Bitlocker is enabled on the system."
+            Score        = 0
+            ResultData   = $checkBitlockerEnabled.Result
+            RiskScore    = 100
+            ErrorCode    = $COMHijacking.ErrorCode
+            ErrorMessage = $COMHijacking.ErrorMessage
+        }
+    }
+
+    if ($params.Contains("all") -or $params.Contains("WCComHijacking")) {
+        $COMHijacking = Get-COMHijacking
+        $Output += [PSCustomObject]@{
+            Name         = "WCComHijacking"
+            DisplayName  = "WindowsConfiguration COM hijacking"
+            Description  = "Checks if COM is hijacked."
+            Score        = $COMHijacking.Score
+            ResultData   = $COMHijacking.Result
+            RiskScore    = 80
+            ErrorCode    = $COMHijacking.ErrorCode
+            ErrorMessage = $COMHijacking.ErrorMessage
+        }
+    }
+
+    if ($params.Contains("all") -or $params.Contains("WCTimeProvHijacking")) {
+        $timeProviderHijacking = Get-vlTimeProviderHijacking
+        $Output += [PSCustomObject]@{
+            Name         = "WCTimeProvHijacking"
+            DisplayName  = "WindowsConfiguration time provider hijacking"
+            Description  = "Checks if the time provider is hijacked."
+            Score        = $timeProviderHijacking.Score
+            ResultData   = $timeProviderHijacking.Result
+            RiskScore    = 80
+            ErrorCode    = $timeProviderHijacking.ErrorCode
+            ErrorMessage = $timeProviderHijacking.ErrorMessage
         }
     }
 
     <#
-    Disabled for now, because a port can have the status LISTENING and still be blocked by the firewall.
-    if ($params.Contains("all") -or $params.Contains("FWListPorts")) {
-        $listeningPorts = Get-vlListeningPorts
+    TODO: Add a good log parsing logic to check for "corrupt" or "repaired" in CBS.log
+    if ($params.Contains("all") -or $params.Contains("persistancecheck")) {
+        $persistancecheck = Get-vlWindowsPersistanceCheck
         $Output += [PSCustomObject]@{
-            Name       = "FWListPorts"
-            DisplayName  = "Listening Firewall Ports"
-            Description  = "Checks if there are ports with the status LISTENING and returns the list of listening ports."
-            Score      = $listeningPorts.Score
-            ResultData = $listeningPorts.Result
-            RiskScore  = 50
-            ErrorCode      = $listeningPorts.ErrorCode
-            ErrorMessage   = $listeningPorts.ErrorMessage
+            Name         = "WindowsConfiguration - persistancecheck"
+            Score        = $persistancecheck.Score
+            ResultData   = $persistancecheck.Result
+            RiskScore    = 80
+            ErrorCode    = $persistancecheck.ErrorCode
+            ErrorMessage = $persistancecheck.ErrorMessage
         }
     }
-    #>
-
+    #>   
+    
     return $output
 }
 
-Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
+Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)

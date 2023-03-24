@@ -574,10 +574,12 @@ function Get-vlPowerShellCheck {
 
     $Output = @()
     
-    if ($params.Contains("all") -or $params.Contains("powershellv2")) {
+    if ($params.Contains("all") -or $params.Contains("PSV2")) {
         $powerShellV2 = Get-vlPowerShellV2Status
         $Output += [PSCustomObject]@{
-            Name         = "powerShellV2"
+            Name         = "PSV2"
+            DisplayName  = "PowerShell V2"
+            Description  = "Checks if PowerShell V2 is enabled"
             Score        = $powerShellV2.Score
             ResultData   = $powerShellV2.Result
             RiskScore    = 60
@@ -586,10 +588,12 @@ function Get-vlPowerShellCheck {
         }
     }
 
-    if ($params.Contains("all") -or $params.Contains("powershellremoting")) {
+    if ($params.Contains("all") -or $params.Contains("PSRemoting")) {
         $powerShellRemoting = Get-vlPowerShellRemotingStatus
         $Output += [PSCustomObject]@{
-            Name         = "powerShellRemoting"
+            Name         = "PSRemoting"
+            DisplayName  = "PowerShell Remoting"
+            Description  = "Checks if PowerShell remoting is enabled"
             Score        = $powerShellRemoting.Score
             ResultData   = $powerShellRemoting.Result
             RiskScore    = $powerShellRemoting.RiskScore
@@ -598,10 +602,13 @@ function Get-vlPowerShellCheck {
         }
     }
     
-    if ($params.Contains("all") -or $params.Contains("powerShellCL")) {
+    ## If CL is enabled, the test cannot be run
+    if ($params.Contains("all") -or $params.Contains("PSCL")) {
         $powerShellMode = Get-vlPowerShellCL
         $Output += [PSCustomObject]@{
-            Name         = "powerShellCL"
+            Name         = "PSCL"
+            DisplayName  = "PowerShell common language mode"
+            Description  = "Checks if PowerShell Common Language Mode is enabled"
             Score        = 10
             ResultData   = $powerShellMode.Result
             RiskScore    = 0
@@ -610,10 +617,12 @@ function Get-vlPowerShellCheck {
         }
     }
 
-    if ($params.Contains("all") -or $params.Contains("powershellversion")) {
+    if ($params.Contains("all") -or $params.Contains("PSVersion")) {
         $powerShellMode = Get-vlPowerShellVersion
         $Output += [PSCustomObject]@{
-            Name         = "powerShellVersion"
+            Name         = "PSVersion"
+            DisplayName  = "PowerShell version"
+            Description  = "The PowerShell version in use"
             Score        = 10
             ResultData   = $powerShellMode.Result
             RiskScore    = 0
@@ -622,10 +631,12 @@ function Get-vlPowerShellCheck {
         }
     }
     
-    if ($params.Contains("all") -or $params.Contains("powershellpolicy")) {
+    if ($params.Contains("all") -or $params.Contains("PSPolicy")) {
         $powerShellExecutionPolicy = Get-vlPowerShellExecutionPolicy
         $Output += [PSCustomObject]@{
-            Name         = "powerShellExecutionPolicy"
+            Name         = "PSPolicy"
+            DisplayName  = "PowerShell policy"
+            Description  = "Checks and evaluates the PowerShell Execution Policy"
             Score        = $powerShellExecutionPolicy.Score
             ResultData   = $powerShellExecutionPolicy.Result
             RiskScore    = $powerShellExecutionPolicy.RiskScore
@@ -634,10 +645,12 @@ function Get-vlPowerShellCheck {
         }
     }
 
-    if ($params.Contains("all") -or $params.Contains("powershelllogging")) {
+    if ($params.Contains("all") -or $params.Contains("PSLogging")) {
         $powerShellLogging = Get-vlPowerShellLogging
         $Output += [PSCustomObject]@{
-            Name         = "powershelllogging"
+            Name         = "PSLogging"
+            DisplayName  = "PowerShell logging"
+            Description  = "Checks if PowerShell Logging is enabled"
             Score        = $powerShellLogging.Score
             ResultData   = $powerShellLogging.Result
             RiskScore    = 20

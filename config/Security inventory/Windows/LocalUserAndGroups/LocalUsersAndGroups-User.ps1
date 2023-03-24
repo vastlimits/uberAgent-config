@@ -113,23 +113,17 @@ function New-vlResultObject {
 function Get-vlRegValue {
     <#
     .SYNOPSIS
-        Generate a result object for the result of a function
+        Get the value of a registry key
     .DESCRIPTION
-        Generate a result object for the result of a function that can be returned to the caller
+        Get the value of a registry key
     .PARAMETER Hive
-        The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
+        The hive of the registry key. Valid values are "HKLM", "HKU", "HKCU" and "HKCR"
     .PARAMETER Path
         The path to the registry key
     .PARAMETER Value
         The name of the value to read
-    .NOTES
-        This function will return an empty string if the value does not exist.
-        Microsoft.Win32.Registry is part of the .NET Framework since version 1.0.
-        PowerShell added support NetFramework in version 2.0. So the min required version is of PowerShell is 2.0
-    .LINK
-        https://uberagent.com
     .OUTPUTS
-        A string containing the value of the registry key or an empty string if the value does not exist
+        The value of the registry key or an empty string if the key was not found
     .EXAMPLE
         Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Value "ProductName"
     #>
@@ -202,83 +196,6 @@ function Get-vlRegValue {
 function Get-vlRegSubkeys {
     <#
     .SYNOPSIS
-        Generate a result object for the result of a function
-    .DESCRIPTION
-        Generate a result object for the result of a function that can be returned to the caller
-    .PARAMETER Hive
-        The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
-    .PARAMETER Path
-        The path to the registry key
-    .NOTES
-        The result will be converted to JSON.
-        Microsoft.Win32.Registry is part of the .NET Framework since version 1.0.
-        PowerShell added support NetFramework in version 2.0. So the min required version is of PowerShell is 2.0
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A [psobject] containing the result, error code and error message will be set to empty
-    .EXAMPLE
-        return New-vlResultObject($result)
-    #>
-
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-    begin {
-
-    }
-    
-    process {
-        try {
-            Write-Verbose "Get-RegSubkeys: $Hive\$Path"
-            $regKey = $null
-
-            if ($Hive -eq "HKLM") {
-                $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path)
-            }
-            elseif ($Hive -eq "HKU") {
-                $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path)
-            }
-            else {
-                $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path)
-            }
-
-            if ($null -eq $regKey) {
-                Write-Verbose "Registry $Hive\$Path was not found"
-                return @()
-            }
-        
-            $subKeys = $regKey.GetSubKeyNames()
-
-            return $subKeys
-        }
-        catch {
-            Write-Verbose "Error reading registry $Hive\$Path"
-            Write-Verbose $_.Exception.Message
-
-            return @()
-        }
-        finally {
-            if ($null -ne $regKey) {
-                $regKey.Dispose()
-            }
-        }
-    }
-    
-    end {
-    
-    }
-}
-
-
-function Get-vlRegSubkeys2 {
-    <#
-    .SYNOPSIS
         Read all the subkeys from a registry path
     .DESCRIPTION
         Read all the subkeys from a registry path
@@ -291,7 +208,7 @@ function Get-vlRegSubkeys2 {
     .OUTPUTS
         
     .EXAMPLE
-        return Get-vlRegSubkeys2 -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+        return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
 
     [CmdletBinding()]
@@ -324,93 +241,6 @@ function Get-vlRegSubkeys2 {
             return @()
         }
         finally {
-        }
-    }
-    
-    end {
-    
-    }
-}
-
-
-function Get-vlRegKeyValues {
-    <#
-    .SYNOPSIS
-        Read all the keys from a registry path
-    .DESCRIPTION
-        Read all the keys from a registry path
-    .PARAMETER Hive
-        The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
-    .PARAMETER Path
-        The path to the registry key        
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        
-    .EXAMPLE
-        return Get-vlRegKeyValues -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-    #>
-
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-    begin {
-
-    }
-    
-    process {
-        try {
-            $registryItems = @()
-            Write-Verbose "Get-RegSubkeys: $Hive\$Path"
-            $regKey = $null
-    
-            if ($Hive -eq "HKLM") {
-                $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path)
-            }
-            elseif ($Hive -eq "HKU") {
-                $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path)
-            }
-            else {
-                $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path)
-            }
-    
-            if ($null -eq $regKey) {
-                Write-Verbose "Registry $Hive\$Path was not found"
-                return @()
-            }
-            
-            $valueNames = $regKey.GetValueNames()
-    
-            #check if $valueNames is empty
-            if ($null -eq $valueNames -or $valueNames.Count -eq 0) {
-                return @()
-            }
-
-            #loop through $valueNames and get the value
-            foreach ($valueName in $valueNames) {
-                $value = $regKey.GetValue($valueName)
-                $registryItems += New-Object -TypeName psobject -Property @{
-                    Name  = $valueName
-                    Value = $value
-                }
-            }
-            return $registryItems
-        }
-        catch {
-            Write-Verbose "Error reading registry $Hive\$Path"
-            Write-Verbose $_.Exception.Message
-
-            return @()
-        }
-        finally {
-            if ($null -ne $regKey) {
-                $regKey.Dispose()
-            }
         }
     }
     
@@ -742,7 +572,7 @@ function Get-vlWindowsHelloStatusLocalUser() {
     $currentUserSID = (whoami /user /fo csv | convertfrom-csv).SID
 
     # Registry path to credential provider belonging for the PIN. A PIN is required with Windows Hello
-    $registryItems = Get-vlRegSubkeys2 -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{D6886603-9D2F-4EB2-B667-1971041FA96B}"
+    $registryItems = Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{D6886603-9D2F-4EB2-B667-1971041FA96B}"
     if (-not $registryItems ) {
         $result = [PSCustomObject]@{
             WindowsHelloEnabled = $false
@@ -829,10 +659,12 @@ function Get-vlLocalUsersAndGroupsCheck {
     
     $Output = @()
 
-    if ($params.Contains("all") -or $params.Contains("islocaladmin")) {
+    if ($params.Contains("all") -or $params.Contains("LUUIsAdmin")) {
         $isLocalAdmin = Get-vlIsLocalAdmin
         $Output += [PSCustomObject]@{
-            Name         = "islocaladmin"
+            Name         = "LUUIsAdmin"
+            DisplayName  = "Local user is admin"
+            Description  = "Checks if the local user is a member of the local Administrators group."
             Score        = $isLocalAdmin.Score
             ResultData   = $isLocalAdmin.Result
             RiskScore    = 70
@@ -840,10 +672,12 @@ function Get-vlLocalUsersAndGroupsCheck {
             ErrorMessage = $isLocalAdmin.ErrorMessage
         }
     }
-    if ($params.Contains("all") -or $params.Contains("userwinhellostatus")) {
+    if ($params.Contains("all") -or $params.Contains("LUUWinBio")) {
         $windowsHelloStatus = Get-vlWindowsHelloStatusLocalUser
         $Output += [PSCustomObject]@{
-            Name         = "userwinhellostatus"
+            Name         = "LUUWinBio"
+            DisplayName  = "Local user Windows Hello / biometrics"
+            Description  = "Checks if Windows Hello is enabled and if the local user has enrolled factors."
             Score        = $windowsHelloStatus.Score
             ResultData   = $windowsHelloStatus.Result
             RiskScore    = 30

@@ -54,31 +54,37 @@ function Get-vlAntivirusStatus {
     process {
         try {
             $instances = Get-WmiObject -Class AntiVirusProduct -Namespace "root\SecurityCenter2"
-
+        
             $riskScore = 100
             $score = 0
             $result = @()
-
+        
+            $avEnabledFound = $false
+        
             foreach ($instance in $instances) {
                 $avEnabled = $([ProductState]::On.value__ -eq $($instance.productState -band [ProductFlags]::ProductState) )
                 $avUp2Date = $([SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [ProductFlags]::SignatureStatus) )
-
-                if($avEnabled -and $avUp2Date) {
-                    $score = 10
-                }elseif($avEnabled -and -not $avUp2Date) {
-                    $score = 4
-                }else 
-                {
-                    $score = 0
+        
+                if ($avEnabled) {
+                    $avEnabledFound = $true
+                    if ($avUp2Date) {
+                        $score = 10
+                    } else {
+                        $score = 4
+                    }
                 }
-
+        
                 $result += [PSCustomObject]@{
                     AntivirusEnabled = $avEnabled
                     AntivirusName    = $instance.displayName
                     AntivirusUpToDate = $avUp2Date
                 }
             }
-
+        
+            if (-not $avEnabledFound) {
+                $score = 0
+            }
+        
             return New-vlResultObject -result $result -score $score -riskScore $riskScore
         }
         catch {
@@ -166,10 +172,12 @@ function Get-vlAntivirusCheck {
 
     $Output = @()
 
-    if ($params.Contains("all") -or $params.Contains("avstatus")) {
+    if ($params.Contains("all") -or $params.Contains("AVState")) {
         $avStatus = Get-vlAntivirusStatus
         $Output += [PSCustomObject]@{
-            Name       = "avStatus"
+            Name       = "AVState"
+            DisplayName  = "Antivirus status"
+            Description  = "Checks if the antivirus is enabled and up to date."
             Score      = $avStatus.Score
             ResultData = $avStatus.Result
             RiskScore  = $avStatus.RiskScore
@@ -179,10 +187,12 @@ function Get-vlAntivirusCheck {
     }
 
     <#
-    if ($params.Contains("all") -or $params.Contains("defenderstatus")) {
+    if ($params.Contains("all") -or $params.Contains("AVDefStat")) {
         $defenderStatus = Get-vlDefenderStatus
         $Output += [PSCustomObject]@{
-            Name       = "defenderStatus"
+            Name       = "AVDefStat"
+            DisplayName  = "Defender status"
+            Description  = "Checks if the defender is enabled and up to date."
             Score      = 0
             ResultData = $defenderStatus.Result
             RiskScore  = 100

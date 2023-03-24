@@ -113,23 +113,17 @@ function New-vlResultObject {
 function Get-vlRegValue {
     <#
     .SYNOPSIS
-        Generate a result object for the result of a function
+        Get the value of a registry key
     .DESCRIPTION
-        Generate a result object for the result of a function that can be returned to the caller
+        Get the value of a registry key
     .PARAMETER Hive
-        The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
+        The hive of the registry key. Valid values are "HKLM", "HKU", "HKCU" and "HKCR"
     .PARAMETER Path
         The path to the registry key
     .PARAMETER Value
         The name of the value to read
-    .NOTES
-        This function will return an empty string if the value does not exist.
-        Microsoft.Win32.Registry is part of the .NET Framework since version 1.0.
-        PowerShell added support NetFramework in version 2.0. So the min required version is of PowerShell is 2.0
-    .LINK
-        https://uberagent.com
     .OUTPUTS
-        A string containing the value of the registry key or an empty string if the value does not exist
+        The value of the registry key or an empty string if the key was not found
     .EXAMPLE
         Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Value "ProductName"
     #>
@@ -202,83 +196,6 @@ function Get-vlRegValue {
 function Get-vlRegSubkeys {
     <#
     .SYNOPSIS
-        Generate a result object for the result of a function
-    .DESCRIPTION
-        Generate a result object for the result of a function that can be returned to the caller
-    .PARAMETER Hive
-        The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
-    .PARAMETER Path
-        The path to the registry key
-    .NOTES
-        The result will be converted to JSON.
-        Microsoft.Win32.Registry is part of the .NET Framework since version 1.0.
-        PowerShell added support NetFramework in version 2.0. So the min required version is of PowerShell is 2.0
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A [psobject] containing the result, error code and error message will be set to empty
-    .EXAMPLE
-        return New-vlResultObject($result)
-    #>
-
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-    begin {
-
-    }
-    
-    process {
-        try {
-            Write-Verbose "Get-RegSubkeys: $Hive\$Path"
-            $regKey = $null
-
-            if ($Hive -eq "HKLM") {
-                $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path)
-            }
-            elseif ($Hive -eq "HKU") {
-                $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path)
-            }
-            else {
-                $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path)
-            }
-
-            if ($null -eq $regKey) {
-                Write-Verbose "Registry $Hive\$Path was not found"
-                return @()
-            }
-        
-            $subKeys = $regKey.GetSubKeyNames()
-
-            return $subKeys
-        }
-        catch {
-            Write-Verbose "Error reading registry $Hive\$Path"
-            Write-Verbose $_.Exception.Message
-
-            return @()
-        }
-        finally {
-            if ($null -ne $regKey) {
-                $regKey.Dispose()
-            }
-        }
-    }
-    
-    end {
-    
-    }
-}
-
-
-function Get-vlRegSubkeys2 {
-    <#
-    .SYNOPSIS
         Read all the subkeys from a registry path
     .DESCRIPTION
         Read all the subkeys from a registry path
@@ -291,7 +208,7 @@ function Get-vlRegSubkeys2 {
     .OUTPUTS
         
     .EXAMPLE
-        return Get-vlRegSubkeys2 -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+        return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
 
     [CmdletBinding()]
@@ -324,93 +241,6 @@ function Get-vlRegSubkeys2 {
             return @()
         }
         finally {
-        }
-    }
-    
-    end {
-    
-    }
-}
-
-
-function Get-vlRegKeyValues {
-    <#
-    .SYNOPSIS
-        Read all the keys from a registry path
-    .DESCRIPTION
-        Read all the keys from a registry path
-    .PARAMETER Hive
-        The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
-    .PARAMETER Path
-        The path to the registry key        
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        
-    .EXAMPLE
-        return Get-vlRegKeyValues -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
-    #>
-
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-    begin {
-
-    }
-    
-    process {
-        try {
-            $registryItems = @()
-            Write-Verbose "Get-RegSubkeys: $Hive\$Path"
-            $regKey = $null
-    
-            if ($Hive -eq "HKLM") {
-                $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path)
-            }
-            elseif ($Hive -eq "HKU") {
-                $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path)
-            }
-            else {
-                $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path)
-            }
-    
-            if ($null -eq $regKey) {
-                Write-Verbose "Registry $Hive\$Path was not found"
-                return @()
-            }
-            
-            $valueNames = $regKey.GetValueNames()
-    
-            #check if $valueNames is empty
-            if ($null -eq $valueNames -or $valueNames.Count -eq 0) {
-                return @()
-            }
-
-            #loop through $valueNames and get the value
-            foreach ($valueName in $valueNames) {
-                $value = $regKey.GetValue($valueName)
-                $registryItems += New-Object -TypeName psobject -Property @{
-                    Name  = $valueName
-                    Value = $value
-                }
-            }
-            return $registryItems
-        }
-        catch {
-            Write-Verbose "Error reading registry $Hive\$Path"
-            Write-Verbose $_.Exception.Message
-
-            return @()
-        }
-        finally {
-            if ($null -ne $regKey) {
-                $regKey.Dispose()
-            }
         }
     }
     
@@ -616,8 +446,7 @@ function Get-vlNetworkConfigurationSMBv1 {
       
       $SMBv1 = $false
       
-      if (Test-Path HKLM:\SYSTEM\CurrentControlSet\services\mrxsmb10)
-      {
+      if (Test-Path HKLM:\SYSTEM\CurrentControlSet\services\mrxsmb10) {
          $mrxsmb10 = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\services\mrxsmb10" -Value "Start"
          $LanmanWorkstation = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\LanmanWorkstation" -Value "DependOnService"
 
@@ -628,21 +457,21 @@ function Get-vlNetworkConfigurationSMBv1 {
 
       if ($SMBv1 -eq $false) {
          $result = [PSCustomObject]@{
-            enabled = $false
+            Enabled = $false
          }
          # SMBv1 is disabled
          return New-vlResultObject -result $result -score 10
       }
       else {
          $result = [PSCustomObject]@{
-            enabled = $true
+            Enabled = $true
          }
          # SMBv1 is enabled
          return New-vlResultObject -result $result -score 2
       }
    }
    catch {
-       return New-vlErrorObject($_)
+      return New-vlErrorObject($_)
    }
 }
 
@@ -666,29 +495,25 @@ function Get-vlNetworkConfigurationSMBSigning {
    try {
       $SMBv1 = Get-vlNetworkConfigurationSMBv1
 
-      if ($SMBv1.Result -like '*true*')
-      {
+      if ($SMBv1.Result -like '*true*') {
          $SMBSigningRequired = Get-vlRegValue -Hive "HKLM" -Path "System\CurrentControlSet\Services\LanManWorkstation\Parameters" -Value "RequireSecuritySignature"
          $SMBSigningEnabled = Get-vlRegValue -Hive "HKLM" -Path "System\CurrentControlSet\Services\LanManWorkstation\Parameters" -Value "EnableSecuritySignature"
 
-         if ($SMBSigningRequired -eq 1) 
-         {
+         if ($SMBSigningRequired -eq 1) {
             $result = [PSCustomObject]@{
                state = "Required"
             }
             # SMB signing is required
             return New-vlResultObject -result $result -score 10
          }
-         elseif ($SMBSigningRequired -eq 0 -and $SMBSigningEnabled -eq 1) 
-         {
+         elseif ($SMBSigningRequired -eq 0 -and $SMBSigningEnabled -eq 1) {
             $result = [PSCustomObject]@{
                state = "Enabled"
             }
             # SMB signing is enabled but not required
             return New-vlResultObject -result $result -score 2
          }
-         else 
-         {
+         else {
             $result = [PSCustomObject]@{
                state = "NotRequired"
             }
@@ -696,20 +521,17 @@ function Get-vlNetworkConfigurationSMBSigning {
             return New-vlResultObject -result $result -score 2
          }
       }
-      elseif ($SMBv1.Result -like '*false*')
-      {
+      elseif ($SMBv1.Result -like '*false*') {
          $SMBSigningRequired = Get-vlRegValue -Hive "HKLM" -Path "System\CurrentControlSet\Services\LanManWorkstation\Parameters" -Value "RequireSecuritySignature"
 
-         if ($SMBSigningRequired -eq 1) 
-         {
+         if ($SMBSigningRequired -eq 1) {
             $result = [PSCustomObject]@{
                state = "Required"
             }
             # SMB signing is required
             return New-vlResultObject -result $result -score 10
          }
-         else 
-         {
+         else {
             $result = [PSCustomObject]@{
                state = "NotRequired"
             }
@@ -718,15 +540,13 @@ function Get-vlNetworkConfigurationSMBSigning {
          }
          
       }
-      else 
-      {
+      else {
          Throw "Return of Get-vlNetworkConfigurationSMBv1 is invalid"
          return New-vlErrorObject($Error)
       }
    }
-   catch 
-   {
-       return New-vlErrorObject($_)
+   catch {
+      return New-vlErrorObject($_)
    }
 }
 
@@ -748,18 +568,16 @@ function Get-vlNetworkConfigurationNetBIOS {
    #>
    
    try {
-      if ((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' | Where-Object -Property 'TcpipNetbiosOptions' -eq 1).Count -eq 0)
-      {
+      if ((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' | Where-Object -Property 'TcpipNetbiosOptions' -eq 1).Count -eq 0) {
          $result = [PSCustomObject]@{
-            enabled = $false
+            Enabled = $false
          }
          # NetBIOS is disabled
          return New-vlResultObject -result $result -score 10
       }
-      else 
-      {
+      else {
          $result = [PSCustomObject]@{
-            enabled = $true
+            Enabled = $true
          }
          # NetBIOS is enabled
          return New-vlResultObject -result $result -score 3
@@ -788,18 +606,16 @@ function Get-vlNetworkConfigurationWINS {
    #>
    
    try {
-      if (((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' -Filter IPEnabled=TRUE | Where-Object -Property 'WINSPrimaryServer' -ne $null).ServiceName).Count -eq 0)
-      {
+      if (((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' -Filter IPEnabled=TRUE | Where-Object -Property 'WINSPrimaryServer' -ne $null).ServiceName).Count -eq 0) {
          $result = [PSCustomObject]@{
-            enabled = $false
+            Enabled = $false
          }
          # WINS is not in usage
          return New-vlResultObject -result $result -score 10
       }
-      else 
-      {
+      else {
          $result = [PSCustomObject]@{
-            enabled = $true
+            Enabled = $true
          }
          # WINS is in usage
          return New-vlResultObject -result $result -score 3
@@ -830,41 +646,35 @@ function Get-vlNetworkConfigurationSSLTLS {
       
       $Protocols = @("TLS 1.0", "TLS 1.1", "SSL 2.0", "SSL 3.0")
       $ProtocolsInUse = @()
-      foreach ($Protocol in $Protocols) 
-      {
+      foreach ($Protocol in $Protocols) {
          $null = $Enabled
          $null = $DisabledByDefault
          
-         if (test-path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client")
-         {
+         if (test-path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client") {
             $Enabled = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client" -Value "Enabled"
             $DisabledByDefault = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client" -Value "DisabledByDefault"
 
-            if ($Enabled -eq 1 -OR $DisabledByDefault -eq 0)
-            {
+            if ($Enabled -eq 1 -OR $DisabledByDefault -eq 0) {
                $ProtocolsInUse += $Protocol
             }
          }
-         else 
-         {
+         else {
             $ProtocolsInUse += $Protocol
          }
       }
 
       
       
-      if ($ProtocolsInUse.Count -eq 0)
-      {
+      if ($ProtocolsInUse.Count -eq 0) {
          $result = [PSCustomObject]@{
-            enabled = $false
+            Enabled = $false
          }
          # Outdated protocols are disabled
          return New-vlResultObject -result $result -score 10
       }
-      else 
-      {
+      else {
          $result = [PSCustomObject]@{
-            enabled = $ProtocolsInUse
+            Enabled = $ProtocolsInUse
          }
          # Outdated protocols are enabled
          return New-vlResultObject -result $result -score 2
@@ -897,63 +707,73 @@ function Get-vlNetworkConfigurationCheck {
    $params = if ($global:args) { $global:args } else { "all" }
    $Output = @()
 
-   if ($params.Contains("all") -or $params.Contains("SMBv1")) {
-       $SMBv1 = Get-vlNetworkConfigurationSMBv1    
-       $Output += [PSCustomObject]@{
-           Name         = "NetworkConfiguration - SMBv1"
-           Score        = $SMBv1.Score
-           ResultData   = $SMBv1.Result
-           RiskScore    = 100
-           ErrorCode    = $SMBv1.ErrorCode
-           ErrorMessage = $SMBv1.ErrorMessage
-       }
+   if ($params.Contains("all") -or $params.Contains("NCSMBv1")) {
+      $SMBv1 = Get-vlNetworkConfigurationSMBv1    
+      $Output += [PSCustomObject]@{
+         Name         = "NCSMBv1"
+         DisplayName  = "Network Configuration SMBv1"
+         Description  = "Checks whether SMBv1 is enabled."
+         Score        = $SMBv1.Score
+         ResultData   = $SMBv1.Result
+         RiskScore    = 100
+         ErrorCode    = $SMBv1.ErrorCode
+         ErrorMessage = $SMBv1.ErrorMessage
+      }
    }
 
-   if ($params.Contains("all") -or $params.Contains("SMBSigning")) {
+   if ($params.Contains("all") -or $params.Contains("NCSMBSign")) {
       $SMBSigning = Get-vlNetworkConfigurationSMBSigning    
       $Output += [PSCustomObject]@{
-          Name         = "NetworkConfiguration - SMB Signing"
-          Score        = $SMBSigning.Score
-          ResultData   = $SMBSigning.Result
-          RiskScore    = 40
-          ErrorCode    = $SMBSigning.ErrorCode
-          ErrorMessage = $SMBSigning.ErrorMessage
+         Name         = "NCSMBSign"
+         DisplayName  = "Network Configuration SMB Signing"
+         Description  = "Checks whether SMB signing is enabled."
+         Score        = $SMBSigning.Score
+         ResultData   = $SMBSigning.Result
+         RiskScore    = 40
+         ErrorCode    = $SMBSigning.ErrorCode
+         ErrorMessage = $SMBSigning.ErrorMessage
       }
-  }
-
-  if ($params.Contains("all") -or $params.Contains("NetBIOS")) {
-   $NetBIOS = Get-vlNetworkConfigurationNetBIOS    
-   $Output += [PSCustomObject]@{
-       Name         = "NetworkConfiguration - NetBIOS"
-       Score        = $NetBIOS.Score
-       ResultData   = $NetBIOS.Result
-       RiskScore    = 20
-       ErrorCode    = $NetBIOS.ErrorCode
-       ErrorMessage = $NetBIOS.ErrorMessage
-   }
    }
 
-   if ($params.Contains("all") -or $params.Contains("WINS")) {
+   if ($params.Contains("all") -or $params.Contains("NCNetBIOS")) {
+      $NetBIOS = Get-vlNetworkConfigurationNetBIOS    
+      $Output += [PSCustomObject]@{
+         Name         = "NCNetBIOS"
+         DisplayName  = "Network configuration NetBIOS"
+         Description  = "Checks whether NetBIOS is enabled."
+         Score        = $NetBIOS.Score
+         ResultData   = $NetBIOS.Result
+         RiskScore    = 20
+         ErrorCode    = $NetBIOS.ErrorCode
+         ErrorMessage = $NetBIOS.ErrorMessage
+      }
+   }
+
+   if ($params.Contains("all") -or $params.Contains("NCWINS")) {
       $WINS = Get-vlNetworkConfigurationWINS    
       $Output += [PSCustomObject]@{
-          Name         = "NetworkConfiguration - WINS"
-          Score        = $WINS.Score
-          ResultData   = $WINS.Result
-          RiskScore    = 20
-          ErrorCode    = $WINS.ErrorCode
-          ErrorMessage = $WINS.ErrorMessage
+         Name         = "NCWINS"
+         DisplayName  = "Network configuration WINS"
+         Description  = "Checks whether WINS is enabled."
+         Score        = $WINS.Score
+         ResultData   = $WINS.Result
+         RiskScore    = 20
+         ErrorCode    = $WINS.ErrorCode
+         ErrorMessage = $WINS.ErrorMessage
       }
    }
 
-   if ($params.Contains("all") -or $params.Contains("SSLTLS")) {
+   if ($params.Contains("all") -or $params.Contains("NCSSLTLS")) {
       $SSLTLS = Get-vlNetworkConfigurationSSLTLS    
       $Output += [PSCustomObject]@{
-          Name         = "NetworkConfiguration - SSL/TLS"
-          Score        = $SSLTLS.Score
-          ResultData   = $SSLTLS.Result
-          RiskScore    = 40
-          ErrorCode    = $SSLTLS.ErrorCode
-          ErrorMessage = $SSLTLS.ErrorMessage
+         Name         = "NCSSLTLS"
+         DisplayName  = "Network configuration SSL/TLS"
+         Description  = "Checks whether outdated SSL and TLS versions are enabled."
+         Score        = $SSLTLS.Score
+         ResultData   = $SSLTLS.Result
+         RiskScore    = 40
+         ErrorCode    = $SSLTLS.ErrorCode
+         ErrorMessage = $SSLTLS.ErrorMessage
       }
    }
 
