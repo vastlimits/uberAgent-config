@@ -169,12 +169,12 @@ def extract_mapping_info(data):
 for dirpath, dirnames, filenames in os.walk(folder_path):
     
     for filename in filenames:
-        counter_processed += 1
         file_path = os.path.join(dirpath, filename)
             
         # Check if it's a .ps1 file and not in an excluded folder
         if filename.endswith('.ps1') and not any(exclude_folder in file_path for exclude_folder in exclude_folders):
             print("Processing: ", file_path )
+            counter_processed += 1
 
             # Handle exceptions when opening the file
             try:
@@ -263,7 +263,7 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
 
 # Print counter statistics
 print("\n-------------------------------------")
-print("Processed: ", counter_processed, " files")
+print("Processed: ", counter_processed + counter_skipped, " files")
 print("Skipped: ", counter_skipped, " files")
 print("Success: ", counter_success, " files")
 print("Failed: ", counter_processed - counter_success, " files")
