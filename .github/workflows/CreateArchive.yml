@@ -12,10 +12,14 @@ jobs:
     - name: Check out repo
       uses: actions/checkout@3
       with:
-        path: repo
+        ref: ${{ github.ref_name }}
     - name: Create archive file
       uses: thedoctor0/zip-release@0.7.1
       with:
         type: 'zip'
-        directory: 'repo/config'
+        directory: 'config/'
         filename: 'uberAgent.uAConfig'
+    - name: Commit archive
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Updated config archive
