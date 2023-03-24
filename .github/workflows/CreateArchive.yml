@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - develop
+  workflow_dispatch:   # enable manual runs
 
 jobs:
   create-archive:
