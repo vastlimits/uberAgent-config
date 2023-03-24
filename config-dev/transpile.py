@@ -25,6 +25,17 @@ print("Using output csv: ", output_csv_mapping)
 print("-------------------------------------")
 print("Cleaning old output...")
 
+# Count subfolders if the input folder
+subfolders = [f.path for f in os.scandir(folder_path) if f.is_dir()]
+subfolders_count = len(subfolders)
+
+# If there are no subfolders, exit the script
+if subfolders_count == 0:
+    print("Error: There are no files to Process: ", folder_path)
+
+    # Exit the script
+    exit()
+
 # Create the "transpiled" directory-structure if it doesn't exist
 if not os.path.exists(output_folder):
     try:
