@@ -1,16 +1,17 @@
 name: Create config archive
 
-on:
-  push:
-    branches:             # this YAML file needs to reside in all of the branches specified here
-    - develop
-  workflow_dispatch:      # enable manual runs
-  
 env:
   SOURCE_DIR_PATH:  config/
   TARGET_DIR_PATH:  config-dist/
   TARGET_FILE:      uberAgent.uAConfig
   
+on:
+  push:
+    branches:             # this YAML file needs to reside in all of the branches specified here
+    - develop
+    paths-ignore:
+    - "${{ env.TARGET_DIR_PATH }}**"    # avoid recursion
+    
 jobs:
   create-archive:
     runs-on: ubuntu-latest
