@@ -6,6 +6,11 @@ on:
     - develop
   workflow_dispatch:      # enable manual runs
   
+env:
+  SourceDir:  config/
+  TargetDir:  config-dist/
+  TargetFile: uberAgent.uAConfig
+  
 jobs:
   create-archive:
     runs-on: ubuntu-latest
@@ -19,13 +24,21 @@ jobs:
         ref: ${{ github.ref_name }}
         token: ${{ secrets.VLSVC_PAT }}
         
+    - name: Prepare target directory
+      run: |
+        # Print executed commands
+        set -x
+        
+        mkdir -p $TargetDir
+        rm -f $TargetDir$TargetFile
+        
     - name: Create archive file
       uses: thedoctor0/zip-release@0.7.1
       with:
-        type: 'zip'
-        directory: 'config-dist/'
-        path: '../config/'
-        filename: 'uberAgent.uAConfig'
+        type: "zip"
+        directory: "$TargetDir"
+        path: "../$SourceDir"
+        filename: "$TargetFile"
         
     - name: Commit archive
       uses: stefanzweifel/git-auto-commit-action@v4
