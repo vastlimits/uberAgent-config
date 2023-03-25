@@ -50,9 +50,9 @@ cd tools
 
 # set target directory
 TARGET_DIR=config
-if [[ "$CURRENT_BRANCH" == "version/6.2" || "$CURRENT_BRANCH" == "version/7.0" ]]; then
-    TARGET_DIR=rules
-fi
+# if [[ "$CURRENT_BRANCH" == "version/6.2" || "$CURRENT_BRANCH" == "version/7.0" ]]; then
+#     TARGET_DIR=rules
+# fi
 
 # set target version
 if [[ "$CURRENT_BRANCH" == "develop" ]]; then
