@@ -7,9 +7,9 @@ on:
   workflow_dispatch:      # enable manual runs
   
 env:
-  SourceDir:  config/
-  TargetDir:  config-dist/
-  TargetFile: uberAgent.uAConfig
+  SOURCE_DIR_PATH:  config/
+  TARGET_DIR_PATH:  config-dist/
+  TARGET_FILE:      uberAgent.uAConfig
   
 jobs:
   create-archive:
@@ -29,16 +29,16 @@ jobs:
         # Print executed commands
         set -x
         
-        mkdir -p $TargetDir
-        rm -f $TargetDir$TargetFile
+        mkdir -p $TARGET_DIR_PATH
+        rm -f $TARGET_DIR_PATH$TARGET_FILE
         
     - name: Create archive file
       uses: thedoctor0/zip-release@0.7.1
       with:
         type: "zip"
-        directory: "${{ vars.TargetDir }}"
-        path: "../${{ vars.SourceDir }}"
-        filename: "${{ vars.TargetFile }}"
+        directory: "${{ env.TARGET_DIR_PATH }}"
+        path: "../${{ env.SOURCE_DIR_PATH }}"
+        filename: "${{ env.TARGET_FILE }}"
         
     - name: Commit archive
       uses: stefanzweifel/git-auto-commit-action@v4
