@@ -10,22 +10,22 @@ jobs:
   create-archive:
     runs-on: ubuntu-latest
 
-    env:
-      GITHUB_ACTOR: ${{ github.actor }}
-      GITHUB_TOKEN: ${{ secrets.VLSVC_PAT}}
-
     steps:
+    
     - name: Check out repo
       uses: actions/checkout@v3
       with:
-        ref: develop
+        ref: develop     # hard-coded to allow for manual workflow runs
         # ref: ${{ github.ref_name }}
+        token: ${{ secrets.VLSVC_PAT }}
+        
     - name: Create archive file
       uses: thedoctor0/zip-release@0.7.1
       with:
         type: 'zip'
         directory: 'config/'
         filename: 'uberAgent.uAConfig'
+        
     - name: Commit archive
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
