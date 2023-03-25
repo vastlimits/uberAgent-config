@@ -36,9 +36,9 @@ jobs:
       uses: thedoctor0/zip-release@0.7.1
       with:
         type: "zip"
-        directory: "$TargetDir"
-        path: "../$SourceDir"
-        filename: "$TargetFile"
+        directory: "${{ vars.TargetDir }}"
+        path: "../${{ vars.SourceDir }}"
+        filename: "${{ vars.TargetFile }}"
         
     - name: Commit archive
       uses: stefanzweifel/git-auto-commit-action@v4
