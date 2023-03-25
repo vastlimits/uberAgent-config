@@ -2,7 +2,7 @@ name: Create config archive
 
 on:
   push:
-    branches:
+    branches:             # this YAML file needs to reside in all of the branches specified here
     - develop
   workflow_dispatch:      # enable manual runs
   
@@ -15,15 +15,16 @@ jobs:
     - name: Check out repo
       uses: actions/checkout@v3
       with:
-        ref: develop     # hard-coded to allow for manual workflow runs
-        # ref: ${{ github.ref_name }}
+        # ref: develop     # hard-coded to allow for manual workflow runs
+        ref: ${{ github.ref_name }}
         token: ${{ secrets.VLSVC_PAT }}
         
     - name: Create archive file
       uses: thedoctor0/zip-release@0.7.1
       with:
         type: 'zip'
-        directory: 'config/'
+        directory: 'config-dist/'
+        path: '../config/'
         filename: 'uberAgent.uAConfig'
         
     - name: Commit archive
