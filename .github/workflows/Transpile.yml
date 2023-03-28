@@ -35,8 +35,8 @@ jobs:
       - name: Run PSScriptAnalyzer log analyzer script
         run: python config-dev/analyzeLog.py
         env:
-          log_level: "note"
-          fail_level: "error"
+          log_level: note
+          fail_level: error
 
       - name: Commit output
         uses: stefanzweifel/git-auto-commit-action@v4
