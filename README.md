@@ -1,3 +1,5 @@
+![transpile workflow](https://github.com/vastlimits/uberAgent-config/actions/workflows/Transpile.yml/badge.svg)
+
 # uberAgent Configuration
 
 This repository is the home for the [uberAgent](https://uberagent.com/) configuration. This repository contains UXM configuration settings (timers, metrics, etc.) as well as ESA Activity Monitoring detection rules and Modular Security Inventory tests.

@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: 3.11
 
-      - name: Run Python script
+      - name: Run transpiler script
         run: python config-dev/transpile.py
       
       - name: Run PSScriptAnalyzer
@@ -30,7 +30,13 @@ jobs:
         with:
           path: "config/Security inventory/Windows"
           recurse: true
-          output: results.sarif
+          output: config-dev/generated/psscriptanalyzer_log.sarif
+
+      - name: Run PSScriptAnalyzer log analyzer script
+        run: python config-dev/analyzeLog.py
+        env:
+          log_level: "note"
+          fail_level: "error"
 
       - name: Commit output
         uses: stefanzweifel/git-auto-commit-action@v4
