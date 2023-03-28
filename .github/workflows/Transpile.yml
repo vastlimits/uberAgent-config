@@ -24,6 +24,13 @@ jobs:
 
       - name: Run Python script
         run: python config-dev/transpile.py
+      
+      - name: Run PSScriptAnalyzer
+        uses: microsoft/psscriptanalyzer-action@v1.1
+        with:
+          path: "config/Security inventory/Windows"
+          recurse: true
+          output: results.sarif
 
       - name: Commit output
         uses: stefanzweifel/git-auto-commit-action@v4
