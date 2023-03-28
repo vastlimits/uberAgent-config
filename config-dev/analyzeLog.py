@@ -33,8 +33,8 @@ try:
     # If the fail level is set to none, the script will not fail
     # If the fail level is set to note it will fail if there is an error, warning or a note
 
-    log_level = 'error' #os.getenv('log_level').toLower() if os.getenv('log_level') else 'note'
-    fail_level = 'error' #os.getenv('fail_level').toLower() if os.getenv('fail_level') else 'note'
+    log_level = os.getenv('log_level').toLower() if os.getenv('log_level') else 'note'
+    fail_level = os.getenv('fail_level').toLower() if os.getenv('fail_level') else 'note'
 except:
     print("Error: Could not get environment variables")
 
