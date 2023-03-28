@@ -1,4 +1,4 @@
-![transpile workflow](https://github.com/vastlimits/uberAgent-config/actions/workflows/Transpile.yml/badge.svg)
+![transpile workflow](https://github.com/vastlimits/uberAgent-config/actions/workflows/Transpile.yml/badge.svg?event=push)
 
 # uberAgent Configuration
 
