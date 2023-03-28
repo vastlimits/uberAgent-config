@@ -18,14 +18,16 @@ counter_processed = 0
 folder_path = os.path.join(working_dir, 'config-dev/Security inventory/Windows')
 include_folder = os.path.join(working_dir, 'config-dev/Security inventory/Windows/Shared')
 output_folder = os.path.join(working_dir, 'config/Security inventory/Windows')
-output_csv_mapping = os.path.join(working_dir, 'config/security_inventory_checknames.csv')
+output_csv_mapping_dir = os.path.join(working_dir, 'config-dev/generated')
+output_csv_mapping = os.path.join(output_csv_mapping_dir, 'security_inventory_checknames.csv')
 
 print("-------------------------------------")
 print("Current working dir: ", working_dir)
 print("Using input: ", folder_path)
 print("Using include: ", include_folder)
 print("Using output: ", output_folder)
-print("Using output csv: ", output_csv_mapping)
+print("Using output mapping dir: ", output_csv_mapping_dir)
+print("Using output mapping csv: ", output_csv_mapping)
 print("-------------------------------------")
 print("Cleaning old output...")
 
@@ -52,6 +54,16 @@ if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     except:
         print("Error: Could not create output folder: ", output_folder)
+
+        # Exit the script
+        exit()
+
+# Create the "config-dev/generated" directory-structure if it doesn't exist
+if not os.path.exists(output_csv_mapping_dir):
+    try:
+        os.makedirs(output_csv_mapping_dir)
+    except:
+        print("Error: Could not create output folder: ", output_csv_mapping_dir)
 
         # Exit the script
         exit()
