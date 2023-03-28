@@ -48,6 +48,17 @@ fail_level_priority = get_log_level_priority(fail_level)
 return_status = 0
 log_file_path = os.path.join(working_dir, 'config-dev/generated/psscriptanalyzer_log.sarif')
 
+print("-------------------------------------")
+print("Current working dir: ", working_dir)
+print("Using Logfile: ", log_file_path)
+print("-------------------------------------")
+
+if not os.path.isfile(log_file_path):
+    print("Error: Could not find sarif file")
+
+    # Exit the script
+    os._exit(1)
+
 try:
     with open(log_file_path, 'r') as file:
         sarif_data = json.load(file)
