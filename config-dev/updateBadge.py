@@ -1,6 +1,6 @@
 import os
 import re
-import urllib.parse
+from requests.utils import requote_uri
 
 try:
     # Path to the folder to search
@@ -20,9 +20,12 @@ def add_custom_badge(tag, description, value, color):
     if "-" in value:
         value = value.replace("-", "--")
 
-    url = f"https://img.shields.io/badge/{description}-{value}-{color}"
-    encoded_url = urllib.parse.urlencode(url)
-    badge_list.append(f"![{tag}]({encoded_url})")
+    try:
+        url = f"https://img.shields.io/badge/{description}-{value}-{color}"
+        encoded_url = requote_uri(url)
+        badge_list.append(f"![{tag}]({encoded_url})")
+    except:
+        print(f"Error: Could not generate badge for {tag}")
 
 def add_license_badge():
     badge_list.append("![license](https://img.shields.io/github/license/vastlimits/uberAgent-config)")
