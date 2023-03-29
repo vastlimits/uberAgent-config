@@ -1,6 +1,6 @@
 
 [comment]: # (BADGE_SECTION_START)
-![license](https://img.shields.io/github/license/vastlimits/uberAgent-config) ![branch](https://img.shields.io/badge/branch-feature--PSAnalyzer-blue) ![transpilation](https://img.shields.io/badge/transpilation- success,  processed-green) ![syntax check](https://img.shields.io/badge/syntax check- errors,  warnings-red)
+![license](https://img.shields.io/github/license/vastlimits/uberAgent-config) ![branch](https://img.shields.io/badge/branch-feature--PSAnalyzer-blue) ![transpilation](https://img.shields.io/badge/transpilation-+success%2C++processed-green) ![syntax check](https://img.shields.io/badge/syntax+check-+errors%2C++warnings-red)
 
 [comment]: # (BADGE_SECTION_END)
 
