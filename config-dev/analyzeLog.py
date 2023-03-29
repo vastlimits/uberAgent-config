@@ -98,6 +98,11 @@ try:
                 elif level == 'note':
                     notes.append(f"\033[94mNOTE\033[0m in {location} line {line}: {message}")
 
+        print("-------------------------------------")
+        print(f"Found {len(errors)} \033[91mErrors\033[0m, {len(warnings)} \033[93mWarnings\033[0m and {len(notes)} \033[94mNotes\033[0m")
+        print("Exit code: " + str(return_status))
+        print("-------------------------------------")
+
         if should_print_log('error', log_level_priority):
             print("-------------------------------------")
             print("Errors:")
@@ -127,11 +132,6 @@ try:
                 return_status = 0
         else:
                 return_status = 0
-
-        print("-------------------------------------")
-        print(f"Found {len(errors)} errors, {len(warnings)} warnings and {len(notes)} notes")
-        print("Exit code: " + str(return_status))
-        print("-------------------------------------")
     
         os._exit(return_status)
     except:
