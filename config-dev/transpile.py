@@ -113,6 +113,41 @@ except:
     exit()
 print("-------------------------------------")
 
+####### ENV_WORKFLOW_FILE #######
+env_file = os.getenv('GITHUB_ENV') # Get the path of the runner file
+
+def update_key(key, value):
+    data = {}
+    try:
+        with open(env_file, 'r') as file:
+            for line in file:
+                if line.strip():
+                    k, v = line.strip().split('=')
+                    data[k] = v
+    except FileNotFoundError:
+        pass
+
+    data[key] = value
+
+    with open(env_file, 'w') as file:
+        for k, v in data.items():
+            file.write(f'{k}={v}\n')
+
+
+def read_key(key):
+    try:
+        with open(env_file, 'r') as file:
+            for line in file:
+                if line.strip():
+                    k, v = line.strip().split('=')
+                    if k == key:
+                        return v
+    except FileNotFoundError:
+        print(f"Error: The file '{env_file}' was not found.")
+
+    print(f"Error: The key '{key}' was not found.")
+    return None
+
 def extract_values(data):
     try:
         pattern = r'(Name|DisplayName|Description)\s*=\s*["\'](.*?)["\']'
@@ -280,10 +315,8 @@ print("Skipped: ", counter_skipped, " files")
 print("Success: ", counter_success, " files")
 print("Failed: ", counter_processed - counter_success, " files")
 
-#os.environ["TRANSPILER_SUCCSESS"] = str(counter_success)
-#os.environ["TRANSPILER_PROCESSED"] = str(counter_processed)
-print(f"::set-output name=TRANSPILER_SUCCSESS::{counter_success}")
-print(f"::set-output name=TRANSPILER_PROCESSED::{counter_processed}")
+update_key("TRANSPILER_SUCCSESS", str(counter_success))
+update_key("TRANSPILER_PROCESSED", str(counter_processed))
 
 # Close the CSV file
 csv_handle.close()

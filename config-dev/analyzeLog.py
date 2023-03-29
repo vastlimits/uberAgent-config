@@ -16,6 +16,42 @@ def should_print_log(level, log_level_priority):
 def should_fail(level, fail_level_priority):
     return get_log_level_priority(level) >= fail_level_priority
 
+
+####### ENV_WORKFLOW_FILE #######
+env_file = os.getenv('GITHUB_ENV') # Get the path of the runner file
+
+def update_key(key, value):
+    data = {}
+    try:
+        with open(env_file, 'r') as file:
+            for line in file:
+                if line.strip():
+                    k, v = line.strip().split('=')
+                    data[k] = v
+    except FileNotFoundError:
+        pass
+
+    data[key] = value
+
+    with open(env_file, 'w') as file:
+        for k, v in data.items():
+            file.write(f'{k}={v}\n')
+
+
+def read_key(key):
+    try:
+        with open(env_file, 'r') as file:
+            for line in file:
+                if line.strip():
+                    k, v = line.strip().split('=')
+                    if k == key:
+                        return v
+    except FileNotFoundError:
+        print(f"Error: The file '{env_file}' was not found.")
+
+    print(f"Error: The key '{key}' was not found.")
+    return None
+
 try:
     # Path to the folder to search
     working_dir = os.getcwd()
@@ -103,12 +139,9 @@ try:
         print("Exit code: " + str(return_status))
         print("-------------------------------------")
 
-        #os.environ["ANALYZER_ERRORS"] = str(len(errors))
-        #os.environ["ANALYZER_WARNINGS"] = str(len(warnings))
-        #os.environ["ANALYZER_NOTES"] = str(len(notes))
-        print(f"::set-output name=ANALYZER_ERRORS::{str(len(errors))}")
-        print(f"::set-output name=ANALYZER_WARNINGS::{str(len(warnings))}")
-        print(f"::set-output name=ANALYZER_NOTES::{str(len(notes))}")
+        update_key("ANALYZER_ERRORS",str(len(errors)))
+        update_key("ANALYZER_WARNINGS",str(len(warnings)))
+        update_key("ANALYZER_NOTES",str(len(notes)))
 
         if should_print_log('error', log_level_priority):
             print("-------------------------------------")

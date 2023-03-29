@@ -14,6 +14,41 @@ except:
 file_read_me = os.path.join(working_dir, 'README.md')
 badge_list = []
 
+####### ENV_WORKFLOW_FILE #######
+env_file = os.getenv('GITHUB_ENV') # Get the path of the runner file
+
+def update_key(key, value):
+    data = {}
+    try:
+        with open(env_file, 'r') as file:
+            for line in file:
+                if line.strip():
+                    k, v = line.strip().split('=')
+                    data[k] = v
+    except FileNotFoundError:
+        pass
+
+    data[key] = value
+
+    with open(env_file, 'w') as file:
+        for k, v in data.items():
+            file.write(f'{k}={v}\n')
+
+
+def read_key(key):
+    try:
+        with open(env_file, 'r') as file:
+            for line in file:
+                if line.strip():
+                    k, v = line.strip().split('=')
+                    if k == key:
+                        return v
+    except FileNotFoundError:
+        print(f"Error: The file '{env_file}' was not found.")
+
+    print(f"Error: The key '{key}' was not found.")
+    return None
+
 def add_custom_badge(tag, description, value, color):
 
     # Replace - with -- to avoid issues with the badge
@@ -60,11 +95,11 @@ try:
             add_custom_badge("branch", "branch", branch, "blue")
 
             try: 
-                TRANSPILER_SUCCSESS = os.environ.get("TRANSPILER_SUCCSESS", "")
-                TRANSPILER_PROCESSED = os.environ.get("TRANSPILER_PROCESSED", "")
-                ANALYZER_ERRORS = os.environ.get("ANALYZER_ERRORS", "")
-                ANALYZER_WARNINGS = os.environ.get("ANALYZER_WARNINGS", "")
-                ANALYZER_NOTES = os.environ.get("ANALYZER_NOTES", "")
+                TRANSPILER_SUCCSESS = read_key("TRANSPILER_SUCCSESS", "")
+                TRANSPILER_PROCESSED = read_key("TRANSPILER_PROCESSED", "")
+                ANALYZER_ERRORS = read_key("ANALYZER_ERRORS", "")
+                ANALYZER_WARNINGS = read_key("ANALYZER_WARNINGS", "")
+                ANALYZER_NOTES = read_key("ANALYZER_NOTES", "")
 
                 print(f"Transpiler: {TRANSPILER_SUCCSESS} success, {TRANSPILER_PROCESSED} processed")
                 print(f"Syntax check: {ANALYZER_ERRORS} errors, {ANALYZER_WARNINGS} warnings, {ANALYZER_NOTES} notes")

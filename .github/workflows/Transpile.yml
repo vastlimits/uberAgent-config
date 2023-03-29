@@ -43,15 +43,12 @@ jobs:
       
       - name: Run badge update script
         if: success() || failure()
-        run: |
-          cat env_vars.txt
-          export $(cat env_vars.txt | xargs)
-          python config-dev/updateBadge.py
+        run: python config-dev/updateBadge.py
         shell: bash
         env:
           GITHUB_REF: ${{ github.ref }}
-          TRANSPILER_SUCCSESS: ${{ steps.transpiler_script.outputs.TRANSPILER_SUCCSESS }}
-          TRANSPILER_PROCESSED: ${{ steps.transpiler_script.outputs.TRANSPILER_PROCESSED }}
+          TRANSPILER_SUCCSESS: $TRANSPILER_SUCCSESS
+          TRANSPILER_PROCESSED: $TRANSPILER_SUCCSESS
 
       - name: Commit everything
         if: success()
