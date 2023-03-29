@@ -14,6 +14,11 @@ file_read_me = os.path.join(working_dir, 'README.md')
 badge_list = []
 
 def add_custom_badge(tag, description, value, color):
+
+    # Replace - with -- to avoid issues with the badge
+    if "-" in value:
+        value = value.replace("-", "--")
+
     badge_list.append(f"![{tag}](https://img.shields.io/badge/{description}-{value}-{color})")
 
 def add_license_badge():
