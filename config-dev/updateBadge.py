@@ -60,14 +60,17 @@ try:
                 ANALYZER_WARNINGS = os.environ.get("ANALYZER_WARNINGS", "")
                 ANALYZER_NOTES = os.environ.get("ANALYZER_NOTES", "")
 
+                print(f"Transpiler: {TRANSPILER_SUCCSESS} success, {TRANSPILER_PROCESSED} processed")
+                print(f"Syntax check: {ANALYZER_ERRORS} errors, {ANALYZER_WARNINGS} warnings, {ANALYZER_NOTES} notes")
+
                 transpilation_color = "green"
                 if TRANSPILER_SUCCSESS != TRANSPILER_PROCESSED:
                     transpilation_color = "red"
 
                 syntax_check_color = "green"
-                if ANALYZER_ERRORS != 0:
+                if ANALYZER_ERRORS != "0":
                     syntax_check_color = "red"
-                elif ANALYZER_WARNINGS != 0:
+                elif ANALYZER_WARNINGS != "0":
                     syntax_check_color = "yellow"
 
                 add_custom_badge("transpilation", "transpilation", f"{TRANSPILER_SUCCSESS} success, {TRANSPILER_PROCESSED} processed", transpilation_color)
