@@ -1,4 +1,6 @@
+[comment]: <> (BADGE_SECTION_START)
 ![license](https://img.shields.io/github/license/vastlimits/uberAgent-config) ![license](https://img.shields.io/badge/branch-feature--PSAnalyzer-green) ![transpile workflow](https://github.com/vastlimits/uberAgent-config/actions/workflows/Transpile.yml/badge.svg?event=push)
+[comment]: <> (BADGE_SECTION_END)
 
 # uberAgent Configuration
 
