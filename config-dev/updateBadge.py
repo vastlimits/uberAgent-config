@@ -1,6 +1,6 @@
 import os
 import re
-from urllib.parse import quote_plus
+from urllib.parse import quote
 
 try:
     # Path to the folder to search
@@ -22,7 +22,7 @@ def add_custom_badge(tag, description, value, color):
 
     try:
         url_parts = f"{description}-{value}-{color}"
-        encoded_url = f"https://img.shields.io/badge/{quote_plus(url_parts)}"
+        encoded_url = f"https://img.shields.io/badge/{quote(url_parts)}"
         badge_list.append(f"![{tag}]({encoded_url})")
     except:
         print(f"Error: Could not generate badge for {tag}")
