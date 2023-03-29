@@ -1,6 +1,6 @@
 import os
 import re
-from requests.utils import requote_uri
+from urllib.parse import quote_plus
 
 try:
     # Path to the folder to search
@@ -21,8 +21,8 @@ def add_custom_badge(tag, description, value, color):
         value = value.replace("-", "--")
 
     try:
-        url = f"https://img.shields.io/badge/{description}-{value}-{color}"
-        encoded_url = requote_uri(url)
+        url_parts = f"{description}-{value}-{color}"
+        encoded_url = f"https://img.shields.io/badge/{quote_plus(url_parts)}"
         badge_list.append(f"![{tag}]({encoded_url})")
     except:
         print(f"Error: Could not generate badge for {tag}")
