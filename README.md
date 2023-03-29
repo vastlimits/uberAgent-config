@@ -1,6 +1,6 @@
 
 [comment]: # (BADGE_SECTION_START)
-![license](https://img.shields.io/github/license/vastlimits/uberAgent-config) ![license](https://img.shields.io/badge/branch-feature--PSAnalyzer-green) ![transpile workflow](https://github.com/vastlimits/uberAgent-config/actions/workflows/Transpile.yml/badge.svg?event=push)
+![license](https://img.shields.io/github/license/vastlimits/uberAgent-config) ![branch](https://img.shields.io/badge/branch-feature-PSAnalyzer-blue)
 
 [comment]: # (BADGE_SECTION_END)
 
