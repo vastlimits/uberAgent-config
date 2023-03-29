@@ -23,6 +23,7 @@ jobs:
           python-version: 3.11
 
       - name: Run transpiler script
+        shell: bash
         run: python config-dev/transpile.py
       
       - name: Run PSScriptAnalyzer
@@ -33,11 +34,13 @@ jobs:
           output: config-dev/generated/psscriptanalyzer_log.sarif
 
       - name: Run PSScriptAnalyzer log analyzer script
+        shell: bash
         run: python config-dev/analyzeLog.py --log_level note --fail_level error
       
       - name: Run badge update script
         if: success() || failure()
         run: python config-dev/updateBadge.py
+        shell: bash
         env:
           GITHUB_REF: ${{ github.ref }}
           TRANSPILER_SUCCSESS: ${{ env.TRANSPILER_SUCCSESS }}
