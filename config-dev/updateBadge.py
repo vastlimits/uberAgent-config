@@ -1,5 +1,6 @@
 import os
 import re
+import urllib.parse
 
 try:
     # Path to the folder to search
@@ -19,7 +20,9 @@ def add_custom_badge(tag, description, value, color):
     if "-" in value:
         value = value.replace("-", "--")
 
-    badge_list.append(f"![{tag}](https://img.shields.io/badge/{description}-{value}-{color})")
+    url = f"https://img.shields.io/badge/{description}-{value}-{color}"
+    encoded_url = urllib.parse.urlencode(url)
+    badge_list.append(f"![{tag}]({encoded_url})")
 
 def add_license_badge():
     badge_list.append("![license](https://img.shields.io/github/license/vastlimits/uberAgent-config)")
