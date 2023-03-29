@@ -33,11 +33,8 @@ jobs:
           output: config-dev/generated/psscriptanalyzer_log.sarif
 
       - name: Run PSScriptAnalyzer log analyzer script
-        run: python config-dev/analyzeLog.py
-        with:
-          log_level: "note"
-          fail_level: "error"
-
+        run: python config-dev/analyzeLog.py --log_level: 'note' --fail_level: "error"
+          
       - name: Commit output
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
