@@ -280,8 +280,10 @@ print("Skipped: ", counter_skipped, " files")
 print("Success: ", counter_success, " files")
 print("Failed: ", counter_processed - counter_success, " files")
 
-os.environ["TRANSPILER_SUCCSESS"] = str(counter_success)
-os.environ["TRANSPILER_PROCESSED"] = str(counter_processed)
+#os.environ["TRANSPILER_SUCCSESS"] = str(counter_success)
+#os.environ["TRANSPILER_PROCESSED"] = str(counter_processed)
+print(f"::set-output name=TRANSPILER_SUCCSESS::{counter_success}")
+print(f"::set-output name=TRANSPILER_PROCESSED::{counter_processed}")
 
 # Close the CSV file
 csv_handle.close()

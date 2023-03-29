@@ -25,9 +25,8 @@ jobs:
       - name: Run transpiler script
         shell: bash
         run: |
-          python config-dev/transpile.py
-          echo "TRANSPILER_SUCCSESS=$(echo $TRANSPILER_SUCCSESS)" >> env_vars.txt
-          echo "TRANSPILER_PROCESSED=$(echo $TRANSPILER_PROCESSED)" >> env_vars.txt
+          OUTPUT=$(python config-dev/transpile.py)
+          echo "$OUTPUT"
       
       - name: Run PSScriptAnalyzer
         uses: microsoft/psscriptanalyzer-action@v1.1
@@ -39,10 +38,8 @@ jobs:
       - name: Run PSScriptAnalyzer log analyzer script
         shell: bash
         run: |
-          python config-dev/analyzeLog.py --log_level note --fail_level error
-          echo "ANALYZER_ERRORS=$(echo $ANALYZER_ERRORS)" >> env_vars.txt
-          echo "ANALYZER_WARNINGS=$(echo $ANALYZER_WARNINGS)" >> env_vars.txt
-          echo "ANALYZER_NOTES=$(echo $ANALYZER_NOTES)" >> env_vars.txt
+           OUTPUT=$(python config-dev/analyzeLog.py --log_level note --fail_level error)
+           echo "$OUTPUT"
       
       - name: Run badge update script
         if: success() || failure()
@@ -53,6 +50,8 @@ jobs:
         shell: bash
         env:
           GITHUB_REF: ${{ github.ref }}
+          TRANSPILER_SUCCSESS: ${{ steps.transpiler_script.outputs.TRANSPILER_SUCCSESS }}
+          TRANSPILER_PROCESSED: ${{ steps.transpiler_script.outputs.TRANSPILER_PROCESSED }}
 
       - name: Commit everything
         if: success()
