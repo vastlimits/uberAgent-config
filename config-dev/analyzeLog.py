@@ -103,6 +103,10 @@ try:
         print("Exit code: " + str(return_status))
         print("-------------------------------------")
 
+        os.environ["ANALYZER_ERRORS"] = len(errors)
+        os.environ["ANALYZER_WARNINGS"] = len(warnings)
+        os.environ["ANALYZER_NOTES"] = len(notes)
+
         if should_print_log('error', log_level_priority):
             print("-------------------------------------")
             print("Errors:")

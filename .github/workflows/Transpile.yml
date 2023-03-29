@@ -40,6 +40,11 @@ jobs:
         run: python config-dev/updateBadge.py
         env:
           GITHUB_REF: ${{ github.ref }}
+          TRANSPILER_SUCCSESS: ${{ env.TRANSPILER_SUCCSESS }}
+          TRANSPILER_PROCESSED: ${{ env.TRANSPILER_PROCESSED }}
+          ANALYZER_ERRORS: ${{ env.ANALYZER_ERRORS }}
+          ANALYZER_WARNINGS: ${{ env.ANALYZER_WARNINGS }}
+          ANALYZER_NOTES: ${{ env.ANALYZER_NOTES }}
 
       - name: Commit everything
         if: success()

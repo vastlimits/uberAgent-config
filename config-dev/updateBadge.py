@@ -53,6 +53,31 @@ try:
             add_license_badge()
             add_custom_badge("branch", "branch", branch, "blue")
 
+            try: 
+                TRANSPILER_SUCCSESS = os.environ.get("TRANSPILER_SUCCSESS", "")
+                TRANSPILER_PROCESSED = os.environ.get("TRANSPILER_PROCESSED", "")
+                ANALYZER_ERRORS = os.environ.get("ANALYZER_ERRORS", "")
+                ANALYZER_WARNINGS = os.environ.get("ANALYZER_WARNINGS", "")
+                ANALYZER_NOTES = os.environ.get("ANALYZER_NOTES", "")
+
+                transpilation_color = "green"
+                if TRANSPILER_SUCCSESS != TRANSPILER_PROCESSED:
+                    transpilation_color = "red"
+
+                syntax_check_color = "green"
+                if ANALYZER_ERRORS != 0:
+                    syntax_check_color = "red"
+                elif ANALYZER_WARNINGS != 0:
+                    syntax_check_color = "yellow"
+
+                add_custom_badge("transpilation", "transpilation", f"{TRANSPILER_SUCCSESS} success, {TRANSPILER_PROCESSED} processed", transpilation_color)
+                add_custom_badge("syntax check", "syntax check", f"{ANALYZER_ERRORS} errors, {ANALYZER_WARNINGS} warnings", syntax_check_color)
+
+            except:
+                print("Error: Failed to get environment variables")
+                add_custom_badge("transpilation", "transpilation", "failed", "red")
+                add_custom_badge("syntax check", "syntax check", "failed", "red")
+
             # Update the file content with the new badge. Replace result with the new badge list. join the list and add spaces
             file_content = file_content.replace(result, " ".join(badge_list))
 
