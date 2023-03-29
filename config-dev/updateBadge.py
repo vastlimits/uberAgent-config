@@ -62,6 +62,7 @@ try:
             try: 
                 TRANSPILER_SUCCSESS = os.environ.get("TRANSPILER_SUCCSESS", "")
                 TRANSPILER_PROCESSED = os.environ.get("TRANSPILER_PROCESSED", "")
+                TRANSPILER_FAILED = os.environ.get("TRANSPILER_FAILED", "")
                 ANALYZER_ERRORS = os.environ.get("ANALYZER_ERRORS", "")
                 ANALYZER_WARNINGS = os.environ.get("ANALYZER_WARNINGS", "")
                 ANALYZER_NOTES = os.environ.get("ANALYZER_NOTES", "")
@@ -79,7 +80,7 @@ try:
                 elif ANALYZER_WARNINGS != "0":
                     syntax_check_color = "yellow"
 
-                add_custom_badge("transpilation", "transpilation", f"{TRANSPILER_SUCCSESS} success, {TRANSPILER_PROCESSED} processed", transpilation_color)
+                add_custom_badge("transpilation", "transpilation", f"{TRANSPILER_SUCCSESS} success, {TRANSPILER_FAILED} failed, {TRANSPILER_PROCESSED} processed", transpilation_color)
                 add_custom_badge("syntax check", "syntax check", f"{ANALYZER_ERRORS} errors, {ANALYZER_WARNINGS} warnings", syntax_check_color)
 
             except:

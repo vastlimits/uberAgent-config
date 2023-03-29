@@ -317,6 +317,7 @@ print("Failed: ", counter_processed - counter_success, " files")
 
 update_key("TRANSPILER_SUCCSESS", str(counter_success))
 update_key("TRANSPILER_PROCESSED", str(counter_processed))
+update_key("TRANSPILER_FAILED", str(counter_processed - counter_success))
 
 # Close the CSV file
 csv_handle.close()
