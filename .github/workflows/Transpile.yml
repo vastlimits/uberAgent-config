@@ -34,7 +34,7 @@ jobs:
 
       - name: Run PSScriptAnalyzer log analyzer script
         run: python config-dev/analyzeLog.py
-        env:
+        with:
           log_level: "note"
           fail_level: "error"
 

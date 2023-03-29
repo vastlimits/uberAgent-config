@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import argparse
 
 def get_log_level_priority(level):
     try:
@@ -32,11 +33,15 @@ try:
     # The log level will always include the upper levels (e.g. if the log level is set to warning, it will also log errors and warnings)
     # If the fail level is set to none, the script will not fail
     # If the fail level is set to note it will fail if there is an error, warning or a note
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--log_level', default='note', help='log level')
+    parser.add_argument('--fail_level', default='error', help='fail level')
+    args = parser.parse_args()
 
-    log_level = os.getenv('log_level').toLower() if os.getenv('log_level') else 'note'
-    fail_level = os.getenv('fail_level').toLower() if os.getenv('fail_level') else 'note'
+    log_level = args.log_level
+    fail_level = args.fail_level
 except:
-    print("Error: Could not get environment variables")
+    print("Error: Could not get parameters")
 
     # Exit the script
     exit(1)
