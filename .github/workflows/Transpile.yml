@@ -47,8 +47,6 @@ jobs:
         shell: bash
         env:
           GITHUB_REF: ${{ github.ref }}
-          TRANSPILER_SUCCSESS: $TRANSPILER_SUCCSESS
-          TRANSPILER_PROCESSED: $TRANSPILER_SUCCSESS
 
       - name: Commit everything
         if: success()
