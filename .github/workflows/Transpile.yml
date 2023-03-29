@@ -34,9 +34,24 @@ jobs:
 
       - name: Run PSScriptAnalyzer log analyzer script
         run: python config-dev/analyzeLog.py --log_level note --fail_level error
-          
-      - name: Commit output
+      
+      - name: Run badge update script
+        if: success() || failure()
+        run: python config-dev/updateBadge.py
+        env:
+          GITHUB_REF: ${{ github.ref }}
+
+      - name: Commit everything
+        if: success()
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Updated transpiled config
+          commit_message: Updated transpiled output
+          commit_user_name: vastlimits
+
+      - name: Commit only README.md
+        if: failure()
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Updated status in README.md
+          file_pattern: '*.md'
           commit_user_name: vastlimits

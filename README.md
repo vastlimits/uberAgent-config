@@ -1,4 +1,4 @@
-![license](https://img.shields.io/github/license/vastlimits/uberAgent-config) ![license](https://img.shields.io/badge/Branch-feature--PSAnalyzer-green) ![transpile workflow](https://github.com/vastlimits/uberAgent-config/actions/workflows/Transpile.yml/badge.svg?event=push)
+![license](https://img.shields.io/github/license/vastlimits/uberAgent-config) ![license](https://img.shields.io/badge/branch-feature--PSAnalyzer-green) ![transpile workflow](https://github.com/vastlimits/uberAgent-config/actions/workflows/Transpile.yml/badge.svg?event=push)
 
 # uberAgent Configuration
 
