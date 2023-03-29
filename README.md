@@ -1,6 +1,6 @@
 
 [comment]: # (BADGE_SECTION_START)
-![license](https://img.shields.io/github/license/vastlimits/uberAgent-config) ![branch](https://img.shields.io/badge/branch-feature-PSAnalyzer-blue)
+![license](https://img.shields.io/github/license/vastlimits/uberAgent-config) ![branch](https://img.shields.io/badge/branch-feature--PSAnalyzer-blue)
 
 [comment]: # (BADGE_SECTION_END)
 
