@@ -76,13 +76,13 @@ try:
                 elif ANALYZER_WARNINGS != "0":
                     syntax_check_color = "yellow"
 
-                add_custom_badge("transpilation", "msi transpilation", f"{TRANSPILER_SUCCSESS} success, {TRANSPILER_FAILED} failed, {TRANSPILER_PROCESSED} processed", transpilation_color)
-                add_custom_badge("syntax check", "msi syntax check", f"{ANALYZER_ERRORS} errors, {ANALYZER_WARNINGS} warnings, {ANALYZER_NOTES} notes", syntax_check_color)
+                add_custom_badge("transpilation", "MSI transpilation", f"{TRANSPILER_SUCCSESS} success, {TRANSPILER_FAILED} failed, {TRANSPILER_PROCESSED} processed", transpilation_color)
+                add_custom_badge("syntax check", "MSI syntax check", f"{ANALYZER_ERRORS} errors, {ANALYZER_WARNINGS} warnings, {ANALYZER_NOTES} notes", syntax_check_color)
 
             except:
                 print("Error: Failed to get environment variables")
-                add_custom_badge("transpilation", "transpilation", "failed", "red")
-                add_custom_badge("syntax check", "syntax check", "failed", "red")
+                add_custom_badge("transpilation", "MSI transpilation", "failed", "red")
+                add_custom_badge("syntax check", "MSI syntax check", "failed", "red")
 
             # Update the file content with the new badge. Replace result with the new badge list. join the list and add spaces
             file_content = file_content.replace(result, " ".join(badge_list))
