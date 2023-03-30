@@ -144,8 +144,8 @@ function Get-vlLAPSSettings {
             $lapsPasswordComplexity = Get-RegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"
             $lapsPasswordLength = Get-RegValue -Hive "HKLM" -Path $hkey "PasswordLength"
             $lapsExpirationProtectionEnabled = Get-RegValue -Hive "HKLM" -Path $hkey "PwdExpirationProtectionEnabled"
-    
-            $lapsSettings = 
+
+            $lapsSettings =
             [PSCustomObject]@{
                 LAPSEnabled                             = $AdmPwdEnabled
                 LAPSAdminAccountName                    = $lapsAdminAccountName
@@ -156,13 +156,13 @@ function Get-vlLAPSSettings {
             return New-vlResultObject -result $lapsSettings -score 10
         }
         else {
-            $lapsSettings = 
+            $lapsSettings =
             [PSCustomObject]@{
                 LAPSEnabled = $false
             }
             return New-vlResultObject -result $lapsSettings -score 6
         }
-        
+
     }
     catch {
         return New-vlErrorObject($_)
@@ -204,22 +204,22 @@ function Get-vlMachineAvailableFactors() {
         https://uberagent.com
     .OUTPUTS
         Retruns if the Machine Factors are available and the name of the factors
-    .NOTES        
+    .NOTES
         Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\SensorInfo
     .EXAMPLE
         Get-vlMachineAvailableFactors
     #>
-    
+
     $winBioUsed = $false
     $winBioAccountInfoPath = "SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\AccountInfo"
     $winBioSensorInfoBasePath = "SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\SensorInfo"
-    
+
     if (-not (Test-Path -Path ("HKLM:\" + $winBioSensorInfoBasePath ))) {
         return [PSCustomObject]@{
             WinBioAvailable        = $false
             WinBioUsed             = $false
             WinBioAvailableFactors = @()
-        }   
+        }
     }
 
     $bioUsers = Get-vlRegSubkeys -Hive "HKLM" -Path $winBioAccountInfoPath
@@ -247,7 +247,7 @@ function Get-vlMachineAvailableFactors() {
         WinBioUsed             = $winBioUsed
         WinBioAvailableFactors = $availableFac
     }
-    
+
 }
 
 function Get-vlWindowsHelloStatusLocalUser() {
@@ -300,7 +300,7 @@ function Get-vlLocalUsersAndGroupsCheck {
 
     $params = if ($global:args) { $global:args } else { "all" }
     $params = $params | ForEach-Object { $_.ToLower() }
-    
+
     $Output = @()
 
     if ($params.Contains("all") -or $params.Contains("LUMUac")) {

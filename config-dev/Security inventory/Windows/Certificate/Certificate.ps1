@@ -120,7 +120,7 @@ function Get-vlExpiredCertificateCheck {
         $expCets = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and $_.NotAfter -lt (Get-Date) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
         $willExpire30 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date) -and $_.NotAfter -lt (Get-Date).AddDays(30)) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
         $willExpire60 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date).AddDays(30) -and $_.NotAfter -lt (Get-Date).AddDays(60)) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
-    
+
         $result = [PSCustomObject]@{
             expired      = $expCets
             willExpire30 = $willExpire30
@@ -188,7 +188,7 @@ function Get-vlRemoteAuthRoot {
         Invoke-WebRequest -Uri $authRootCabUrl -OutFile $authRootCabTemp -UseBasicParsing
 
         #Expand the CAB file
-        Expand-vlCabFile -CabFilePath $authRootCabTemp -DestinationFilePath $tempAuthRootStl       
+        Expand-vlCabFile -CabFilePath $authRootCabTemp -DestinationFilePath $tempAuthRootStl
 
         #check if $tempAuthRootStl was created
         if (Test-Path $tempAuthRootStl) {
@@ -215,7 +215,7 @@ function Get-vlLastGetSyncTimeByKey {
     .EXAMPLE
         Get-vlLastCTLSyncTime
     #>
-    
+
     # Parameter Value
     [CmdletBinding()]
     param (
@@ -408,7 +408,7 @@ function Get-vlGetCTLCheck {
 
         #extract CTL
         $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl
-        
+
         # Create the result object
         $result = [PSCustomObject]@{
             CurrentUser  = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
@@ -472,7 +472,7 @@ function Get-vlCheckSyncTimes {
 
     $score = 10
     $riskScore = 50
-    
+
     try {
         $lastCTLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "LastSyncTime" # Gets the last time the AuthRoot.stl file was synced
         $lastCRLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "DisallowedCertLastSyncTime" # Gets the last time the CRL file was synced
@@ -487,7 +487,7 @@ function Get-vlCheckSyncTimes {
         if( (Get-vlIsWindows7) -eq $false) {
             $score += Get-vlTimeScore -time $lastPRLSyncTime
         }
-        
+
         # Create the result object
         $result = [PSCustomObject]@{
             CTL = $lastCTLSyncTime
@@ -539,7 +539,7 @@ function Get-vlCertificateCheck {
         }
     }
     if ($params.Contains("all") -or $params.Contains("CExpCerts")) {
-        $protectedRoots = Get-vlExpiredCertificateCheck   
+        $protectedRoots = Get-vlExpiredCertificateCheck
         $Output += [PSCustomObject]@{
             Name         = "CExpCerts"
             DisplayName  = "Expired certificates"
@@ -590,7 +590,7 @@ function Get-vlCertificateCheck {
             ErrorMessage = $ctlCheck.ErrorMessage
         }
     }
-    
+
     return $output
 }
 

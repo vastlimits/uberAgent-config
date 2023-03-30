@@ -19,9 +19,9 @@ function Get-vlNetworkConfigurationSMBv1 {
    #>
 
    try {
-      
+
       $SMBv1 = $false
-      
+
       if (Test-Path HKLM:\SYSTEM\CurrentControlSet\services\mrxsmb10) {
          $mrxsmb10 = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\services\mrxsmb10" -Value "Start"
          $LanmanWorkstation = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\LanmanWorkstation" -Value "DependOnService"
@@ -114,7 +114,7 @@ function Get-vlNetworkConfigurationSMBSigning {
             # SMB signing is not required
             return New-vlResultObject -result $result -score 2
          }
-         
+
       }
       else {
          Throw "Return of Get-vlNetworkConfigurationSMBv1 is invalid"
@@ -138,11 +138,11 @@ function Get-vlNetworkConfigurationNetBIOS {
        If NetBIOS is disabled, the function returns a PSCustomObject with the following properties:
        enabled: false
    .NOTES
-       
+
    .EXAMPLE
        Get-vlNetworkConfigurationNetBIOS
    #>
-   
+
    try {
       if ((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' | Where-Object -Property 'TcpipNetbiosOptions' -eq 1).Count -eq 0) {
          $result = [PSCustomObject]@{
@@ -176,11 +176,11 @@ function Get-vlNetworkConfigurationWINS {
        If WINS is used, the function returns a PSCustomObject with the following properties:
        enabled: false
    .NOTES
-       
+
    .EXAMPLE
        Get-vlNetworkConfigurationWINS
    #>
-   
+
    try {
       if (((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' -Filter IPEnabled=TRUE | Where-Object -Property 'WINSPrimaryServer' -ne $null).ServiceName).Count -eq 0) {
          $result = [PSCustomObject]@{
@@ -213,19 +213,19 @@ function Get-vlNetworkConfigurationSSLTLS {
        enabled: false
        If outdated SSL and TLS versions are enabled, the function returns a PSCustomObject with the protocols in use
    .NOTES
-       
+
    .EXAMPLE
        Get-vlNetworkConfigurationSSLTLS
    #>
-   
+
    try {
-      
+
       $Protocols = @("TLS 1.0", "TLS 1.1", "SSL 2.0", "SSL 3.0")
       $ProtocolsInUse = @()
       foreach ($Protocol in $Protocols) {
          $null = $Enabled
          $null = $DisabledByDefault
-         
+
          if (test-path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client") {
             $Enabled = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client" -Value "Enabled"
             $DisabledByDefault = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client" -Value "DisabledByDefault"
@@ -239,8 +239,8 @@ function Get-vlNetworkConfigurationSSLTLS {
          }
       }
 
-      
-      
+
+
       if ($ProtocolsInUse.Count -eq 0) {
          $result = [PSCustomObject]@{
             Enabled = $false
@@ -284,7 +284,7 @@ function Get-vlNetworkConfigurationCheck {
    $Output = @()
 
    if ($params.Contains("all") -or $params.Contains("NCSMBv1")) {
-      $SMBv1 = Get-vlNetworkConfigurationSMBv1    
+      $SMBv1 = Get-vlNetworkConfigurationSMBv1
       $Output += [PSCustomObject]@{
          Name         = "NCSMBv1"
          DisplayName  = "Network Configuration SMBv1"
@@ -298,7 +298,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCSMBSign")) {
-      $SMBSigning = Get-vlNetworkConfigurationSMBSigning    
+      $SMBSigning = Get-vlNetworkConfigurationSMBSigning
       $Output += [PSCustomObject]@{
          Name         = "NCSMBSign"
          DisplayName  = "Network Configuration SMB Signing"
@@ -312,7 +312,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCNetBIOS")) {
-      $NetBIOS = Get-vlNetworkConfigurationNetBIOS    
+      $NetBIOS = Get-vlNetworkConfigurationNetBIOS
       $Output += [PSCustomObject]@{
          Name         = "NCNetBIOS"
          DisplayName  = "Network configuration NetBIOS"
@@ -326,7 +326,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCWINS")) {
-      $WINS = Get-vlNetworkConfigurationWINS    
+      $WINS = Get-vlNetworkConfigurationWINS
       $Output += [PSCustomObject]@{
          Name         = "NCWINS"
          DisplayName  = "Network configuration WINS"
@@ -340,7 +340,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCSSLTLS")) {
-      $SSLTLS = Get-vlNetworkConfigurationSSLTLS    
+      $SSLTLS = Get-vlNetworkConfigurationSSLTLS
       $Output += [PSCustomObject]@{
          Name         = "NCSSLTLS"
          DisplayName  = "Network configuration SSL/TLS"
@@ -353,7 +353,7 @@ function Get-vlNetworkConfigurationCheck {
       }
    }
 
-   
+
    return $output
 }
 

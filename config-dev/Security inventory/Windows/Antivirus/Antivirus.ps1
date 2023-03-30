@@ -4,31 +4,27 @@
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
 #https://mcpforlife.com/2020/04/14/how-to-resolve-this-state-value-of-av-providers/
-[Flags()] enum ProductState 
-{
-    Off         = 0x0000
-    On          = 0x1000
-    Snoozed     = 0x2000
-    Expired     = 0x3000
+[Flags()] enum ProductState {
+    Off = 0x0000
+    On = 0x1000
+    Snoozed = 0x2000
+    Expired = 0x3000
 }
 
-[Flags()] enum SignatureStatus
-{
-    UpToDate     = 0x00
-    OutOfDate    = 0x10
+[Flags()] enum SignatureStatus {
+    UpToDate = 0x00
+    OutOfDate = 0x10
 }
 
-[Flags()] enum ProductOwner
-{
-    NonMs        = 0x000
-    Windows      = 0x100
+[Flags()] enum ProductOwner {
+    NonMs = 0x000
+    Windows = 0x100
 }
 
-[Flags()] enum ProductFlags
-{
-   SignatureStatus = 0x000000F0
-   ProductOwner    = 0x00000F00
-   ProductState    = 0x0000F000
+[Flags()] enum ProductFlags {
+    SignatureStatus = 0x000000F0
+    ProductOwner = 0x00000F00
+    ProductState = 0x0000F000
 }
 
 function Get-vlAntivirusStatus {
@@ -38,7 +34,6 @@ function Get-vlAntivirusStatus {
     .DESCRIPTION
         Get the status of the antivirus software
         This cmdlet is only available on the Windows platform.
-        Get-WmiObject was added in PowerShell 3.0
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -53,38 +48,38 @@ function Get-vlAntivirusStatus {
 
     process {
         try {
-            $instances = Get-WmiObject -Class AntiVirusProduct -Namespace "root\SecurityCenter2"
-        
+            $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
+
             $riskScore = 100
             $score = 0
             $result = @()
-        
             $avEnabledFound = $false
-        
+
             foreach ($instance in $instances) {
                 $avEnabled = $([ProductState]::On.value__ -eq $($instance.productState -band [ProductFlags]::ProductState) )
                 $avUp2Date = $([SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [ProductFlags]::SignatureStatus) )
-        
+
                 if ($avEnabled) {
                     $avEnabledFound = $true
                     if ($avUp2Date) {
                         $score = 10
-                    } else {
+                    }
+                    else {
                         $score = 4
                     }
                 }
-        
+
                 $result += [PSCustomObject]@{
-                    AntivirusEnabled = $avEnabled
-                    AntivirusName    = $instance.displayName
+                    AntivirusEnabled  = $avEnabled
+                    AntivirusName     = $instance.displayName
                     AntivirusUpToDate = $avUp2Date
                 }
             }
-        
+
             if (-not $avEnabledFound) {
                 $score = 0
             }
-        
+
             return New-vlResultObject -result $result -score $score -riskScore $riskScore
         }
         catch {
@@ -95,7 +90,7 @@ function Get-vlAntivirusStatus {
         }
 
     }
-    
+
 }
 
 
@@ -118,7 +113,7 @@ function Get-vlDefenderStatus {
 
     [CmdletBinding()]
     param (
-        
+
     )
 
     process {
@@ -137,7 +132,7 @@ function Get-vlDefenderStatus {
                 QuickScanSignatureVersion       = $instances.QuickScanSignatureVersion
             }
 
-            return New-vlResultObject -result $result 
+            return New-vlResultObject -result $result
         }
         catch {
             return New-vlErrorObject($_)
@@ -175,14 +170,14 @@ function Get-vlAntivirusCheck {
     if ($params.Contains("all") -or $params.Contains("AVState")) {
         $avStatus = Get-vlAntivirusStatus
         $Output += [PSCustomObject]@{
-            Name       = "AVState"
+            Name         = "AVState"
             DisplayName  = "Antivirus status"
             Description  = "Checks if the antivirus is enabled and up to date."
-            Score      = $avStatus.Score
-            ResultData = $avStatus.Result
-            RiskScore  = $avStatus.RiskScore
-            ErrorCode      = $avStatus.ErrorCode
-            ErrorMessage   = $avStatus.ErrorMessage
+            Score        = $avStatus.Score
+            ResultData   = $avStatus.Result
+            RiskScore    = $avStatus.RiskScore
+            ErrorCode    = $avStatus.ErrorCode
+            ErrorMessage = $avStatus.ErrorMessage
         }
     }
 
@@ -201,7 +196,7 @@ function Get-vlAntivirusCheck {
         }
     }
     #>
-    
+
     Write-Output $output
 }
 

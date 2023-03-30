@@ -18,7 +18,7 @@
 [Flags()] enum FW_RULE_DIRECTION {
     IN = 1
     OUT = 2
-} 
+}
 
 [Flags()] enum FW_ACTION {
     BLOCK = 0
@@ -32,7 +32,7 @@ function Get-vlIsFirewallEnabled {
     .SYNOPSIS
         Function that checks if the firewall is enabled.
     .DESCRIPTION
-        Function that checks if the firewall is enabled. 
+        Function that checks if the firewall is enabled.
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -88,7 +88,7 @@ Function Get-vlEnabledRules {
         Direction = IN
         Action = ALLOW
         ApplicationName or ServiceName or LocalPort or RemotePort = not null
-        
+
     .OUTPUTS
         Returns an array of objects containing the following properties:
 
@@ -124,7 +124,7 @@ function Get-vlOpenFirewallPorts {
         Function that iterates over all profiles and returns all enabled rules for all profiles.
     .LINK
         https://uberagent.com
-        
+
     .OUTPUTS
         Returns an array of objects containing the following properties:
 
@@ -140,7 +140,7 @@ function Get-vlOpenFirewallPorts {
     try {
         $openPorts = [FW_PROFILE].GetEnumNames() | ForEach-Object { Get-vlEnabledRules -profile ([FW_PROFILE]::$_) }
 
-        return New-vlResultObject -result $openPorts -score 10 
+        return New-vlResultObject -result $openPorts -score 10
     }
     catch [Microsoft.Management.Infrastructure.CimException] {
         return "[Get-vlOpenFirewallPorts] You need elevated privileges"
@@ -158,7 +158,7 @@ function Get-vlListeningPorts {
         Function that returns all listening ports.
     .LINK
         https://uberagent.com
-        
+
     .OUTPUTS
         Returns an array of objects containing the following properties:
 
@@ -185,7 +185,7 @@ function Get-vlListeningPorts {
             $_.OwningProcessPath = $process.Path
         }
 
-        return New-vlResultObject -result $listeningPorts -score 10 
+        return New-vlResultObject -result $listeningPorts -score 10
     }
     catch [Microsoft.Management.Infrastructure.CimException] {
         return "[Get-vlListeningPorts] You need elevated privileges"
@@ -218,7 +218,7 @@ function Get-vlFirewallCheck {
     $Output = @()
 
     if ($params.Contains("all") -or $params.Contains("FWState")) {
-        $firewallEnabled = Get-vlIsFirewallEnabled    
+        $firewallEnabled = Get-vlIsFirewallEnabled
         $Output += [PSCustomObject]@{
             Name       = "FWState"
             DisplayName  = "Firewall status"

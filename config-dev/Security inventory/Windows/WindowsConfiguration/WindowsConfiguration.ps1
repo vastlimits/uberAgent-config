@@ -26,7 +26,7 @@ function Get-vlDefaultProgramForExtension {
 
         # select the one that is not null
         $command = if ($command1 -ne $null -and $command1 -ne "") { $command1 } else { $command2 }
-        
+
         if ($command -ne $null) {
             return $command
         }
@@ -156,7 +156,7 @@ function Get-BitlockerEnabled {
         #check if bitlocker is enabled using Get-BitLockerVolume
         $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage
 
-        return New-vlResultObject -result $bitlockerEnabled 
+        return New-vlResultObject -result $bitlockerEnabled
     }
     catch {
         return New-vlErrorObject -error $_
@@ -176,7 +176,7 @@ function Get-COMHijacking {
         Get-COMHijacking
     #>
     try {
-        
+
         $expectedValue = "$($env:SystemRoot)\system32\mmc.exe ""%1"" %*"
 
         $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Classes\mscfile\shell\open\command"
@@ -249,7 +249,7 @@ function Get-vlWindowsPersistanceCheck {
     .EXAMPLE
         Get-vlWindowsPersistanceCheck
     #>
-    
+
     try {
         $log_file = "$($env:SystemRoot)\Logs\CBS\CBS.log"
 
@@ -260,7 +260,7 @@ function Get-vlWindowsPersistanceCheck {
 
         #run sfc /verifyonly and wait for it to finish run it hidden
         $sfc = Start-Process -FilePath "sfc.exe" -ArgumentList "/verifyonly" -Wait -WindowStyle Hidden
-        
+
         #read the log file and check if it contains "corrupt" or "repaired"
         $defect = Get-Content $log_file | Select-String -Pattern "(corrupt|repaired)"
         $ix = 0
@@ -347,8 +347,8 @@ function Get-WindowsConfigurationCheck {
             ErrorMessage = $persistancecheck.ErrorMessage
         }
     }
-    #>   
-    
+    #>
+
     return $output
 }
 

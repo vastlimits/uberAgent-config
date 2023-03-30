@@ -48,7 +48,7 @@ function Get-vlPowerShellV2Status {
         }
 
     }
-    
+
 }
 
 function Get-vlPowerShellCL {
@@ -66,7 +66,7 @@ function Get-vlPowerShellCL {
     .EXAMPLE
         Get-vlPowerShellCL
     #>
-    
+
     param ()
 
     process {
@@ -85,7 +85,7 @@ function Get-vlPowerShellCL {
 
         }
     }
-    
+
 }
 
 function Get-vlPowerShellVersion {
@@ -97,11 +97,11 @@ function Get-vlPowerShellVersion {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        A [psobject] containing the current PowerShell version 
+        A [psobject] containing the current PowerShell version
     .EXAMPLE
         Get-vlPowerShellVersion
     #>
-    
+
     param ()
 
     process {
@@ -120,7 +120,7 @@ function Get-vlPowerShellVersion {
 
         }
     }
-    
+
 }
 
 Function Get-vlPowerShellRemotingStatus {
@@ -132,7 +132,7 @@ Function Get-vlPowerShellRemotingStatus {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        A [psobject] containing the current PowerShell remoting status 
+        A [psobject] containing the current PowerShell remoting status
     .EXAMPLE
         Get-vlPowerShellRemotingStatus
     #>
@@ -195,7 +195,7 @@ function Get-vlPowerShellExecutionPolicy {
     .EXAMPLE
         Get-vlPowerShellExecutionPolicy
     #>
-    
+
     param ()
 
     process {
@@ -320,14 +320,14 @@ function Get-vlPowerShellExecutionPolicy {
             elseif ($highestPolicy -eq "LocalMachine") {
                 return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
             }
-        
+
             $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem
             <#
                 Work Station (1)
                 Domain Controller (2)
                 Server (3)
             #>
-            
+
             # If the execution policy in all scopes is Undefined, the effective execution policy is Restricted for Windows clients and RemoteSigned for Windows Server.
             if ($osInfo.ProductType -eq 1) {
                 return New-vlResultObject -result $result -score 10 -riskScore 0
@@ -344,7 +344,7 @@ function Get-vlPowerShellExecutionPolicy {
 
         }
     }
-    
+
 }
 
 Function Get-vlPowerShellLoggingTranscriptionStatus {
@@ -378,7 +378,7 @@ Function Get-vlPowerShellLoggingTranscriptionStatus {
         }
     }
     catch {
-        
+
     }
 
     return $result
@@ -416,7 +416,7 @@ Function Get-vlPowerShellLoggingScriptBlockStatus {
         }
     }
     catch {
-        
+
     }
 
     return $result
@@ -453,7 +453,7 @@ Function Get-vlPowerShellLoggingModuleLogging {
         }
     }
     catch {
-        
+
     }
 
     return $result
@@ -474,7 +474,7 @@ function Get-vlPowerShellLogging {
     .EXAMPLE
         Get-vlPowerShellLogging
     #>
-    
+
     param ()
 
     process {
@@ -510,7 +510,7 @@ function Get-vlPowerShellLogging {
 
         }
     }
-    
+
 }
 
 Function Get-vlJEACheck {
@@ -573,7 +573,7 @@ function Get-vlPowerShellCheck {
     $params = $params | ForEach-Object { $_.ToLower() }
 
     $Output = @()
-    
+
     if ($params.Contains("all") -or $params.Contains("PSV2")) {
         $powerShellV2 = Get-vlPowerShellV2Status
         $Output += [PSCustomObject]@{
@@ -601,7 +601,7 @@ function Get-vlPowerShellCheck {
             ErrorMessage = $powerShellRemoting.ErrorMessage
         }
     }
-    
+
     ## If CL is enabled, the test cannot be run
     if ($params.Contains("all") -or $params.Contains("PSCL")) {
         $powerShellMode = Get-vlPowerShellCL
@@ -630,7 +630,7 @@ function Get-vlPowerShellCheck {
             ErrorMessage = $powerShellMode.ErrorMessage
         }
     }
-    
+
     if ($params.Contains("all") -or $params.Contains("PSPolicy")) {
         $powerShellExecutionPolicy = Get-vlPowerShellExecutionPolicy
         $Output += [PSCustomObject]@{
@@ -658,7 +658,7 @@ function Get-vlPowerShellCheck {
             ErrorMessage = $powerShellLogging.ErrorMessage
         }
     }
-        
+
     Write-Output $output
 }
 

@@ -34,7 +34,7 @@ function Get-vlIsLocalAdmin {
         Function that checks if the user is a local admin.
     .LINK
         https://uberagent.com
-        
+
     .OUTPUTS
         If the user is a local admin, the script will return a vlResultObject with the IsLocalAdmin property set to true.
         If the user is not a local admin, the script will return a vlResultObject with the IsLocalAdmin property set to false.
@@ -86,14 +86,14 @@ function Get-vlGetUserEnrolledFactors() {
     .EXAMPLE
         Get-vlGetUserEnrolledFactors
     #>
-    
+
     $winBioBasePath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio"
-    
+
     if (-not (Test-Path -Path $winBioBasePath)) {
         return [PSCustomObject]@{
             WinBioAvailable = $false
             WinBioUsed      = $false
-        }   
+        }
     }
 
     $currentUserSID = (whoami /user /fo csv | convertfrom-csv).SID
@@ -102,7 +102,7 @@ function Get-vlGetUserEnrolledFactors() {
         return [PSCustomObject]@{
             WinBioAvailable = $true
             WinBioUsed      = $false
-        }   
+        }
     }
 
     $enroledFactors = Get-vlRegValue -Hive "HKLM" -Path ("SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\AccountInfo\" + $currentUserSID) -Value "EnrolledFactors"
@@ -176,7 +176,7 @@ function Get-vlWindowsHelloStatusLocalUser() {
                     EnrolledFactors     = $enroledFactors
                 }
 
-                return New-vlResultObject -result $result -score 10    
+                return New-vlResultObject -result $result -score 10
             }
             else {
                 $result = [PSCustomObject]@{
@@ -184,7 +184,7 @@ function Get-vlWindowsHelloStatusLocalUser() {
                     EnrolledFactors     = $enroledFactors
                 }
 
-                return New-vlResultObject -result $result -score 7    
+                return New-vlResultObject -result $result -score 7
             }
         }
         else {
@@ -194,7 +194,7 @@ function Get-vlWindowsHelloStatusLocalUser() {
                     EnrolledFactors     = $enroledFactors
                 }
 
-                return New-vlResultObject -result $result -score 10    
+                return New-vlResultObject -result $result -score 10
             }
             else {
                 $result = [PSCustomObject]@{
@@ -202,8 +202,8 @@ function Get-vlWindowsHelloStatusLocalUser() {
                     EnrolledFactors     = $enroledFactors
                 }
 
-                return New-vlResultObject -result $result -score 7   
-            } 
+                return New-vlResultObject -result $result -score 7
+            }
         }
     }
     else {
@@ -229,10 +229,10 @@ function Get-vlLocalUsersAndGroupsCheck {
     .EXAMPLE
         Get-vlLocalUsersAndGroupsCheck -uacState -lapsState -secrets
     #>
-    
+
     $params = if ($global:args) { $global:args } else { "all" }
     $params = $params | ForEach-Object { $_.ToLower() }
-    
+
     $Output = @()
 
     if ($params.Contains("all") -or $params.Contains("LUUIsAdmin")) {
