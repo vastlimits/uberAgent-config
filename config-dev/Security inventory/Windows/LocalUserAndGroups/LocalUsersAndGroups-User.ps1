@@ -96,7 +96,7 @@ function Get-vlGetUserEnrolledFactors() {
       }
    }
 
-   $currentUserSID = (whoami /user /fo csv | convertfrom-csv).SID
+   $currentUserSID = (New-Object System.Security.Principal.NTAccount($env:USERNAME)).Translate([System.Security.Principal.SecurityIdentifier]).value
 
    if (-not (Test-Path -Path ($winBioBasePath + "\AccountInfo\" + $currentUserSID))) {
       return [PSCustomObject]@{
@@ -122,7 +122,7 @@ function Get-vlGetUserEnrolledFactors() {
    }
 }
 
-function Get-vlWindowsHelloStatusLocalUser() {
+function Get-vlWindowsHelloStatusLocalUser () {
    <#
     .SYNOPSIS
         Function that checks if Windows Hello is enabled.
@@ -145,7 +145,7 @@ function Get-vlWindowsHelloStatusLocalUser() {
 
 
    # Get currently logged on user's SID
-   $currentUserSID = (whoami /user /fo csv | convertfrom-csv).SID
+   $currentUserSID = (New-Object System.Security.Principal.NTAccount($env:USERNAME)).Translate([System.Security.Principal.SecurityIdentifier]).value
 
    # Registry path to credential provider belonging for the PIN. A PIN is required with Windows Hello
    $registryItems = Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{D6886603-9D2F-4EB2-B667-1971041FA96B}"

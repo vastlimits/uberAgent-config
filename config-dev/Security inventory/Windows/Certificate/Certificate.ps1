@@ -227,7 +227,7 @@ function Get-vlLastGetSyncTimeByKey {
     .OUTPUTS
         Returns the last sync time of the given key for SystemCertificates.
     .EXAMPLE
-        Get-vlLastCTLSyncTime
+        Get-vlLastGetSyncTimeByKey
     #>
 
    # Parameter Value
@@ -266,7 +266,7 @@ function Get-vlStlFromRegistryToFile {
         Returns the path to the AuthRoot.stl file.
         If there returns an empty string.
     .EXAMPLE
-        Get-vlStlFromRegistry
+        Get-vlStlFromRegistryToFile
     #>
 
    try {
@@ -305,7 +305,7 @@ function Get-vlStlFromRegistryToMemory {
         Returns the path to the AuthRoot.stl file.
         If there returns an empty string.
     .EXAMPLE
-        Get-vlStlFromRegistry
+        Get-vlStlFromRegistryToMemory
     #>
 
    try {
@@ -368,7 +368,7 @@ function Get-vlCompareCertTrustList($trustList, $certList) {
         Returns true if the lists are the same.
         Returns false if the lists are not the same.
     .EXAMPLE
-        Get-vlCompareList -trustList @("cert1", "cert2") -certList @("cert1", "cert2")
+        Get-vlCompareCertTrustList -trustList @("cert1", "cert2") -certList @("cert1", "cert2")
     #>
 
    try {
@@ -401,6 +401,17 @@ function Get-vlCompareCertTrustList($trustList, $certList) {
 
 function Get-vlGetCTLCheck {
    <#
+    .SYNOPSIS
+        Check if there are unknown certificates installed
+    .DESCRIPTION
+        Check if there are unknown certificates installed
+    .OUTPUTS
+        Returns the unknown certificates for LocalMachine and CurrentUser
+    .EXAMPLE
+        Get-vlGetCTLCheck
+    #>
+
+   <#
     # Get-ChildItem -Path cert:\LocalMachine\My | Where-Object { $_.Issuer -eq $_.Subject }
     # Get-ChildItem -Path cert:\CurrentUser\My | Where-Object { $_.Issuer -eq $_.Subject }
     # Get-ChildItem -Path cert:\LocalMachine\Root | Where-Object { $_.Issuer -eq $_.Subject }
@@ -429,7 +440,15 @@ function Get-vlGetCTLCheck {
          LocalMachine = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts
       }
 
-      return New-vlResultObject -result $result -score $score -riskScore 50
+      if($result.CurrentUser.Count -gt 0) {
+         $score -= 5
+      }
+
+      if($result.LocalMachine.Count -gt 0) {
+         $score -= 5
+      }
+
+      return New-vlResultObject -result $result -score $score -riskScore 70
    }
    catch {
       return New-vlErrorObject -context $_
@@ -481,7 +500,7 @@ function Get-vlCheckSyncTimes {
     .OUTPUTS
         Returns the last time the AuthRoot.stl file was synced.
     .EXAMPLE
-        Get-vlCompareList -trustList @("cert1", "cert2") -certList @("cert1", "cert2")
+        Get-vlCheckSyncTimes
     #>
 
    $score = 10
