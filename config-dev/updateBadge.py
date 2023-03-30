@@ -77,7 +77,7 @@ try:
                     syntax_check_color = "yellow"
 
                 add_custom_badge("transpilation", "transpilation", f"{TRANSPILER_SUCCSESS} success, {TRANSPILER_FAILED} failed, {TRANSPILER_PROCESSED} processed", transpilation_color)
-                add_custom_badge("syntax check", "syntax check", f"{ANALYZER_ERRORS} errors, {ANALYZER_WARNINGS} warnings", syntax_check_color)
+                add_custom_badge("syntax check", "syntax check", f"{ANALYZER_ERRORS} errors, {ANALYZER_WARNINGS} warnings, {ANALYZER_NOTES} notes", syntax_check_color)
 
             except:
                 print("Error: Failed to get environment variables")
