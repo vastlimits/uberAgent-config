@@ -2,7 +2,7 @@
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
 function Get-vlUACState {
-    <#
+   <#
     .SYNOPSIS
         Function that checks if the UAC is enabled.
     .DESCRIPTION
@@ -17,30 +17,30 @@ function Get-vlUACState {
         Get-vlUACState
     #>
 
-    try {
-        $uac = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Value "EnableLUA"
-        if ($uac.EnableLUA -eq 1) {
-            $result = [PSCustomObject]@{
-                UACEnabled = $true
-            }
+   try {
+      $uac = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Value "EnableLUA"
+      if ($uac.EnableLUA -eq 1) {
+         $result = [PSCustomObject]@{
+            UACEnabled = $true
+         }
 
-            return New-vlResultObject -result $result -score 10
-        }
-        else {
-            $result = [PSCustomObject]@{
-                UACEnabled = $false
-            }
+         return New-vlResultObject -result $result -score 10
+      }
+      else {
+         $result = [PSCustomObject]@{
+            UACEnabled = $false
+         }
 
-            return New-vlResultObject -result $result -score 4
-        }
-    }
-    catch {
-        return New-vlErrorObject($_)
-    }
+         return New-vlResultObject -result $result -score 4
+      }
+   }
+   catch {
+      return New-vlErrorObject($_)
+   }
 }
 
 function Get-vlLAPSState {
-    <#
+   <#
     .SYNOPSIS
         Function that checks if the UAC is enabled.
     .DESCRIPTION
@@ -55,30 +55,30 @@ function Get-vlLAPSState {
         Get-vlUACState
     #>
 
-    try {
-        $laps = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft Services\AdmPwd" -Value "AdmPwdEnabled"
-        if ($laps.AdmPwdEnabled -eq 1) {
-            $result = [PSCustomObject]@{
-                LAPSEnabled = $true
-            }
+   try {
+      $laps = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft Services\AdmPwd" -Value "AdmPwdEnabled"
+      if ($laps.AdmPwdEnabled -eq 1) {
+         $result = [PSCustomObject]@{
+            LAPSEnabled = $true
+         }
 
-            return New-vlResultObject -result $result -score 10
-        }
-        else {
-            $result = [PSCustomObject]@{
-                LAPSEnabled = $false
-            }
+         return New-vlResultObject -result $result -score 10
+      }
+      else {
+         $result = [PSCustomObject]@{
+            LAPSEnabled = $false
+         }
 
-            return New-vlResultObject -result $result -score 6
-        }
-    }
-    catch {
-        return New-vlErrorObject($_)
-    }
+         return New-vlResultObject -result $result -score 6
+      }
+   }
+   catch {
+      return New-vlErrorObject($_)
+   }
 }
 
 function Get-vlSecrets {
-    <#
+   <#
     .SYNOPSIS
         Function that checks if LSA secrets are enabled.
     .DESCRIPTION
@@ -94,28 +94,28 @@ function Get-vlSecrets {
         Get-vlSecrets
     #>
 
-    try {
-        $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path "Security\Policy\Secrets" -Value ""
-        if ($AdmPwdEnabled) {
-            $result = [PSCustomObject]@{
-                SecretsEnabled = $true
-            }
-            return New-vlResultObject -result $result -score 10
-        }
-        else {
-            $result = [PSCustomObject]@{
-                SecretsEnabled = $false
-            }
-            return New-vlResultObject -result $result -score 6
-        }
-    }
-    catch {
-        return New-vlErrorObject($_)
-    }
+   try {
+      $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path "Security\Policy\Secrets" -Value ""
+      if ($AdmPwdEnabled) {
+         $result = [PSCustomObject]@{
+            SecretsEnabled = $true
+         }
+         return New-vlResultObject -result $result -score 10
+      }
+      else {
+         $result = [PSCustomObject]@{
+            SecretsEnabled = $false
+         }
+         return New-vlResultObject -result $result -score 6
+      }
+   }
+   catch {
+      return New-vlErrorObject($_)
+   }
 }
 
 function Get-vlLAPSSettings {
-    <#
+   <#
     .SYNOPSIS
         Function that returns the LAPS settings.
     .DESCRIPTION
@@ -135,67 +135,67 @@ function Get-vlLAPSSettings {
         Get-vlLAPSSettings
     #>
 
-    try {
-        $hkey = "Software\Policies\Microsoft Services\AdmPwd"
-        $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey -Value "AdmPwdEnabled"
+   try {
+      $hkey = "Software\Policies\Microsoft Services\AdmPwd"
+      $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey -Value "AdmPwdEnabled"
 
-        if ($AdmPwdEnabled -ne "") {
-            $lapsAdminAccountName = Get-RegValue -Hive "HKLM" -Path $hkey "AdminAccountName"
-            $lapsPasswordComplexity = Get-RegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"
-            $lapsPasswordLength = Get-RegValue -Hive "HKLM" -Path $hkey "PasswordLength"
-            $lapsExpirationProtectionEnabled = Get-RegValue -Hive "HKLM" -Path $hkey "PwdExpirationProtectionEnabled"
+      if ($AdmPwdEnabled -ne "") {
+         $lapsAdminAccountName = Get-RegValue -Hive "HKLM" -Path $hkey "AdminAccountName"
+         $lapsPasswordComplexity = Get-RegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"
+         $lapsPasswordLength = Get-RegValue -Hive "HKLM" -Path $hkey "PasswordLength"
+         $lapsExpirationProtectionEnabled = Get-RegValue -Hive "HKLM" -Path $hkey "PwdExpirationProtectionEnabled"
 
-            $lapsSettings =
-            [PSCustomObject]@{
-                LAPSEnabled                             = $AdmPwdEnabled
-                LAPSAdminAccountName                    = $lapsAdminAccountName
-                LAPSPasswordComplexity                  = $lapsPasswordComplexity
-                LAPSPasswordLength                      = $lapsPasswordLength
-                LAPSPasswordExpirationProtectionEnabled = $lapsExpirationProtectionEnabled
-            }
-            return New-vlResultObject -result $lapsSettings -score 10
-        }
-        else {
-            $lapsSettings =
-            [PSCustomObject]@{
-                LAPSEnabled = $false
-            }
-            return New-vlResultObject -result $lapsSettings -score 6
-        }
+         $lapsSettings =
+         [PSCustomObject]@{
+            LAPSEnabled                             = $AdmPwdEnabled
+            LAPSAdminAccountName                    = $lapsAdminAccountName
+            LAPSPasswordComplexity                  = $lapsPasswordComplexity
+            LAPSPasswordLength                      = $lapsPasswordLength
+            LAPSPasswordExpirationProtectionEnabled = $lapsExpirationProtectionEnabled
+         }
+         return New-vlResultObject -result $lapsSettings -score 10
+      }
+      else {
+         $lapsSettings =
+         [PSCustomObject]@{
+            LAPSEnabled = $false
+         }
+         return New-vlResultObject -result $lapsSettings -score 6
+      }
 
-    }
-    catch {
-        return New-vlErrorObject($_)
-    }
+   }
+   catch {
+      return New-vlErrorObject($_)
+   }
 }
 
 [Flags()] enum WinBioStatus {
-    MULTIPLE = 0x00000001;
-    FACIAL_FEATURES = 0x00000002;
-    VOICE = 0x00000004;
-    FINGERPRINT = 0x00000008;
-    IRIS = 0x00000010;
-    RETINA = 0x00000020;
-    HAND_GEOMETRY = 0x00000040;
-    SIGNATURE_DYNAMICS = 0x00000080;
-    KEYSTROKE_DYNAMICS = 0x00000100;
-    LIP_MOVEMENT = 0x00000200;
-    THERMAL_FACE_IMAGE = 0x00000400;
-    THERMAL_HAND_IMAGE = 0x00000800;
-    GAIT = 0x00001000;
-    SCENT = 0x00002000;
-    DNA = 0x00004000;
-    EAR_SHAPE = 0x00008000;
-    FINGER_GEOMETRY = 0x00010000;
-    PALM_PRINT = 0x00020000;
-    VEIN_PATTERN = 0x00040000;
-    FOOT_PRINT = 0x00080000;
-    OTHER = 0x40000000;
-    PASSWORD = 0x80000000;
+   MULTIPLE = 0x00000001;
+   FACIAL_FEATURES = 0x00000002;
+   VOICE = 0x00000004;
+   FINGERPRINT = 0x00000008;
+   IRIS = 0x00000010;
+   RETINA = 0x00000020;
+   HAND_GEOMETRY = 0x00000040;
+   SIGNATURE_DYNAMICS = 0x00000080;
+   KEYSTROKE_DYNAMICS = 0x00000100;
+   LIP_MOVEMENT = 0x00000200;
+   THERMAL_FACE_IMAGE = 0x00000400;
+   THERMAL_HAND_IMAGE = 0x00000800;
+   GAIT = 0x00001000;
+   SCENT = 0x00002000;
+   DNA = 0x00004000;
+   EAR_SHAPE = 0x00008000;
+   FINGER_GEOMETRY = 0x00010000;
+   PALM_PRINT = 0x00020000;
+   VEIN_PATTERN = 0x00040000;
+   FOOT_PRINT = 0x00080000;
+   OTHER = 0x40000000;
+   PASSWORD = 0x80000000;
 }
 
 function Get-vlMachineAvailableFactors() {
-    <#
+   <#
     .SYNOPSIS
         Function that returns the Machine Factors, that can be used.
     .DESCRIPTION
@@ -210,48 +210,48 @@ function Get-vlMachineAvailableFactors() {
         Get-vlMachineAvailableFactors
     #>
 
-    $winBioUsed = $false
-    $winBioAccountInfoPath = "SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\AccountInfo"
-    $winBioSensorInfoBasePath = "SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\SensorInfo"
+   $winBioUsed = $false
+   $winBioAccountInfoPath = "SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\AccountInfo"
+   $winBioSensorInfoBasePath = "SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\SensorInfo"
 
-    if (-not (Test-Path -Path ("HKLM:\" + $winBioSensorInfoBasePath ))) {
-        return [PSCustomObject]@{
-            WinBioAvailable        = $false
-            WinBioUsed             = $false
-            WinBioAvailableFactors = @()
-        }
-    }
+   if (-not (Test-Path -Path ("HKLM:\" + $winBioSensorInfoBasePath ))) {
+      return [PSCustomObject]@{
+         WinBioAvailable        = $false
+         WinBioUsed             = $false
+         WinBioAvailableFactors = @()
+      }
+   }
 
-    $bioUsers = Get-vlRegSubkeys -Hive "HKLM" -Path $winBioAccountInfoPath
+   $bioUsers = Get-vlRegSubkeys -Hive "HKLM" -Path $winBioAccountInfoPath
 
-    foreach ($bioUser in $bioUsers) {
-        $bioUserValues = Get-vlRegValue -Hive "HKLM" -Path ($winBioAccountInfoPath + "\" + $bioUser.PSChildName) -Value "EnrolledFactors"
+   foreach ($bioUser in $bioUsers) {
+      $bioUserValues = Get-vlRegValue -Hive "HKLM" -Path ($winBioAccountInfoPath + "\" + $bioUser.PSChildName) -Value "EnrolledFactors"
 
-        if ($bioUserValues -and $bioUserValues -gt 0) {
-            $winBioUsed = $true
-        }
-    }
+      if ($bioUserValues -and $bioUserValues -gt 0) {
+         $winBioUsed = $true
+      }
+   }
 
-    $availableFactors = Get-vlRegValue -Hive "HKLM" -Path $winBioSensorInfoBasePath -Value "AvailableFactors"
+   $availableFactors = Get-vlRegValue -Hive "HKLM" -Path $winBioSensorInfoBasePath -Value "AvailableFactors"
 
-    # iterate over [WinBioStatus].GetEnumNames() and check if the bit is set. If bit is set, save matching enum names in array $availableFac
-    $availableFac = @()
-    foreach ($factor in [WinBioStatus].GetEnumNames()) {
-        if ($availableFactors -band [WinBioStatus]::$factor) {
-            $availableFac += $factor
-        }
-    }
+   # iterate over [WinBioStatus].GetEnumNames() and check if the bit is set. If bit is set, save matching enum names in array $availableFac
+   $availableFac = @()
+   foreach ($factor in [WinBioStatus].GetEnumNames()) {
+      if ($availableFactors -band [WinBioStatus]::$factor) {
+         $availableFac += $factor
+      }
+   }
 
-    return [PSCustomObject]@{
-        WinBioAvailable        = $true
-        WinBioUsed             = $winBioUsed
-        WinBioAvailableFactors = $availableFac
-    }
+   return [PSCustomObject]@{
+      WinBioAvailable        = $true
+      WinBioUsed             = $winBioUsed
+      WinBioAvailableFactors = $availableFac
+   }
 
 }
 
 function Get-vlWindowsHelloStatusLocalUser() {
-    <#
+   <#
     .SYNOPSIS
         Function that checks if Windows Hello is enabled.
     .DESCRIPTION
@@ -265,23 +265,23 @@ function Get-vlWindowsHelloStatusLocalUser() {
         Get-vlLAPSSettings
     #>
 
-    try {
-        $factors = Get-vlMachineAvailableFactors
+   try {
+      $factors = Get-vlMachineAvailableFactors
 
-        if($factors.WinBioAvailable -and $factors.WinBioUsed) {
-            return New-vlResultObject -result $factors -score 10
-        }
-        else {
-            return New-vlResultObject -result $factors -score 7
-        }
-    }
-    catch {
-        return New-vlErrorObject($_)
-    }
+      if ($factors.WinBioAvailable -and $factors.WinBioUsed) {
+         return New-vlResultObject -result $factors -score 10
+      }
+      else {
+         return New-vlResultObject -result $factors -score 7
+      }
+   }
+   catch {
+      return New-vlErrorObject($_)
+   }
 }
 
 function Get-vlLocalUsersAndGroupsCheck {
-    <#
+   <#
     .SYNOPSIS
         Function that performs the LocalUsersAndGroups check and returns the result to the uberAgent.
     .DESCRIPTION
@@ -298,64 +298,64 @@ function Get-vlLocalUsersAndGroupsCheck {
         Get-vlLocalUsersAndGroupsCheck -uacState -lapsState -secrets
     #>
 
-    $params = if ($global:args) { $global:args } else { "all" }
-    $params = $params | ForEach-Object { $_.ToLower() }
+   $params = if ($global:args) { $global:args } else { "all" }
+   $params = $params | ForEach-Object { $_.ToLower() }
 
-    $Output = @()
+   $Output = @()
 
-    if ($params.Contains("all") -or $params.Contains("LUMUac")) {
-        $uac = Get-vlUACState
-        $Output += [PSCustomObject]@{
-            Name       = "LUMUac"
-            DisplayName  = "User account control"
-            Description  = "Checks if the User Account Control is enabled."
-            Score      = $uac.Score
-            ResultData = $uac.Result
-            RiskScore  = 60
-            ErrorCode      = $uac.ErrorCode
-            ErrorMessage   = $uac.ErrorMessage
-        }
-    }
-    if ($params.Contains("all") -or $params.Contains("LUMLaps")) {
-        $laps = Get-vlLAPSSettings
-        $Output += [PSCustomObject]@{
-            Name       = "LUMLaps"
-            DisplayName  = "Local administrator password solution"
-            Description  = "Checks if the Local Administrator Password Solution is enabled."
-            Score      = $laps.Score
-            ResultData = $laps.Result
-            RiskScore  = 40
-            ErrorCode      = $laps.ErrorCode
-            ErrorMessage   = $laps.ErrorMessage
-        }
-    }
-    if ($params.Contains("all") -or $params.Contains("LUMSecrets")) {
-        $secrets = Get-vlSecrets
-        $Output += [PSCustomObject]@{
-            Name       = "LUMSecrets"
-            DisplayName  = "Local security authority secrets"
-            Description  = "Checks if LSA secrets are available."
-            Score      = $secrets.Score
-            ResultData = $secrets.Result
-            RiskScore  = 40
-            ErrorCode      = $secrets.ErrorCode
-            ErrorMessage   = $secrets.ErrorMessage
-        }
-    }
-    if ($params.Contains("all") -or $params.Contains("LUMWinBio")) {
-        $windowsHelloStatus = Get-vlWindowsHelloStatusLocalUser
-        $Output += [PSCustomObject]@{
-            Name       = "LUMWinBio"
-            DisplayName  = "Windows Hello / biometrics"
-            Description  = "Checks if Windows Hello is enabled and what factors are available."
-            Score      = $windowsHelloStatus.Score
-            ResultData = $windowsHelloStatus.Result
-            RiskScore  = 40
-            ErrorCode      = $windowsHelloStatus.ErrorCode
-            ErrorMessage   = $windowsHelloStatus.ErrorMessage
-        }
-    }
-    return $output
+   if ($params.Contains("all") -or $params.Contains("LUMUac")) {
+      $uac = Get-vlUACState
+      $Output += [PSCustomObject]@{
+         Name         = "LUMUac"
+         DisplayName  = "User account control"
+         Description  = "Checks if the User Account Control is enabled."
+         Score        = $uac.Score
+         ResultData   = $uac.Result
+         RiskScore    = 60
+         ErrorCode    = $uac.ErrorCode
+         ErrorMessage = $uac.ErrorMessage
+      }
+   }
+   if ($params.Contains("all") -or $params.Contains("LUMLaps")) {
+      $laps = Get-vlLAPSSettings
+      $Output += [PSCustomObject]@{
+         Name         = "LUMLaps"
+         DisplayName  = "Local administrator password solution"
+         Description  = "Checks if the Local Administrator Password Solution is enabled."
+         Score        = $laps.Score
+         ResultData   = $laps.Result
+         RiskScore    = 40
+         ErrorCode    = $laps.ErrorCode
+         ErrorMessage = $laps.ErrorMessage
+      }
+   }
+   if ($params.Contains("all") -or $params.Contains("LUMSecrets")) {
+      $secrets = Get-vlSecrets
+      $Output += [PSCustomObject]@{
+         Name         = "LUMSecrets"
+         DisplayName  = "Local security authority secrets"
+         Description  = "Checks if LSA secrets are available."
+         Score        = $secrets.Score
+         ResultData   = $secrets.Result
+         RiskScore    = 40
+         ErrorCode    = $secrets.ErrorCode
+         ErrorMessage = $secrets.ErrorMessage
+      }
+   }
+   if ($params.Contains("all") -or $params.Contains("LUMWinBio")) {
+      $windowsHelloStatus = Get-vlWindowsHelloStatusLocalUser
+      $Output += [PSCustomObject]@{
+         Name         = "LUMWinBio"
+         DisplayName  = "Windows Hello / biometrics"
+         Description  = "Checks if Windows Hello is enabled and what factors are available."
+         Score        = $windowsHelloStatus.Score
+         ResultData   = $windowsHelloStatus.Result
+         RiskScore    = 40
+         ErrorCode    = $windowsHelloStatus.ErrorCode
+         ErrorMessage = $windowsHelloStatus.ErrorMessage
+      }
+   }
+   return $output
 }
 
 # Entrypoint of the script call the check function and convert the result to JSON
