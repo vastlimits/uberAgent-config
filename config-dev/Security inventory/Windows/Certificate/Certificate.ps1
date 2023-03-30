@@ -116,10 +116,24 @@ function Get-vlExpiredCertificateCheck {
     #>
 
    try {
+      $score = 10
+
       $certs = Get-ChildItem cert:\ -Recurse
       $expCets = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and $_.NotAfter -lt (Get-Date) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
       $willExpire30 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date) -and $_.NotAfter -lt (Get-Date).AddDays(30)) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
       $willExpire60 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date).AddDays(30) -and $_.NotAfter -lt (Get-Date).AddDays(60)) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
+
+      if( $willExpire60.Length -gt 0 ){
+         $score = 7
+      }
+
+      if( $willExpire30.Length -gt 0 ){
+         $score = 4
+      }
+
+      if( $expCets.Length -gt 0 ){
+         $score = 0
+      }
 
       $result = [PSCustomObject]@{
          expired      = $expCets
@@ -127,7 +141,7 @@ function Get-vlExpiredCertificateCheck {
          willExpire60 = $willExpire60
       }
       # Updates are enabled
-      return New-vlResultObject -result $result -score 10
+      return New-vlResultObject -result $result -score $score
    }
    catch {
       return New-vlErrorObject($_)
