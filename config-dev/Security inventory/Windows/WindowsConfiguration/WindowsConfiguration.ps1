@@ -149,7 +149,7 @@ function Get-BitlockerEnabled {
         PSCustomObject
         enabled: true if enabled, false if not
     .EXAMPLE
-        Get-CheckHTAEnabled
+        Get-BitlockerEnabled
     #>
 
    try {
