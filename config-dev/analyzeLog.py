@@ -138,7 +138,6 @@ try:
         print("-------------------------------------")
         print(f"Found {len(errors)} \033[91mErrors\033[0m, {len(warnings)} \033[93mWarnings\033[0m and {len(notes)} \033[94mNotes\033[0m")
         print("Exit code: " + str(return_status))
-        print("-------------------------------------")
 
         update_key("ANALYZER_ERRORS",str(len(errors)))
         update_key("ANALYZER_WARNINGS",str(len(warnings)))
