@@ -180,7 +180,7 @@ function Get-vlRegValue {
       }
       catch {
          Write-Verbose "Registry $Hive\$Path was not found"
-         return ""
+         return $null
       }
       finally {
          if ($null -ne $regKey) {
@@ -214,6 +214,7 @@ function Get-vlRegSubkeys {
     #>
 
    [CmdletBinding()]
+   [OutputType([Object])]
    param (
       [Parameter(Mandatory = $true)]
       [ValidateSet("HKLM", "HKU", "HKCU")]
@@ -240,7 +241,7 @@ function Get-vlRegSubkeys {
          Write-Verbose "Error reading registry $Hive\$Path"
          Write-Verbose $_.Exception.Message
 
-         return @()
+         return [Object]@()
       }
       finally {
       }
@@ -347,6 +348,7 @@ function Get-vlTimerElapsedTime {
     #>
 
    [CmdletBinding()]
+   [OutputType([System.Int64])]
    param (
       [Parameter(Mandatory = $true)]
       [string]$Name,
