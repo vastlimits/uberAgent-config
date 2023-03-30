@@ -4,7 +4,7 @@
 $global:debug_timers = @()
 
 function Get-vlOsArchitecture {
-    <#
+   <#
     .SYNOPSIS
         Get the OS architecture
     .DESCRIPTION
@@ -19,11 +19,11 @@ function Get-vlOsArchitecture {
         return Get-vlOsArchitecture
     #>
 
-    return (Get-CimInstance Win32_operatingsystem).OSArchitecture
+   return (Get-CimInstance Win32_operatingsystem).OSArchitecture
 }
 
 function Get-vlIsWindows7 {
-    <#
+   <#
     .SYNOPSIS
         Check if the OS is Windows 7
     .DESCRIPTION
@@ -34,16 +34,17 @@ function Get-vlIsWindows7 {
         return Get-vlIsWindows7
     #>
 
-    $osVersion = (Get-WmiObject -Class Win32_OperatingSystem).Version
-    if ($osVersion -match "^6\.1") {
-        return $true
-    } else {
-        return $false
-    }
+   $osVersion = (Get-WmiObject -Class Win32_OperatingSystem).Version
+   if ($osVersion -match "^6\.1") {
+      return $true
+   }
+   else {
+      return $false
+   }
 }
 
 function New-vlErrorObject {
-    <#
+   <#
     .SYNOPSIS
         Generate an error object for the result of a function
     .DESCRIPTION
@@ -60,23 +61,23 @@ function New-vlErrorObject {
         }
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        $context,
-        $score = 0
-    )
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      $context,
+      $score = 0
+   )
 
-    return [PSCustomObject]@{
-        Result       = ""
-        ErrorCode    = $context.Exception.MessageId
-        ErrorMessage = $context.Exception.Message
-        Score        = $score
-    }
+   return [PSCustomObject]@{
+      Result       = ""
+      ErrorCode    = $context.Exception.MessageId
+      ErrorMessage = $context.Exception.Message
+      Score        = $score
+   }
 }
 
 function New-vlResultObject {
-    <#
+   <#
     .SYNOPSIS
         Generate a result object for the result of a function
     .DESCRIPTION
@@ -94,25 +95,25 @@ function New-vlResultObject {
         New-vlResultObject($result)
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        $result,
-        $score,
-        $riskScore
-    )
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      $result,
+      $score,
+      $riskScore
+   )
 
-    return [PSCustomObject]@{
-        Result       = ConvertTo-Json $result -Compress
-        ErrorCode    = 0
-        ErrorMessage = ""
-        Score        = $score
-        RiskScore    = $riskScore
-    }
+   return [PSCustomObject]@{
+      Result       = ConvertTo-Json $result -Compress
+      ErrorCode    = 0
+      ErrorMessage = ""
+      Score        = $score
+      RiskScore    = $riskScore
+   }
 }
 
 function Get-vlRegValue {
-    <#
+   <#
     .SYNOPSIS
         Get the value of a registry key
     .DESCRIPTION
@@ -129,73 +130,73 @@ function Get-vlRegValue {
         Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Value "ProductName"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU", "HKCR")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path,
-        [Parameter(Mandatory = $false)]
-        [string]$Value
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [ValidateSet("HKLM", "HKU", "HKCU", "HKCR")]
+      [string]$Hive,
+      [Parameter(Mandatory = $true)]
+      [string]$Path,
+      [Parameter(Mandatory = $false)]
+      [string]$Value
+   )
+   begin {
 
-    }
+   }
 
-    process {
+   process {
 
-        try {
-            $regKey = $null
-            $regKeyValue = "";
-            if ($Hive -eq "HKCU") {
-                $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value)
-                }
-                return $regKeyValue;
-            }
-            elseif ($hive -eq "HKU") {
-                $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value);
-                }
-                return $regKeyValue;
-            }
-            elseif ($hive -eq "HKCR") {
-                $regKey = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value);
-                }
-                return $regKeyValue;
-            }
-            else {
-                $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value);
-                }
-                return $regKeyValue;
-            }
-        }
-        catch {
-            Write-Verbose "Registry $Hive\$Path was not found"
-            return ""
-        }
-        finally {
+      try {
+         $regKey = $null
+         $regKeyValue = "";
+         if ($Hive -eq "HKCU") {
+            $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path);
             if ($null -ne $regKey) {
-                Write-Verbose "Closing registry key $Hive\$Path"
-                $regKey.Dispose()
+               $regKeyValue = $regKey.GetValue($Value)
             }
-        }
-    }
+            return $regKeyValue;
+         }
+         elseif ($hive -eq "HKU") {
+            $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path);
+            if ($null -ne $regKey) {
+               $regKeyValue = $regKey.GetValue($Value);
+            }
+            return $regKeyValue;
+         }
+         elseif ($hive -eq "HKCR") {
+            $regKey = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey($Path);
+            if ($null -ne $regKey) {
+               $regKeyValue = $regKey.GetValue($Value);
+            }
+            return $regKeyValue;
+         }
+         else {
+            $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path);
+            if ($null -ne $regKey) {
+               $regKeyValue = $regKey.GetValue($Value);
+            }
+            return $regKeyValue;
+         }
+      }
+      catch {
+         Write-Verbose "Registry $Hive\$Path was not found"
+         return ""
+      }
+      finally {
+         if ($null -ne $regKey) {
+            Write-Verbose "Closing registry key $Hive\$Path"
+            $regKey.Dispose()
+         }
+      }
+   }
 
-    end {
-    }
+   end {
+   }
 }
 
 
 function Get-vlRegSubkeys {
-    <#
+   <#
     .SYNOPSIS
         Read all the subkeys from a registry path
     .DESCRIPTION
@@ -212,48 +213,48 @@ function Get-vlRegSubkeys {
         return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [ValidateSet("HKLM", "HKU", "HKCU")]
+      [string]$Hive,
+      [Parameter(Mandatory = $true)]
+      [string]$Path
+   )
+   begin {
 
-    }
+   }
 
-    process {
-        try {
-            $registryItems = @()
+   process {
+      try {
+         $registryItems = @()
 
-            $path = $Hive + ":\" + $Path
-            if (Test-Path -Path $path) {
-                $keys = Get-ChildItem -Path $path
-                $registryItems = $keys | Foreach-Object { Get-ItemProperty $_.PsPath }
-            }
-            return $registryItems
-        }
-        catch {
-            Write-Verbose "Error reading registry $Hive\$Path"
-            Write-Verbose $_.Exception.Message
+         $path = $Hive + ":\" + $Path
+         if (Test-Path -Path $path) {
+            $keys = Get-ChildItem -Path $path
+            $registryItems = $keys | Foreach-Object { Get-ItemProperty $_.PsPath }
+         }
+         return $registryItems
+      }
+      catch {
+         Write-Verbose "Error reading registry $Hive\$Path"
+         Write-Verbose $_.Exception.Message
 
-            return @()
-        }
-        finally {
-        }
-    }
+         return @()
+      }
+      finally {
+      }
+   }
 
-    end {
+   end {
 
-    }
+   }
 }
 
 ##### Debugging utilities #####
 
 function Add-vlTimer {
-    <#
+   <#
     .SYNOPSIS
         Start a timer
     .DESCRIPTION
@@ -268,30 +269,30 @@ function Add-vlTimer {
         Start-vlTimer -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name
+   )
+   begin {
 
-    }
+   }
 
-    process {
-        $timer = New-Object -TypeName psobject -Property @{
-            Name  = $Name
-            Start = (Get-Date)
-        }
-        $global:debug_timers += $timer
-    }
+   process {
+      $timer = New-Object -TypeName psobject -Property @{
+         Name  = $Name
+         Start = (Get-Date)
+      }
+      $global:debug_timers += $timer
+   }
 
-    end {
+   end {
 
-    }
+   }
 }
 
 function Restart-vlTimer {
-    <#
+   <#
     .SYNOPSIS
         Restart a timer
     .DESCRIPTION
@@ -306,29 +307,29 @@ function Restart-vlTimer {
         Restart-vlTimer -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name
+   )
+   begin {
 
-    }
+   }
 
-    process {
-        $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
-        if ($null -ne $timer) {
-            $timer.Start = (Get-Date)
-        }
-    }
+   process {
+      $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
+      if ($null -ne $timer) {
+         $timer.Start = (Get-Date)
+      }
+   }
 
-    end {
+   end {
 
-    }
+   }
 }
 
 function Get-vlTimerElapsedTime {
-    <#
+   <#
     .SYNOPSIS
         Get the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
     .DESCRIPTION
@@ -345,40 +346,40 @@ function Get-vlTimerElapsedTime {
         Get-vlTimerElapsedTime -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name,
-        [ValidateSet("sec", "ms")]
-        [string]$Unit = "ms"
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name,
+      [ValidateSet("sec", "ms")]
+      [string]$Unit = "ms"
+   )
+   begin {
 
-    }
+   }
 
-    process {
-        $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
-        if ($null -ne $timer) {
-            $elapsed = (Get-Date) - $timer.Start
-            if ($Unit -eq "sec") {
-                return $elapsed.TotalSeconds
-            }
-            else {
-                return $elapsed.TotalMilliseconds
-            }
-        }
-        else {
-            return 0
-        }
-    }
+   process {
+      $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
+      if ($null -ne $timer) {
+         $elapsed = (Get-Date) - $timer.Start
+         if ($Unit -eq "sec") {
+            return $elapsed.TotalSeconds
+         }
+         else {
+            return $elapsed.TotalMilliseconds
+         }
+      }
+      else {
+         return 0
+      }
+   }
 
-    end {
+   end {
 
-    }
+   }
 }
 
 function Write-vlTimerElapsedTime {
-    <#
+   <#
     .SYNOPSIS
         Write the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
     .DESCRIPTION
@@ -397,61 +398,61 @@ function Write-vlTimerElapsedTime {
         Write-vlTimerElapsedTime -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name,
-        [Parameter(Mandatory = $false)]
-        [bool]$UseFile = $false,
-        [Parameter(Mandatory = $false)]
-        [ValidateSet("sec", "ms")]
-        [string]$Unit = "ms"
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name,
+      [Parameter(Mandatory = $false)]
+      [bool]$UseFile = $false,
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("sec", "ms")]
+      [string]$Unit = "ms"
+   )
+   begin {
 
-    }
+   }
 
-    process {
-        $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
-        if ($UseFile) {
-            Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
-        }
-        else {
-            Write-Host "${Name}: $elapsed $Unit"
-        }
-    }
+   process {
+      $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
+      if ($UseFile) {
+         Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
+      }
+      else {
+         Write-Host "${Name}: $elapsed $Unit"
+      }
+   }
 
-    end {
+   end {
 
-    }
+   }
 }
 
 #https://mcpforlife.com/2020/04/14/how-to-resolve-this-state-value-of-av-providers/
 [Flags()] enum ProductState {
-    Off = 0x0000
-    On = 0x1000
-    Snoozed = 0x2000
-    Expired = 0x3000
+   Off = 0x0000
+   On = 0x1000
+   Snoozed = 0x2000
+   Expired = 0x3000
 }
 
 [Flags()] enum SignatureStatus {
-    UpToDate = 0x00
-    OutOfDate = 0x10
+   UpToDate = 0x00
+   OutOfDate = 0x10
 }
 
 [Flags()] enum ProductOwner {
-    NonMs = 0x000
-    Windows = 0x100
+   NonMs = 0x000
+   Windows = 0x100
 }
 
 [Flags()] enum ProductFlags {
-    SignatureStatus = 0x000000F0
-    ProductOwner = 0x00000F00
-    ProductState = 0x0000F000
+   SignatureStatus = 0x000000F0
+   ProductOwner = 0x00000F00
+   ProductState = 0x0000F000
 }
 
 function Get-vlAntivirusStatus {
-    <#
+   <#
     .SYNOPSIS
         Get the status of the antivirus software
     .DESCRIPTION
@@ -465,60 +466,60 @@ function Get-vlAntivirusStatus {
         Get-vlAntivirusStatus
     #>
 
-    param (
+   param (
 
-    )
+   )
 
-    process {
-        try {
-            $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
+   process {
+      try {
+         $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
 
-            $riskScore = 100
+         $riskScore = 100
+         $score = 0
+         $result = @()
+         $avEnabledFound = $false
+
+         foreach ($instance in $instances) {
+            $avEnabled = $([ProductState]::On.value__ -eq $($instance.productState -band [ProductFlags]::ProductState) )
+            $avUp2Date = $([SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [ProductFlags]::SignatureStatus) )
+
+            if ($avEnabled) {
+               $avEnabledFound = $true
+               if ($avUp2Date) {
+                  $score = 10
+               }
+               else {
+                  $score = 4
+               }
+            }
+
+            $result += [PSCustomObject]@{
+               AntivirusEnabled  = $avEnabled
+               AntivirusName     = $instance.displayName
+               AntivirusUpToDate = $avUp2Date
+            }
+         }
+
+         if (-not $avEnabledFound) {
             $score = 0
-            $result = @()
-            $avEnabledFound = $false
+         }
 
-            foreach ($instance in $instances) {
-                $avEnabled = $([ProductState]::On.value__ -eq $($instance.productState -band [ProductFlags]::ProductState) )
-                $avUp2Date = $([SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [ProductFlags]::SignatureStatus) )
+         return New-vlResultObject -result $result -score $score -riskScore $riskScore
+      }
+      catch {
+         return New-vlErrorObject($_)
+      }
+      finally {
 
-                if ($avEnabled) {
-                    $avEnabledFound = $true
-                    if ($avUp2Date) {
-                        $score = 10
-                    }
-                    else {
-                        $score = 4
-                    }
-                }
+      }
 
-                $result += [PSCustomObject]@{
-                    AntivirusEnabled  = $avEnabled
-                    AntivirusName     = $instance.displayName
-                    AntivirusUpToDate = $avUp2Date
-                }
-            }
-
-            if (-not $avEnabledFound) {
-                $score = 0
-            }
-
-            return New-vlResultObject -result $result -score $score -riskScore $riskScore
-        }
-        catch {
-            return New-vlErrorObject($_)
-        }
-        finally {
-
-        }
-
-    }
+   }
 
 }
 
 
 function Get-vlDefenderStatus {
-    <#
+   <#
     .SYNOPSIS
         Get the status of the registrated antivirus
     .DESCRIPTION
@@ -534,40 +535,40 @@ function Get-vlDefenderStatus {
         Get-vlAMSIProviders
     #>
 
-    [CmdletBinding()]
-    param (
+   [CmdletBinding()]
+   param (
 
-    )
+   )
 
-    process {
-        try {
-            $instances = Get-MpComputerStatus
+   process {
+      try {
+         $instances = Get-MpComputerStatus
 
-            $result = [PSCustomObject]@{
-                AMEngineVersion                 = $instances.AMEngineVersion
-                AMServiceEnabled                = $instances.AMServiceEnabled
-                AMServiceVersion                = $instances.AMServiceVersion
-                AntispywareEnabled              = $instances.AntispywareEnabled
-                AntivirusEnabled                = $instances.AntivirusEnabled
-                AntispywareSignatureLastUpdated = $instances.AntispywareSignatureLastUpdated
-                AntispywareSignatureVersion     = $instances.AntispywareSignatureVersion
-                AntivirusSignatureLastUpdated   = $instances.AntivirusSignatureLastUpdated
-                QuickScanSignatureVersion       = $instances.QuickScanSignatureVersion
-            }
+         $result = [PSCustomObject]@{
+            AMEngineVersion                 = $instances.AMEngineVersion
+            AMServiceEnabled                = $instances.AMServiceEnabled
+            AMServiceVersion                = $instances.AMServiceVersion
+            AntispywareEnabled              = $instances.AntispywareEnabled
+            AntivirusEnabled                = $instances.AntivirusEnabled
+            AntispywareSignatureLastUpdated = $instances.AntispywareSignatureLastUpdated
+            AntispywareSignatureVersion     = $instances.AntispywareSignatureVersion
+            AntivirusSignatureLastUpdated   = $instances.AntivirusSignatureLastUpdated
+            QuickScanSignatureVersion       = $instances.QuickScanSignatureVersion
+         }
 
-            return New-vlResultObject -result $result
-        }
-        catch {
-            return New-vlErrorObject($_)
-        }
-        finally {
+         return New-vlResultObject -result $result
+      }
+      catch {
+         return New-vlErrorObject($_)
+      }
+      finally {
 
-        }
-    }
+      }
+   }
 }
 
 function Get-vlAntivirusCheck {
-    <#
+   <#
     .SYNOPSIS
         Function that performs the antivirus check and returns the result to the uberAgent.
     .DESCRIPTION
@@ -584,27 +585,27 @@ function Get-vlAntivirusCheck {
         Get-vlAntivirusCheck -amsi -avStatus
     #>
 
-    #set $params to $global:args or if empty default "all"
-    $params = if ($global:args) { $global:args } else { "all" }
-    $params = $params | ForEach-Object { $_.ToLower() }
+   #set $params to $global:args or if empty default "all"
+   $params = if ($global:args) { $global:args } else { "all" }
+   $params = $params | ForEach-Object { $_.ToLower() }
 
-    $Output = @()
+   $Output = @()
 
-    if ($params.Contains("all") -or $params.Contains("AVState")) {
-        $avStatus = Get-vlAntivirusStatus
-        $Output += [PSCustomObject]@{
-            Name         = "AVState"
-            DisplayName  = "Antivirus status"
-            Description  = "Checks if the antivirus is enabled and up to date."
-            Score        = $avStatus.Score
-            ResultData   = $avStatus.Result
-            RiskScore    = $avStatus.RiskScore
-            ErrorCode    = $avStatus.ErrorCode
-            ErrorMessage = $avStatus.ErrorMessage
-        }
-    }
+   if ($params.Contains("all") -or $params.Contains("AVState")) {
+      $avStatus = Get-vlAntivirusStatus
+      $Output += [PSCustomObject]@{
+         Name         = "AVState"
+         DisplayName  = "Antivirus status"
+         Description  = "Checks if the antivirus is enabled and up to date."
+         Score        = $avStatus.Score
+         ResultData   = $avStatus.Result
+         RiskScore    = $avStatus.RiskScore
+         ErrorCode    = $avStatus.ErrorCode
+         ErrorMessage = $avStatus.ErrorMessage
+      }
+   }
 
-    <#
+   <#
     if ($params.Contains("all") -or $params.Contains("AVDefStat")) {
         $defenderStatus = Get-vlDefenderStatus
         $Output += [PSCustomObject]@{
@@ -620,7 +621,7 @@ function Get-vlAntivirusCheck {
     }
     #>
 
-    Write-Output $output
+   Write-Output $output
 }
 
 # Entrypoint of the script call the check function and convert the result to JSON
