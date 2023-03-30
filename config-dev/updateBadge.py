@@ -27,9 +27,6 @@ def add_custom_badge(tag, description, value, color):
     except:
         print(f"Error: Could not generate badge for {tag}")
 
-def add_license_badge():
-    badge_list.append("![license](https://img.shields.io/github/license/vastlimits/uberAgent-config)")
-
 def get_current_branch():
     try:
         github_ref = os.environ.get("GITHUB_REF", "")
@@ -56,7 +53,6 @@ try:
         if match:
             result = match.group(1).strip()
 
-            add_license_badge()
             add_custom_badge("branch", "branch", branch, "blue")
 
             try: 

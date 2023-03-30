@@ -154,12 +154,12 @@ function Get-BitlockerEnabled {
 
     try {
         #check if bitlocker is enabled using Get-BitLockerVolume
-        $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, PercentComplete
+        $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage
 
         return New-vlResultObject -result $bitlockerEnabled 
     }
     catch {
-        return "Cannot get BitlockerEnabled"
+        return New-vlErrorObject -error $_
     }
 }
 
