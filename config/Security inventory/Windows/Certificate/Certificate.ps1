@@ -757,7 +757,7 @@ function Get-vlRootCertificateInstallationCheck {
         #define CERT_PROT_ROOT_INHIBIT_ADD_AT_INIT_FLAG     0x2
         #>
       # check if HKLM\SOFTWARE\Policies\Microsoft\SystemCertificates\Root\ProtectedRoots - Flags (REG_DWORD) - 1
-      $protectedRoots = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft\SystemCertificates\Root" -Value "ProtectedRoots"
+      $protectedRoots = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft\SystemCertificates\Root\ProtectedRoots" -Value "Flags"
 
       if ($protectedRoots -eq 1) {
          $result = [PSCustomObject]@{
