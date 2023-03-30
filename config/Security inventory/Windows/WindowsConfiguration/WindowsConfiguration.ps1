@@ -131,6 +131,7 @@ function Get-vlRegValue {
     #>
 
    [CmdletBinding()]
+   [OutputType([Object])]
    param (
       [Parameter(Mandatory = $true)]
       [ValidateSet("HKLM", "HKU", "HKCU", "HKCR")]
