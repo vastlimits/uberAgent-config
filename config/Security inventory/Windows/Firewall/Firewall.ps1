@@ -371,7 +371,7 @@ function Get-vlTimerElapsedTime {
          }
       }
       else {
-         return 0
+         return [System.Int64]0
       }
    }
 
