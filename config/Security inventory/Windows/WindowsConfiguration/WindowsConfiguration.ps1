@@ -523,6 +523,7 @@ function Get-CheckHTAEnabled {
 
    try {
       $startProc = ""
+      $score = 10
 
       #$htaExecuteStatus = Run-vlHtaCode $htacode
       $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "mshta.exe"
@@ -552,13 +553,21 @@ function Get-CheckHTAEnabled {
          $defaultLink = $false
       }
 
+      if($htaRunBlocked -ne $true) {
+         $score -= 7
+      }
+
+      if($defaultLink -eq $true) {
+         $score -= 3
+      }
+
       $result = [PSCustomObject]@{
          RunBlocked  = $htaRunBlocked
          OpenWith    = $startProc
          DefaultLink = $defaultLink
       }
 
-      return New-vlResultObject -result $result -score 10
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject -error $_
@@ -579,10 +588,24 @@ function Get-BitlockerEnabled {
     #>
 
    try {
+      $score = 10
+
       #check if bitlocker is enabled using Get-BitLockerVolume
       $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage
 
-      return New-vlResultObject -result $bitlockerEnabled
+      if ($bitlockerEnabled.ProtectionStatus -ne "On") {
+         $score = 0
+      }
+      else {
+         if($bitlockerEnabled.EncryptionPercentage -eq 100) {
+            $score = 10
+         }
+         else {
+            $score = 5
+         }
+      }
+
+      return New-vlResultObject -result $bitlockerEnabled -score $score
    }
    catch {
       return New-vlErrorObject -error $_
@@ -710,11 +733,11 @@ function Get-WindowsConfigurationCheck {
          Name         = "WCHta"
          DisplayName  = "WindowsConfiguration HTA"
          Description  = "Checks if HTA execution is enabled on the system."
-         Score        = 0
+         Score        = $checkHtaEnabled.Score
          ResultData   = $checkHtaEnabled.Result
-         RiskScore    = 100
-         ErrorCode    = $COMHijacking.ErrorCode
-         ErrorMessage = $COMHijacking.ErrorMessage
+         RiskScore    = 80
+         ErrorCode    = $checkHtaEnabled.ErrorCode
+         ErrorMessage = $checkHtaEnabled.ErrorMessage
       }
    }
 
@@ -724,11 +747,11 @@ function Get-WindowsConfigurationCheck {
          Name         = "WCBitlocker"
          DisplayName  = "WindowsConfiguration Bitlocker"
          Description  = "Checks if Bitlocker is enabled on the system."
-         Score        = 0
+         Score        = $checkBitlockerEnabled.Score
          ResultData   = $checkBitlockerEnabled.Result
-         RiskScore    = 100
-         ErrorCode    = $COMHijacking.ErrorCode
-         ErrorMessage = $COMHijacking.ErrorMessage
+         RiskScore    = 80
+         ErrorCode    = $checkBitlockerEnabled.ErrorCode
+         ErrorMessage = $checkBitlockerEnabled.ErrorMessage
       }
    }
 
