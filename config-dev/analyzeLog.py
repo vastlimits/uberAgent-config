@@ -89,10 +89,11 @@ fail_level_priority = get_log_level_priority(fail_level)
 return_status = 0
 log_file_path = os.path.join(working_dir, 'config-dev/generated/psscriptanalyzer_log.sarif')
 
-print("-------------------------------------", flush=True)
-print("Current working dir: ", working_dir, flush=True)
-print("Using Logfile: ", log_file_path, flush=True)
-print("-------------------------------------", flush=True)
+print("-------------------------------------")
+print("Current working dir: ", working_dir)
+print("Using Logfile: ", log_file_path)
+print("-------------------------------------")
+print("", flush=True) # Flush the output to make sure the output is printed before the next step starts
 
 if not os.path.isfile(log_file_path):
     print("Error: Could not find sarif file")
@@ -161,6 +162,7 @@ try:
             for note in notes:
                 print(note)
 
+        print("-------------------------------------", flush=True)
         if fail_level_priority > 0:
             if should_fail('error', fail_level_priority) and len(errors) > 0:
                 return_status = 1
@@ -175,12 +177,12 @@ try:
     
         os._exit(return_status)
     except:
-        print("Error: Could not parse sarif file")
+        print("Error: Could not parse sarif file", flush=True)
 
         # Exit the script
         os._exit(1)
 except:
-    print("Error: Could not open sarif file")
+    print("Error: Could not open sarif file", flush=True)
 
     # Exit the script
     os._exit(1)
