@@ -547,7 +547,7 @@ function Get-vlGetUserEnrolledFactors() {
    }
 }
 
-function Get-vlWindowsHelloStatusLocalUser() {
+function Get-vlWindowsHelloStatusLocalUser () {
    <#
     .SYNOPSIS
         Function that checks if Windows Hello is enabled.
