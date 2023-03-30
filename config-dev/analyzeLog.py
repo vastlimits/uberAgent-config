@@ -89,10 +89,10 @@ fail_level_priority = get_log_level_priority(fail_level)
 return_status = 0
 log_file_path = os.path.join(working_dir, 'config-dev/generated/psscriptanalyzer_log.sarif')
 
-print("-------------------------------------")
-print("Current working dir: ", working_dir)
-print("Using Logfile: ", log_file_path)
-print("-------------------------------------")
+print("-------------------------------------", flush=True)
+print("Current working dir: ", working_dir, flush=True)
+print("Using Logfile: ", log_file_path, flush=True)
+print("-------------------------------------", flush=True)
 
 if not os.path.isfile(log_file_path):
     print("Error: Could not find sarif file")
