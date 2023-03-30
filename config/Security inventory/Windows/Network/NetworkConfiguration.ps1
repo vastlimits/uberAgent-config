@@ -48,7 +48,7 @@ function New-vlErrorObject {
     .DESCRIPTION
         Generate an error object for the result of a function that can be returned to the caller
     .PARAMETER Context
-        The context of the error / exception    
+        The context of the error / exception
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -139,9 +139,9 @@ function Get-vlRegValue {
         [string]$Value
     )
     begin {
-        
+
     }
-    
+
     process {
 
         try {
@@ -202,11 +202,11 @@ function Get-vlRegSubkeys {
     .PARAMETER Hive
         The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
     .PARAMETER Path
-        The path to the registry key        
+        The path to the registry key
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
@@ -222,7 +222,7 @@ function Get-vlRegSubkeys {
     begin {
 
     }
-    
+
     process {
         try {
             $registryItems = @()
@@ -243,9 +243,9 @@ function Get-vlRegSubkeys {
         finally {
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -262,7 +262,7 @@ function Add-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Start-vlTimer -Name "timer1"
     #>
@@ -275,7 +275,7 @@ function Add-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = New-Object -TypeName psobject -Property @{
             Name  = $Name
@@ -283,9 +283,9 @@ function Add-vlTimer {
         }
         $global:debug_timers += $timer
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -300,7 +300,7 @@ function Restart-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Restart-vlTimer -Name "timer1"
     #>
@@ -313,16 +313,16 @@ function Restart-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
             $timer.Start = (Get-Date)
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -339,7 +339,7 @@ function Get-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Get-vlTimerElapsedTime -Name "timer1"
     #>
@@ -354,7 +354,7 @@ function Get-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
@@ -370,9 +370,9 @@ function Get-vlTimerElapsedTime {
             return 0
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -391,7 +391,7 @@ function Write-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Write-vlTimerElapsedTime -Name "timer1"
     #>
@@ -409,7 +409,7 @@ function Write-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
         if ($UseFile) {
@@ -419,9 +419,9 @@ function Write-vlTimerElapsedTime {
             Write-Host "${Name}: $elapsed $Unit"
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -443,9 +443,9 @@ function Get-vlNetworkConfigurationSMBv1 {
    #>
 
    try {
-      
+
       $SMBv1 = $false
-      
+
       if (Test-Path HKLM:\SYSTEM\CurrentControlSet\services\mrxsmb10) {
          $mrxsmb10 = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\services\mrxsmb10" -Value "Start"
          $LanmanWorkstation = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\LanmanWorkstation" -Value "DependOnService"
@@ -538,7 +538,7 @@ function Get-vlNetworkConfigurationSMBSigning {
             # SMB signing is not required
             return New-vlResultObject -result $result -score 2
          }
-         
+
       }
       else {
          Throw "Return of Get-vlNetworkConfigurationSMBv1 is invalid"
@@ -562,11 +562,11 @@ function Get-vlNetworkConfigurationNetBIOS {
        If NetBIOS is disabled, the function returns a PSCustomObject with the following properties:
        enabled: false
    .NOTES
-       
+
    .EXAMPLE
        Get-vlNetworkConfigurationNetBIOS
    #>
-   
+
    try {
       if ((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' | Where-Object -Property 'TcpipNetbiosOptions' -eq 1).Count -eq 0) {
          $result = [PSCustomObject]@{
@@ -600,11 +600,11 @@ function Get-vlNetworkConfigurationWINS {
        If WINS is used, the function returns a PSCustomObject with the following properties:
        enabled: false
    .NOTES
-       
+
    .EXAMPLE
        Get-vlNetworkConfigurationWINS
    #>
-   
+
    try {
       if (((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' -Filter IPEnabled=TRUE | Where-Object -Property 'WINSPrimaryServer' -ne $null).ServiceName).Count -eq 0) {
          $result = [PSCustomObject]@{
@@ -637,19 +637,19 @@ function Get-vlNetworkConfigurationSSLTLS {
        enabled: false
        If outdated SSL and TLS versions are enabled, the function returns a PSCustomObject with the protocols in use
    .NOTES
-       
+
    .EXAMPLE
        Get-vlNetworkConfigurationSSLTLS
    #>
-   
+
    try {
-      
+
       $Protocols = @("TLS 1.0", "TLS 1.1", "SSL 2.0", "SSL 3.0")
       $ProtocolsInUse = @()
       foreach ($Protocol in $Protocols) {
          $null = $Enabled
          $null = $DisabledByDefault
-         
+
          if (test-path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client") {
             $Enabled = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client" -Value "Enabled"
             $DisabledByDefault = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client" -Value "DisabledByDefault"
@@ -663,8 +663,8 @@ function Get-vlNetworkConfigurationSSLTLS {
          }
       }
 
-      
-      
+
+
       if ($ProtocolsInUse.Count -eq 0) {
          $result = [PSCustomObject]@{
             Enabled = $false
@@ -708,7 +708,7 @@ function Get-vlNetworkConfigurationCheck {
    $Output = @()
 
    if ($params.Contains("all") -or $params.Contains("NCSMBv1")) {
-      $SMBv1 = Get-vlNetworkConfigurationSMBv1    
+      $SMBv1 = Get-vlNetworkConfigurationSMBv1
       $Output += [PSCustomObject]@{
          Name         = "NCSMBv1"
          DisplayName  = "Network Configuration SMBv1"
@@ -722,7 +722,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCSMBSign")) {
-      $SMBSigning = Get-vlNetworkConfigurationSMBSigning    
+      $SMBSigning = Get-vlNetworkConfigurationSMBSigning
       $Output += [PSCustomObject]@{
          Name         = "NCSMBSign"
          DisplayName  = "Network Configuration SMB Signing"
@@ -736,7 +736,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCNetBIOS")) {
-      $NetBIOS = Get-vlNetworkConfigurationNetBIOS    
+      $NetBIOS = Get-vlNetworkConfigurationNetBIOS
       $Output += [PSCustomObject]@{
          Name         = "NCNetBIOS"
          DisplayName  = "Network configuration NetBIOS"
@@ -750,7 +750,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCWINS")) {
-      $WINS = Get-vlNetworkConfigurationWINS    
+      $WINS = Get-vlNetworkConfigurationWINS
       $Output += [PSCustomObject]@{
          Name         = "NCWINS"
          DisplayName  = "Network configuration WINS"
@@ -764,7 +764,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCSSLTLS")) {
-      $SSLTLS = Get-vlNetworkConfigurationSSLTLS    
+      $SSLTLS = Get-vlNetworkConfigurationSSLTLS
       $Output += [PSCustomObject]@{
          Name         = "NCSSLTLS"
          DisplayName  = "Network configuration SSL/TLS"
@@ -777,7 +777,7 @@ function Get-vlNetworkConfigurationCheck {
       }
    }
 
-   
+
    return $output
 }
 

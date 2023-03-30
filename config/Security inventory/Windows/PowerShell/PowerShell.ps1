@@ -48,7 +48,7 @@ function New-vlErrorObject {
     .DESCRIPTION
         Generate an error object for the result of a function that can be returned to the caller
     .PARAMETER Context
-        The context of the error / exception    
+        The context of the error / exception
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -139,9 +139,9 @@ function Get-vlRegValue {
         [string]$Value
     )
     begin {
-        
+
     }
-    
+
     process {
 
         try {
@@ -202,11 +202,11 @@ function Get-vlRegSubkeys {
     .PARAMETER Hive
         The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
     .PARAMETER Path
-        The path to the registry key        
+        The path to the registry key
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
@@ -222,7 +222,7 @@ function Get-vlRegSubkeys {
     begin {
 
     }
-    
+
     process {
         try {
             $registryItems = @()
@@ -243,9 +243,9 @@ function Get-vlRegSubkeys {
         finally {
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -262,7 +262,7 @@ function Add-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Start-vlTimer -Name "timer1"
     #>
@@ -275,7 +275,7 @@ function Add-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = New-Object -TypeName psobject -Property @{
             Name  = $Name
@@ -283,9 +283,9 @@ function Add-vlTimer {
         }
         $global:debug_timers += $timer
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -300,7 +300,7 @@ function Restart-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Restart-vlTimer -Name "timer1"
     #>
@@ -313,16 +313,16 @@ function Restart-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
             $timer.Start = (Get-Date)
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -339,7 +339,7 @@ function Get-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Get-vlTimerElapsedTime -Name "timer1"
     #>
@@ -354,7 +354,7 @@ function Get-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
@@ -370,9 +370,9 @@ function Get-vlTimerElapsedTime {
             return 0
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -391,7 +391,7 @@ function Write-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Write-vlTimerElapsedTime -Name "timer1"
     #>
@@ -409,7 +409,7 @@ function Write-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
         if ($UseFile) {
@@ -419,9 +419,9 @@ function Write-vlTimerElapsedTime {
             Write-Host "${Name}: $elapsed $Unit"
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -471,7 +471,7 @@ function Get-vlPowerShellV2Status {
         }
 
     }
-    
+
 }
 
 function Get-vlPowerShellCL {
@@ -489,7 +489,7 @@ function Get-vlPowerShellCL {
     .EXAMPLE
         Get-vlPowerShellCL
     #>
-    
+
     param ()
 
     process {
@@ -508,7 +508,7 @@ function Get-vlPowerShellCL {
 
         }
     }
-    
+
 }
 
 function Get-vlPowerShellVersion {
@@ -520,11 +520,11 @@ function Get-vlPowerShellVersion {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        A [psobject] containing the current PowerShell version 
+        A [psobject] containing the current PowerShell version
     .EXAMPLE
         Get-vlPowerShellVersion
     #>
-    
+
     param ()
 
     process {
@@ -543,7 +543,7 @@ function Get-vlPowerShellVersion {
 
         }
     }
-    
+
 }
 
 Function Get-vlPowerShellRemotingStatus {
@@ -555,7 +555,7 @@ Function Get-vlPowerShellRemotingStatus {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        A [psobject] containing the current PowerShell remoting status 
+        A [psobject] containing the current PowerShell remoting status
     .EXAMPLE
         Get-vlPowerShellRemotingStatus
     #>
@@ -618,7 +618,7 @@ function Get-vlPowerShellExecutionPolicy {
     .EXAMPLE
         Get-vlPowerShellExecutionPolicy
     #>
-    
+
     param ()
 
     process {
@@ -743,14 +743,14 @@ function Get-vlPowerShellExecutionPolicy {
             elseif ($highestPolicy -eq "LocalMachine") {
                 return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
             }
-        
+
             $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem
             <#
                 Work Station (1)
                 Domain Controller (2)
                 Server (3)
             #>
-            
+
             # If the execution policy in all scopes is Undefined, the effective execution policy is Restricted for Windows clients and RemoteSigned for Windows Server.
             if ($osInfo.ProductType -eq 1) {
                 return New-vlResultObject -result $result -score 10 -riskScore 0
@@ -767,7 +767,7 @@ function Get-vlPowerShellExecutionPolicy {
 
         }
     }
-    
+
 }
 
 Function Get-vlPowerShellLoggingTranscriptionStatus {
@@ -801,7 +801,7 @@ Function Get-vlPowerShellLoggingTranscriptionStatus {
         }
     }
     catch {
-        
+
     }
 
     return $result
@@ -839,7 +839,7 @@ Function Get-vlPowerShellLoggingScriptBlockStatus {
         }
     }
     catch {
-        
+
     }
 
     return $result
@@ -876,7 +876,7 @@ Function Get-vlPowerShellLoggingModuleLogging {
         }
     }
     catch {
-        
+
     }
 
     return $result
@@ -897,7 +897,7 @@ function Get-vlPowerShellLogging {
     .EXAMPLE
         Get-vlPowerShellLogging
     #>
-    
+
     param ()
 
     process {
@@ -933,7 +933,7 @@ function Get-vlPowerShellLogging {
 
         }
     }
-    
+
 }
 
 Function Get-vlJEACheck {
@@ -996,7 +996,7 @@ function Get-vlPowerShellCheck {
     $params = $params | ForEach-Object { $_.ToLower() }
 
     $Output = @()
-    
+
     if ($params.Contains("all") -or $params.Contains("PSV2")) {
         $powerShellV2 = Get-vlPowerShellV2Status
         $Output += [PSCustomObject]@{
@@ -1024,7 +1024,7 @@ function Get-vlPowerShellCheck {
             ErrorMessage = $powerShellRemoting.ErrorMessage
         }
     }
-    
+
     ## If CL is enabled, the test cannot be run
     if ($params.Contains("all") -or $params.Contains("PSCL")) {
         $powerShellMode = Get-vlPowerShellCL
@@ -1053,7 +1053,7 @@ function Get-vlPowerShellCheck {
             ErrorMessage = $powerShellMode.ErrorMessage
         }
     }
-    
+
     if ($params.Contains("all") -or $params.Contains("PSPolicy")) {
         $powerShellExecutionPolicy = Get-vlPowerShellExecutionPolicy
         $Output += [PSCustomObject]@{
@@ -1081,7 +1081,7 @@ function Get-vlPowerShellCheck {
             ErrorMessage = $powerShellLogging.ErrorMessage
         }
     }
-        
+
     Write-Output $output
 }
 

@@ -48,7 +48,7 @@ function New-vlErrorObject {
     .DESCRIPTION
         Generate an error object for the result of a function that can be returned to the caller
     .PARAMETER Context
-        The context of the error / exception    
+        The context of the error / exception
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -139,9 +139,9 @@ function Get-vlRegValue {
         [string]$Value
     )
     begin {
-        
+
     }
-    
+
     process {
 
         try {
@@ -202,11 +202,11 @@ function Get-vlRegSubkeys {
     .PARAMETER Hive
         The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
     .PARAMETER Path
-        The path to the registry key        
+        The path to the registry key
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
@@ -222,7 +222,7 @@ function Get-vlRegSubkeys {
     begin {
 
     }
-    
+
     process {
         try {
             $registryItems = @()
@@ -243,9 +243,9 @@ function Get-vlRegSubkeys {
         finally {
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -262,7 +262,7 @@ function Add-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Start-vlTimer -Name "timer1"
     #>
@@ -275,7 +275,7 @@ function Add-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = New-Object -TypeName psobject -Property @{
             Name  = $Name
@@ -283,9 +283,9 @@ function Add-vlTimer {
         }
         $global:debug_timers += $timer
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -300,7 +300,7 @@ function Restart-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Restart-vlTimer -Name "timer1"
     #>
@@ -313,16 +313,16 @@ function Restart-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
             $timer.Start = (Get-Date)
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -339,7 +339,7 @@ function Get-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Get-vlTimerElapsedTime -Name "timer1"
     #>
@@ -354,7 +354,7 @@ function Get-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
@@ -370,9 +370,9 @@ function Get-vlTimerElapsedTime {
             return 0
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -391,7 +391,7 @@ function Write-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Write-vlTimerElapsedTime -Name "timer1"
     #>
@@ -409,7 +409,7 @@ function Write-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
         if ($UseFile) {
@@ -419,9 +419,9 @@ function Write-vlTimerElapsedTime {
             Write-Host "${Name}: $elapsed $Unit"
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -464,7 +464,7 @@ function Get-vlServiceLocations {
                # No services outside common locations found
                return New-vlResultObject -result $result -score 10
             }
-            else 
+            else
             {
                $result = [PSCustomObject]@{
                   Services = $ServiceArray
@@ -482,7 +482,7 @@ function Get-vlServiceLocations {
        }
 
    }
-   
+
 }
 
 function Get-vlServiceDLLLocations {
@@ -492,35 +492,35 @@ function Get-vlServiceDLLLocations {
     .DESCRIPTION
         Checks whether service.dll files are located outside common locations
     .LINK
- 
+
     .NOTES
- 
+
     .OUTPUTS
         A [psobject] containing services with service.dll files located outside common locations. Empty if nothing was found.
     .EXAMPLE
         Get-vlServiceDLLLocations
     #>
- 
+
     param (
- 
+
     )
- 
+
     process {
         try {
              $ServiceArray = @()
              $ServiceDLLArray = @()
              Get-ItemProperty hklm:\SYSTEM\CurrentControlSet\Services\*\Parameters | Where-Object { $_.servicedll } | ForEach-Object -process {
- 
+
                 $ServiceDLL = $PSItem.ServiceDLL
                 $ServiceName = ($PSItem.PSParentPath).split('\\')[-1]
                 if ($ServiceDLL -inotmatch '^C:\\WINDOWS\\system32.*$') {
-                   
+
                    $ServiceArray += $ServiceName
                    $ServiceDLLArray += $ServiceDLL
                 }
- 
+
              }
- 
+
              if ($ServiceArray.Count -eq 0)
              {
                 $result = [PSCustomObject]@{
@@ -530,7 +530,7 @@ function Get-vlServiceDLLLocations {
                 # No service.dll file outside common locations found
                 return New-vlResultObject -result $result -score 10
              }
-             else 
+             else
              {
                 $result = [PSCustomObject]@{
                    Services = $ServiceArray
@@ -541,15 +541,15 @@ function Get-vlServiceDLLLocations {
              }
         }
         catch {
- 
+
             return New-vlErrorObject($_)
         }
         finally {
- 
+
         }
- 
+
     }
-    
+
  }
 
 
@@ -575,7 +575,7 @@ function Get-vlWindowsServicesCheck {
    $Output = @()
 
    if ($params.Contains("all") -or $params.Contains("ServiceLocations")) {
-       $ServiceLocations = Get-vlServiceLocations    
+       $ServiceLocations = Get-vlServiceLocations
        $Output += [PSCustomObject]@{
            Name         = "Locations"
            DisplayName  = "Uncommon locations"
@@ -589,7 +589,7 @@ function Get-vlWindowsServicesCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("ServiceDLLLocations")) {
-    $ServiceDLLLocations = Get-vlServiceDLLLocations    
+    $ServiceDLLLocations = Get-vlServiceDLLLocations
     $Output += [PSCustomObject]@{
         Name         = "Service.dll"
         DisplayName  = "Uncommon locations of service.dll"

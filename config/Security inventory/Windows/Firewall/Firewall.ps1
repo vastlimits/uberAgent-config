@@ -48,7 +48,7 @@ function New-vlErrorObject {
     .DESCRIPTION
         Generate an error object for the result of a function that can be returned to the caller
     .PARAMETER Context
-        The context of the error / exception    
+        The context of the error / exception
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -139,9 +139,9 @@ function Get-vlRegValue {
         [string]$Value
     )
     begin {
-        
+
     }
-    
+
     process {
 
         try {
@@ -202,11 +202,11 @@ function Get-vlRegSubkeys {
     .PARAMETER Hive
         The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
     .PARAMETER Path
-        The path to the registry key        
+        The path to the registry key
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
@@ -222,7 +222,7 @@ function Get-vlRegSubkeys {
     begin {
 
     }
-    
+
     process {
         try {
             $registryItems = @()
@@ -243,9 +243,9 @@ function Get-vlRegSubkeys {
         finally {
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -262,7 +262,7 @@ function Add-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Start-vlTimer -Name "timer1"
     #>
@@ -275,7 +275,7 @@ function Add-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = New-Object -TypeName psobject -Property @{
             Name  = $Name
@@ -283,9 +283,9 @@ function Add-vlTimer {
         }
         $global:debug_timers += $timer
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -300,7 +300,7 @@ function Restart-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Restart-vlTimer -Name "timer1"
     #>
@@ -313,16 +313,16 @@ function Restart-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
             $timer.Start = (Get-Date)
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -339,7 +339,7 @@ function Get-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Get-vlTimerElapsedTime -Name "timer1"
     #>
@@ -354,7 +354,7 @@ function Get-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
@@ -370,9 +370,9 @@ function Get-vlTimerElapsedTime {
             return 0
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -391,7 +391,7 @@ function Write-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Write-vlTimerElapsedTime -Name "timer1"
     #>
@@ -409,7 +409,7 @@ function Write-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
         if ($UseFile) {
@@ -419,9 +419,9 @@ function Write-vlTimerElapsedTime {
             Write-Host "${Name}: $elapsed $Unit"
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -441,7 +441,7 @@ function Write-vlTimerElapsedTime {
 [Flags()] enum FW_RULE_DIRECTION {
     IN = 1
     OUT = 2
-} 
+}
 
 [Flags()] enum FW_ACTION {
     BLOCK = 0
@@ -455,7 +455,7 @@ function Get-vlIsFirewallEnabled {
     .SYNOPSIS
         Function that checks if the firewall is enabled.
     .DESCRIPTION
-        Function that checks if the firewall is enabled. 
+        Function that checks if the firewall is enabled.
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -511,7 +511,7 @@ Function Get-vlEnabledRules {
         Direction = IN
         Action = ALLOW
         ApplicationName or ServiceName or LocalPort or RemotePort = not null
-        
+
     .OUTPUTS
         Returns an array of objects containing the following properties:
 
@@ -547,7 +547,7 @@ function Get-vlOpenFirewallPorts {
         Function that iterates over all profiles and returns all enabled rules for all profiles.
     .LINK
         https://uberagent.com
-        
+
     .OUTPUTS
         Returns an array of objects containing the following properties:
 
@@ -563,7 +563,7 @@ function Get-vlOpenFirewallPorts {
     try {
         $openPorts = [FW_PROFILE].GetEnumNames() | ForEach-Object { Get-vlEnabledRules -profile ([FW_PROFILE]::$_) }
 
-        return New-vlResultObject -result $openPorts -score 10 
+        return New-vlResultObject -result $openPorts -score 10
     }
     catch [Microsoft.Management.Infrastructure.CimException] {
         return "[Get-vlOpenFirewallPorts] You need elevated privileges"
@@ -581,7 +581,7 @@ function Get-vlListeningPorts {
         Function that returns all listening ports.
     .LINK
         https://uberagent.com
-        
+
     .OUTPUTS
         Returns an array of objects containing the following properties:
 
@@ -608,7 +608,7 @@ function Get-vlListeningPorts {
             $_.OwningProcessPath = $process.Path
         }
 
-        return New-vlResultObject -result $listeningPorts -score 10 
+        return New-vlResultObject -result $listeningPorts -score 10
     }
     catch [Microsoft.Management.Infrastructure.CimException] {
         return "[Get-vlListeningPorts] You need elevated privileges"
@@ -641,7 +641,7 @@ function Get-vlFirewallCheck {
     $Output = @()
 
     if ($params.Contains("all") -or $params.Contains("FWState")) {
-        $firewallEnabled = Get-vlIsFirewallEnabled    
+        $firewallEnabled = Get-vlIsFirewallEnabled
         $Output += [PSCustomObject]@{
             Name       = "FWState"
             DisplayName  = "Firewall status"
