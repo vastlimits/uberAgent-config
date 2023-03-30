@@ -48,7 +48,7 @@ function New-vlErrorObject {
     .DESCRIPTION
         Generate an error object for the result of a function that can be returned to the caller
     .PARAMETER Context
-        The context of the error / exception    
+        The context of the error / exception
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -139,9 +139,9 @@ function Get-vlRegValue {
         [string]$Value
     )
     begin {
-        
+
     }
-    
+
     process {
 
         try {
@@ -202,11 +202,11 @@ function Get-vlRegSubkeys {
     .PARAMETER Hive
         The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
     .PARAMETER Path
-        The path to the registry key        
+        The path to the registry key
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
@@ -222,7 +222,7 @@ function Get-vlRegSubkeys {
     begin {
 
     }
-    
+
     process {
         try {
             $registryItems = @()
@@ -243,9 +243,9 @@ function Get-vlRegSubkeys {
         finally {
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -262,7 +262,7 @@ function Add-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Start-vlTimer -Name "timer1"
     #>
@@ -275,7 +275,7 @@ function Add-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = New-Object -TypeName psobject -Property @{
             Name  = $Name
@@ -283,9 +283,9 @@ function Add-vlTimer {
         }
         $global:debug_timers += $timer
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -300,7 +300,7 @@ function Restart-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Restart-vlTimer -Name "timer1"
     #>
@@ -313,16 +313,16 @@ function Restart-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
             $timer.Start = (Get-Date)
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -339,7 +339,7 @@ function Get-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Get-vlTimerElapsedTime -Name "timer1"
     #>
@@ -354,7 +354,7 @@ function Get-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
@@ -370,9 +370,9 @@ function Get-vlTimerElapsedTime {
             return 0
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -391,7 +391,7 @@ function Write-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Write-vlTimerElapsedTime -Name "timer1"
     #>
@@ -409,7 +409,7 @@ function Write-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
         if ($UseFile) {
@@ -419,9 +419,9 @@ function Write-vlTimerElapsedTime {
             Write-Host "${Name}: $elapsed $Unit"
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -458,7 +458,7 @@ function Get-vlIsLocalAdmin {
         Function that checks if the user is a local admin.
     .LINK
         https://uberagent.com
-        
+
     .OUTPUTS
         If the user is a local admin, the script will return a vlResultObject with the IsLocalAdmin property set to true.
         If the user is not a local admin, the script will return a vlResultObject with the IsLocalAdmin property set to false.
@@ -510,14 +510,14 @@ function Get-vlGetUserEnrolledFactors() {
     .EXAMPLE
         Get-vlGetUserEnrolledFactors
     #>
-    
+
     $winBioBasePath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio"
-    
+
     if (-not (Test-Path -Path $winBioBasePath)) {
         return [PSCustomObject]@{
             WinBioAvailable = $false
             WinBioUsed      = $false
-        }   
+        }
     }
 
     $currentUserSID = (whoami /user /fo csv | convertfrom-csv).SID
@@ -526,7 +526,7 @@ function Get-vlGetUserEnrolledFactors() {
         return [PSCustomObject]@{
             WinBioAvailable = $true
             WinBioUsed      = $false
-        }   
+        }
     }
 
     $enroledFactors = Get-vlRegValue -Hive "HKLM" -Path ("SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\AccountInfo\" + $currentUserSID) -Value "EnrolledFactors"
@@ -600,7 +600,7 @@ function Get-vlWindowsHelloStatusLocalUser() {
                     EnrolledFactors     = $enroledFactors
                 }
 
-                return New-vlResultObject -result $result -score 10    
+                return New-vlResultObject -result $result -score 10
             }
             else {
                 $result = [PSCustomObject]@{
@@ -608,7 +608,7 @@ function Get-vlWindowsHelloStatusLocalUser() {
                     EnrolledFactors     = $enroledFactors
                 }
 
-                return New-vlResultObject -result $result -score 7    
+                return New-vlResultObject -result $result -score 7
             }
         }
         else {
@@ -618,7 +618,7 @@ function Get-vlWindowsHelloStatusLocalUser() {
                     EnrolledFactors     = $enroledFactors
                 }
 
-                return New-vlResultObject -result $result -score 10    
+                return New-vlResultObject -result $result -score 10
             }
             else {
                 $result = [PSCustomObject]@{
@@ -626,8 +626,8 @@ function Get-vlWindowsHelloStatusLocalUser() {
                     EnrolledFactors     = $enroledFactors
                 }
 
-                return New-vlResultObject -result $result -score 7   
-            } 
+                return New-vlResultObject -result $result -score 7
+            }
         }
     }
     else {
@@ -653,10 +653,10 @@ function Get-vlLocalUsersAndGroupsCheck {
     .EXAMPLE
         Get-vlLocalUsersAndGroupsCheck -uacState -lapsState -secrets
     #>
-    
+
     $params = if ($global:args) { $global:args } else { "all" }
     $params = $params | ForEach-Object { $_.ToLower() }
-    
+
     $Output = @()
 
     if ($params.Contains("all") -or $params.Contains("LUUIsAdmin")) {

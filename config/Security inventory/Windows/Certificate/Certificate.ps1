@@ -48,7 +48,7 @@ function New-vlErrorObject {
     .DESCRIPTION
         Generate an error object for the result of a function that can be returned to the caller
     .PARAMETER Context
-        The context of the error / exception    
+        The context of the error / exception
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -139,9 +139,9 @@ function Get-vlRegValue {
         [string]$Value
     )
     begin {
-        
+
     }
-    
+
     process {
 
         try {
@@ -202,11 +202,11 @@ function Get-vlRegSubkeys {
     .PARAMETER Hive
         The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
     .PARAMETER Path
-        The path to the registry key        
+        The path to the registry key
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
@@ -222,7 +222,7 @@ function Get-vlRegSubkeys {
     begin {
 
     }
-    
+
     process {
         try {
             $registryItems = @()
@@ -243,9 +243,9 @@ function Get-vlRegSubkeys {
         finally {
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -262,7 +262,7 @@ function Add-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Start-vlTimer -Name "timer1"
     #>
@@ -275,7 +275,7 @@ function Add-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = New-Object -TypeName psobject -Property @{
             Name  = $Name
@@ -283,9 +283,9 @@ function Add-vlTimer {
         }
         $global:debug_timers += $timer
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -300,7 +300,7 @@ function Restart-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Restart-vlTimer -Name "timer1"
     #>
@@ -313,16 +313,16 @@ function Restart-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
             $timer.Start = (Get-Date)
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -339,7 +339,7 @@ function Get-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Get-vlTimerElapsedTime -Name "timer1"
     #>
@@ -354,7 +354,7 @@ function Get-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
@@ -370,9 +370,9 @@ function Get-vlTimerElapsedTime {
             return 0
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -391,7 +391,7 @@ function Write-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Write-vlTimerElapsedTime -Name "timer1"
     #>
@@ -409,7 +409,7 @@ function Write-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
         if ($UseFile) {
@@ -419,9 +419,9 @@ function Write-vlTimerElapsedTime {
             Write-Host "${Name}: $elapsed $Unit"
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -841,7 +841,7 @@ function Get-vlExpiredCertificateCheck {
         $expCets = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and $_.NotAfter -lt (Get-Date) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
         $willExpire30 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date) -and $_.NotAfter -lt (Get-Date).AddDays(30)) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
         $willExpire60 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date).AddDays(30) -and $_.NotAfter -lt (Get-Date).AddDays(60)) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
-    
+
         $result = [PSCustomObject]@{
             expired      = $expCets
             willExpire30 = $willExpire30
@@ -909,7 +909,7 @@ function Get-vlRemoteAuthRoot {
         Invoke-WebRequest -Uri $authRootCabUrl -OutFile $authRootCabTemp -UseBasicParsing
 
         #Expand the CAB file
-        Expand-vlCabFile -CabFilePath $authRootCabTemp -DestinationFilePath $tempAuthRootStl       
+        Expand-vlCabFile -CabFilePath $authRootCabTemp -DestinationFilePath $tempAuthRootStl
 
         #check if $tempAuthRootStl was created
         if (Test-Path $tempAuthRootStl) {
@@ -936,7 +936,7 @@ function Get-vlLastGetSyncTimeByKey {
     .EXAMPLE
         Get-vlLastCTLSyncTime
     #>
-    
+
     # Parameter Value
     [CmdletBinding()]
     param (
@@ -1129,7 +1129,7 @@ function Get-vlGetCTLCheck {
 
         #extract CTL
         $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl
-        
+
         # Create the result object
         $result = [PSCustomObject]@{
             CurrentUser  = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
@@ -1193,7 +1193,7 @@ function Get-vlCheckSyncTimes {
 
     $score = 10
     $riskScore = 50
-    
+
     try {
         $lastCTLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "LastSyncTime" # Gets the last time the AuthRoot.stl file was synced
         $lastCRLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "DisallowedCertLastSyncTime" # Gets the last time the CRL file was synced
@@ -1208,7 +1208,7 @@ function Get-vlCheckSyncTimes {
         if( (Get-vlIsWindows7) -eq $false) {
             $score += Get-vlTimeScore -time $lastPRLSyncTime
         }
-        
+
         # Create the result object
         $result = [PSCustomObject]@{
             CTL = $lastCTLSyncTime
@@ -1260,7 +1260,7 @@ function Get-vlCertificateCheck {
         }
     }
     if ($params.Contains("all") -or $params.Contains("CExpCerts")) {
-        $protectedRoots = Get-vlExpiredCertificateCheck   
+        $protectedRoots = Get-vlExpiredCertificateCheck
         $Output += [PSCustomObject]@{
             Name         = "CExpCerts"
             DisplayName  = "Expired certificates"
@@ -1311,7 +1311,7 @@ function Get-vlCertificateCheck {
             ErrorMessage = $ctlCheck.ErrorMessage
         }
     }
-    
+
     return $output
 }
 

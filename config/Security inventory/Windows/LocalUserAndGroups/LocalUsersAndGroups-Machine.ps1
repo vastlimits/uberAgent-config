@@ -48,7 +48,7 @@ function New-vlErrorObject {
     .DESCRIPTION
         Generate an error object for the result of a function that can be returned to the caller
     .PARAMETER Context
-        The context of the error / exception    
+        The context of the error / exception
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -139,9 +139,9 @@ function Get-vlRegValue {
         [string]$Value
     )
     begin {
-        
+
     }
-    
+
     process {
 
         try {
@@ -202,11 +202,11 @@ function Get-vlRegSubkeys {
     .PARAMETER Hive
         The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
     .PARAMETER Path
-        The path to the registry key        
+        The path to the registry key
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
@@ -222,7 +222,7 @@ function Get-vlRegSubkeys {
     begin {
 
     }
-    
+
     process {
         try {
             $registryItems = @()
@@ -243,9 +243,9 @@ function Get-vlRegSubkeys {
         finally {
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -262,7 +262,7 @@ function Add-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Start-vlTimer -Name "timer1"
     #>
@@ -275,7 +275,7 @@ function Add-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = New-Object -TypeName psobject -Property @{
             Name  = $Name
@@ -283,9 +283,9 @@ function Add-vlTimer {
         }
         $global:debug_timers += $timer
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -300,7 +300,7 @@ function Restart-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Restart-vlTimer -Name "timer1"
     #>
@@ -313,16 +313,16 @@ function Restart-vlTimer {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
             $timer.Start = (Get-Date)
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -339,7 +339,7 @@ function Get-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Get-vlTimerElapsedTime -Name "timer1"
     #>
@@ -354,7 +354,7 @@ function Get-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
         if ($null -ne $timer) {
@@ -370,9 +370,9 @@ function Get-vlTimerElapsedTime {
             return 0
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -391,7 +391,7 @@ function Write-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Write-vlTimerElapsedTime -Name "timer1"
     #>
@@ -409,7 +409,7 @@ function Write-vlTimerElapsedTime {
     begin {
 
     }
-    
+
     process {
         $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
         if ($UseFile) {
@@ -419,9 +419,9 @@ function Write-vlTimerElapsedTime {
             Write-Host "${Name}: $elapsed $Unit"
         }
     }
-    
+
     end {
-    
+
     }
 }
 
@@ -568,8 +568,8 @@ function Get-vlLAPSSettings {
             $lapsPasswordComplexity = Get-RegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"
             $lapsPasswordLength = Get-RegValue -Hive "HKLM" -Path $hkey "PasswordLength"
             $lapsExpirationProtectionEnabled = Get-RegValue -Hive "HKLM" -Path $hkey "PwdExpirationProtectionEnabled"
-    
-            $lapsSettings = 
+
+            $lapsSettings =
             [PSCustomObject]@{
                 LAPSEnabled                             = $AdmPwdEnabled
                 LAPSAdminAccountName                    = $lapsAdminAccountName
@@ -580,13 +580,13 @@ function Get-vlLAPSSettings {
             return New-vlResultObject -result $lapsSettings -score 10
         }
         else {
-            $lapsSettings = 
+            $lapsSettings =
             [PSCustomObject]@{
                 LAPSEnabled = $false
             }
             return New-vlResultObject -result $lapsSettings -score 6
         }
-        
+
     }
     catch {
         return New-vlErrorObject($_)
@@ -628,22 +628,22 @@ function Get-vlMachineAvailableFactors() {
         https://uberagent.com
     .OUTPUTS
         Retruns if the Machine Factors are available and the name of the factors
-    .NOTES        
+    .NOTES
         Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\SensorInfo
     .EXAMPLE
         Get-vlMachineAvailableFactors
     #>
-    
+
     $winBioUsed = $false
     $winBioAccountInfoPath = "SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\AccountInfo"
     $winBioSensorInfoBasePath = "SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\SensorInfo"
-    
+
     if (-not (Test-Path -Path ("HKLM:\" + $winBioSensorInfoBasePath ))) {
         return [PSCustomObject]@{
             WinBioAvailable        = $false
             WinBioUsed             = $false
             WinBioAvailableFactors = @()
-        }   
+        }
     }
 
     $bioUsers = Get-vlRegSubkeys -Hive "HKLM" -Path $winBioAccountInfoPath
@@ -671,7 +671,7 @@ function Get-vlMachineAvailableFactors() {
         WinBioUsed             = $winBioUsed
         WinBioAvailableFactors = $availableFac
     }
-    
+
 }
 
 function Get-vlWindowsHelloStatusLocalUser() {
@@ -724,7 +724,7 @@ function Get-vlLocalUsersAndGroupsCheck {
 
     $params = if ($global:args) { $global:args } else { "all" }
     $params = $params | ForEach-Object { $_.ToLower() }
-    
+
     $Output = @()
 
     if ($params.Contains("all") -or $params.Contains("LUMUac")) {
