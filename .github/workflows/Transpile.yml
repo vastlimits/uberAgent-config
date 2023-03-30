@@ -24,9 +24,7 @@ jobs:
 
       - name: Run transpiler script
         shell: bash
-        run: |
-          OUTPUT=$(python config-dev/transpile.py)
-          echo "$OUTPUT"
+        run: python config-dev/transpile.py
       
       - name: Run PSScriptAnalyzer
         uses: microsoft/psscriptanalyzer-action@v1.1
@@ -37,9 +35,7 @@ jobs:
 
       - name: Run PSScriptAnalyzer log analyzer script
         shell: bash
-        run: |
-           OUTPUT=$(python config-dev/analyzeLog.py --log_level note --fail_level error)
-           echo "$OUTPUT"
+        run: python config-dev/analyzeLog.py --log_level note --fail_level error
       
       - name: Run badge update script
         if: success() || failure()
