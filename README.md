@@ -1,6 +1,6 @@
 
 [comment]: # (BADGE_SECTION_START)
-![branch](https://img.shields.io/badge/branch-feature--PSAnalyzer-blue) ![transpilation](https://img.shields.io/badge/transpilation-9%20success%2C%200%20failed%2C%209%20processed-green) ![syntax check](https://img.shields.io/badge/syntax%20check-0%20errors%2C%200%20warnings%2C%2027%20notes-green)
+![branch](https://img.shields.io/badge/branch-feature--PSAnalyzer-blue) ![msi transpilation](https://img.shields.io/badge/transpilation-9%20success%2C%200%20failed%2C%209%20processed-green) ![msi syntax check](https://img.shields.io/badge/syntax%20check-0%20errors%2C%200%20warnings%2C%2027%20notes-green)
 
 [comment]: # (BADGE_SECTION_END)
 

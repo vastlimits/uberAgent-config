@@ -477,7 +477,7 @@ function Get-vlLAPSState {
         If the UAC is enabled, the script will return a vlResultObject with the UACEnabled property set to true.
         If the UAC is disabled, the script will return a vlResultObject with the UACEnabled property set to false.
     .EXAMPLE
-        Get-vlUACState
+        Get-vlLAPSState
     #>
 
    try {
@@ -619,7 +619,7 @@ function Get-vlLAPSSettings {
    PASSWORD = 0x80000000;
 }
 
-function Get-vlMachineAvailableFactors() {
+function Get-vlMachineAvailableFactors () {
    <#
     .SYNOPSIS
         Function that returns the Machine Factors, that can be used.
@@ -675,7 +675,7 @@ function Get-vlMachineAvailableFactors() {
 
 }
 
-function Get-vlWindowsHelloStatusLocalUser() {
+function Get-vlWindowsHelloStatusLocalUser () {
    <#
     .SYNOPSIS
         Function that checks if Windows Hello is enabled.
@@ -687,7 +687,7 @@ function Get-vlWindowsHelloStatusLocalUser() {
         If the Windows Hello is enabled, the script will return a vlResultObject with the WindowsHelloEnabled property set to true.
         If the Windows Hello is disabled, the script will return a vlResultObject with the WindowsHelloEnabled property set to false.
     .EXAMPLE
-        Get-vlLAPSSettings
+        Get-vlWindowsHelloStatusLocalUser
     #>
 
    try {

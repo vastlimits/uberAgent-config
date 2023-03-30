@@ -532,7 +532,7 @@ function Get-vlDefenderStatus {
     .OUTPUTS
         A vlResultObject | vlErrorObject [psobject] containing the list of AMSI providers
     .EXAMPLE
-        Get-vlAMSIProviders
+        Get-vlDefenderStatus
     #>
 
    [CmdletBinding()]
