@@ -43,6 +43,41 @@ function Get-vlIsWindows7 {
    }
 }
 
+function Convert-vlEnumToString ($object) {
+   <#
+    .SYNOPSIS
+        Checks if the input object is an enum and converts it to a string
+    .DESCRIPTION
+        Checks if the input object is an enum and converts it to a string
+    .OUTPUTS
+         an object with all enums converted to strings
+    .EXAMPLE
+        Convert-vlEnumToString
+    #>
+
+   $outputObj = $object | ForEach-Object {
+      if ($_ -is [Enum]) {
+         $_.ToString()
+      }
+      elseif ($_ -is [Array]) {
+         $_ | ForEach-Object { Convert-vlEnumToString $_ }
+      }
+      elseif ($_ -is [PSCustomObject] -and $_.GetType().Name -eq 'PSCustomObject') {
+         $properties = $_ | Get-Member -MemberType Properties
+         $newObj = New-Object -TypeName PSCustomObject
+         foreach ($prop in $properties) {
+            $propValue = $_.($prop.Name)
+            $newObj | Add-Member -MemberType NoteProperty -Name $prop.Name -Value (Convert-vlEnumToString $propValue)
+         }
+         return $newObj
+      }
+      else {
+         return $_
+      }
+   }
+   return $outputObj
+}
+
 function New-vlErrorObject {
    <#
     .SYNOPSIS

@@ -167,6 +167,10 @@ function Get-BitlockerEnabled {
       #check if bitlocker is enabled using Get-BitLockerVolume
       $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage
 
+      if($bitlockerEnabled) {
+         $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
+      }
+
       if ($bitlockerEnabled.ProtectionStatus -ne "On") {
          $score = 0
       }
