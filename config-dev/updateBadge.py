@@ -9,7 +9,7 @@ except:
     print("Error: Could not get current working directory")
 
     # Exit the script
-    exit()
+    exit(1)
 
 file_read_me = os.path.join(working_dir, 'README.md')
 badge_list = []
@@ -97,4 +97,4 @@ except:
     print("Error: Could not read file")
 
     # Exit the script
-    exit()
+    exit(1)
