@@ -91,6 +91,14 @@ try:
             with open(file_read_me, 'w') as write_file:
                 write_file.write(file_content)
                 write_file.close()
+
+            # Clean up the env_vars.txt
+            try:
+                env_file = os.getenv('GITHUB_ENV')
+                if os.path.exists(env_file):
+                    os.remove(env_file)
+            except:
+                print("Error: Failed to remove env_vars.txt")
         else:
             print("Error: Failed to find badge section")
 except:
