@@ -42,10 +42,17 @@ print(f"Generating badge for branch: {branch}")
  # Handle exceptions when opening the file
 try:
     # Open the file
+    file_size = os.path.getsize(file_read_me)
+
     with open(file_read_me, 'r') as read_file:
         # Read the file
         file_content = read_file.read()
         read_file.close()
+
+        if not file_content or file_size != len(file_content):
+            print('File is empty or not all data was read.')
+            # Exit the script
+            exit(1)
 
         pattern = r'\[comment\]: # \(BADGE_SECTION_START\)(.*?)\[comment\]: # \(BADGE_SECTION_END\)'
         match = re.search(pattern, file_content, flags=re.DOTALL)
@@ -90,8 +97,18 @@ try:
             # Write the file
             with open(file_read_me, 'w') as write_file:
                 write_file.write(file_content)
-                write_file.close()
+                write_file.flush()
 
+            # Check if everything was written
+            with open(file_read_me, 'r') as read_file:
+                content = read_file.read()
+
+                if content != file_content:
+                    print('Not all data was written to the file.')
+                    # Exit the script
+                    exit(1)
+
+            print("Badge updated successfully")
         else:
             print("Error: Failed to find badge section")
 except:
