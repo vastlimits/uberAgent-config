@@ -4,7 +4,7 @@
 $global:debug_timers = @()
 
 function Get-vlOsArchitecture {
-    <#
+   <#
     .SYNOPSIS
         Get the OS architecture
     .DESCRIPTION
@@ -19,11 +19,11 @@ function Get-vlOsArchitecture {
         return Get-vlOsArchitecture
     #>
 
-    return (Get-CimInstance Win32_operatingsystem).OSArchitecture
+   return (Get-CimInstance Win32_operatingsystem).OSArchitecture
 }
 
 function Get-vlIsWindows7 {
-    <#
+   <#
     .SYNOPSIS
         Check if the OS is Windows 7
     .DESCRIPTION
@@ -34,22 +34,58 @@ function Get-vlIsWindows7 {
         return Get-vlIsWindows7
     #>
 
-    $osVersion = (Get-WmiObject -Class Win32_OperatingSystem).Version
-    if ($osVersion -match "^6\.1") {
-        return $true
-    } else {
-        return $false
-    }
+   $osVersion = (Get-WmiObject -Class Win32_OperatingSystem).Version
+   if ($osVersion -match "^6\.1") {
+      return $true
+   }
+   else {
+      return $false
+   }
+}
+
+function Convert-vlEnumToString ($object) {
+   <#
+    .SYNOPSIS
+        Checks if the input object is an enum and converts it to a string
+    .DESCRIPTION
+        Checks if the input object is an enum and converts it to a string
+    .OUTPUTS
+         an object with all enums converted to strings
+    .EXAMPLE
+        Convert-vlEnumToString
+    #>
+
+   $outputObj = $object | ForEach-Object {
+      if ($_ -is [Enum]) {
+         $_.ToString()
+      }
+      elseif ($_ -is [Array]) {
+         $_ | ForEach-Object { Convert-vlEnumToString $_ }
+      }
+      elseif ($_ -is [PSCustomObject] -and $_.GetType().Name -eq 'PSCustomObject') {
+         $properties = $_ | Get-Member -MemberType Properties
+         $newObj = New-Object -TypeName PSCustomObject
+         foreach ($prop in $properties) {
+            $propValue = $_.($prop.Name)
+            $newObj | Add-Member -MemberType NoteProperty -Name $prop.Name -Value (Convert-vlEnumToString $propValue)
+         }
+         return $newObj
+      }
+      else {
+         return $_
+      }
+   }
+   return $outputObj
 }
 
 function New-vlErrorObject {
-    <#
+   <#
     .SYNOPSIS
         Generate an error object for the result of a function
     .DESCRIPTION
         Generate an error object for the result of a function that can be returned to the caller
     .PARAMETER Context
-        The context of the error / exception    
+        The context of the error / exception
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -60,23 +96,23 @@ function New-vlErrorObject {
         }
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        $context,
-        $score = 0
-    )
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      $context,
+      $score = 0
+   )
 
-    return [PSCustomObject]@{
-        Result       = ""
-        ErrorCode    = $context.Exception.MessageId
-        ErrorMessage = $context.Exception.Message
-        Score        = $score
-    }
+   return [PSCustomObject]@{
+      Result       = ""
+      ErrorCode    = $context.Exception.MessageId
+      ErrorMessage = $context.Exception.Message
+      Score        = $score
+   }
 }
 
 function New-vlResultObject {
-    <#
+   <#
     .SYNOPSIS
         Generate a result object for the result of a function
     .DESCRIPTION
@@ -94,25 +130,25 @@ function New-vlResultObject {
         New-vlResultObject($result)
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        $result,
-        $score,
-        $riskScore
-    )
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      $result,
+      $score,
+      $riskScore
+   )
 
-    return [PSCustomObject]@{
-        Result       = ConvertTo-Json $result -Compress
-        ErrorCode    = 0
-        ErrorMessage = ""
-        Score        = $score
-        RiskScore    = $riskScore
-    }
+   return [PSCustomObject]@{
+      Result       = ConvertTo-Json $result -Compress
+      ErrorCode    = 0
+      ErrorMessage = ""
+      Score        = $score
+      RiskScore    = $riskScore
+   }
 }
 
 function Get-vlRegValue {
-    <#
+   <#
     .SYNOPSIS
         Get the value of a registry key
     .DESCRIPTION
@@ -129,73 +165,74 @@ function Get-vlRegValue {
         Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Value "ProductName"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU", "HKCR")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path,
-        [Parameter(Mandatory = $false)]
-        [string]$Value
-    )
-    begin {
-        
-    }
-    
-    process {
+   [CmdletBinding()]
+   [OutputType([Object])]
+   param (
+      [Parameter(Mandatory = $true)]
+      [ValidateSet("HKLM", "HKU", "HKCU", "HKCR")]
+      [string]$Hive,
+      [Parameter(Mandatory = $true)]
+      [string]$Path,
+      [Parameter(Mandatory = $false)]
+      [string]$Value
+   )
+   begin {
 
-        try {
-            $regKey = $null
-            $regKeyValue = "";
-            if ($Hive -eq "HKCU") {
-                $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value)
-                }
-                return $regKeyValue;
-            }
-            elseif ($hive -eq "HKU") {
-                $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value);
-                }
-                return $regKeyValue;
-            }
-            elseif ($hive -eq "HKCR") {
-                $regKey = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value);
-                }
-                return $regKeyValue;
-            }
-            else {
-                $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value);
-                }
-                return $regKeyValue;
-            }
-        }
-        catch {
-            Write-Verbose "Registry $Hive\$Path was not found"
-            return ""
-        }
-        finally {
+   }
+
+   process {
+
+      try {
+         $regKey = $null
+         $regKeyValue = "";
+         if ($Hive -eq "HKCU") {
+            $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path);
             if ($null -ne $regKey) {
-                Write-Verbose "Closing registry key $Hive\$Path"
-                $regKey.Dispose()
+               $regKeyValue = $regKey.GetValue($Value)
             }
-        }
-    }
+            return $regKeyValue;
+         }
+         elseif ($hive -eq "HKU") {
+            $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path);
+            if ($null -ne $regKey) {
+               $regKeyValue = $regKey.GetValue($Value);
+            }
+            return $regKeyValue;
+         }
+         elseif ($hive -eq "HKCR") {
+            $regKey = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey($Path);
+            if ($null -ne $regKey) {
+               $regKeyValue = $regKey.GetValue($Value);
+            }
+            return $regKeyValue;
+         }
+         else {
+            $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path);
+            if ($null -ne $regKey) {
+               $regKeyValue = $regKey.GetValue($Value);
+            }
+            return $regKeyValue;
+         }
+      }
+      catch {
+         Write-Verbose "Registry $Hive\$Path was not found"
+         return $null
+      }
+      finally {
+         if ($null -ne $regKey) {
+            Write-Verbose "Closing registry key $Hive\$Path"
+            $regKey.Dispose()
+         }
+      }
+   }
 
-    end {
-    }
+   end {
+   }
 }
 
 
 function Get-vlRegSubkeys {
-    <#
+   <#
     .SYNOPSIS
         Read all the subkeys from a registry path
     .DESCRIPTION
@@ -203,57 +240,58 @@ function Get-vlRegSubkeys {
     .PARAMETER Hive
         The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
     .PARAMETER Path
-        The path to the registry key        
+        The path to the registry key
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-    begin {
+   [CmdletBinding()]
+   [OutputType([Object])]
+   param (
+      [Parameter(Mandatory = $true)]
+      [ValidateSet("HKLM", "HKU", "HKCU")]
+      [string]$Hive,
+      [Parameter(Mandatory = $true)]
+      [string]$Path
+   )
+   begin {
 
-    }
-    
-    process {
-        try {
-            $registryItems = @()
+   }
 
-            $path = $Hive + ":\" + $Path
-            if (Test-Path -Path $path) {
-                $keys = Get-ChildItem -Path $path
-                $registryItems = $keys | Foreach-Object { Get-ItemProperty $_.PsPath }
-            }
-            return $registryItems
-        }
-        catch {
-            Write-Verbose "Error reading registry $Hive\$Path"
-            Write-Verbose $_.Exception.Message
+   process {
+      try {
+         $registryItems = @()
 
-            return @()
-        }
-        finally {
-        }
-    }
-    
-    end {
-    
-    }
+         $path = $Hive + ":\" + $Path
+         if (Test-Path -Path $path) {
+            $keys = Get-ChildItem -Path $path
+            $registryItems = $keys | Foreach-Object { Get-ItemProperty $_.PsPath }
+         }
+         return $registryItems
+      }
+      catch {
+         Write-Verbose "Error reading registry $Hive\$Path"
+         Write-Verbose $_.Exception.Message
+
+         return [Object]@()
+      }
+      finally {
+      }
+   }
+
+   end {
+
+   }
 }
 
 ##### Debugging utilities #####
 
 function Add-vlTimer {
-    <#
+   <#
     .SYNOPSIS
         Start a timer
     .DESCRIPTION
@@ -263,35 +301,35 @@ function Add-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Start-vlTimer -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name
+   )
+   begin {
 
-    }
-    
-    process {
-        $timer = New-Object -TypeName psobject -Property @{
-            Name  = $Name
-            Start = (Get-Date)
-        }
-        $global:debug_timers += $timer
-    }
-    
-    end {
-    
-    }
+   }
+
+   process {
+      $timer = New-Object -TypeName psobject -Property @{
+         Name  = $Name
+         Start = (Get-Date)
+      }
+      $global:debug_timers += $timer
+   }
+
+   end {
+
+   }
 }
 
 function Restart-vlTimer {
-    <#
+   <#
     .SYNOPSIS
         Restart a timer
     .DESCRIPTION
@@ -301,34 +339,34 @@ function Restart-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Restart-vlTimer -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name
+   )
+   begin {
 
-    }
-    
-    process {
-        $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
-        if ($null -ne $timer) {
-            $timer.Start = (Get-Date)
-        }
-    }
-    
-    end {
-    
-    }
+   }
+
+   process {
+      $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
+      if ($null -ne $timer) {
+         $timer.Start = (Get-Date)
+      }
+   }
+
+   end {
+
+   }
 }
 
 function Get-vlTimerElapsedTime {
-    <#
+   <#
     .SYNOPSIS
         Get the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
     .DESCRIPTION
@@ -340,45 +378,46 @@ function Get-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Get-vlTimerElapsedTime -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name,
-        [ValidateSet("sec", "ms")]
-        [string]$Unit = "ms"
-    )
-    begin {
+   [CmdletBinding()]
+   [OutputType([System.Int64])]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name,
+      [ValidateSet("sec", "ms")]
+      [string]$Unit = "ms"
+   )
+   begin {
 
-    }
-    
-    process {
-        $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
-        if ($null -ne $timer) {
-            $elapsed = (Get-Date) - $timer.Start
-            if ($Unit -eq "sec") {
-                return $elapsed.TotalSeconds
-            }
-            else {
-                return $elapsed.TotalMilliseconds
-            }
-        }
-        else {
-            return 0
-        }
-    }
-    
-    end {
-    
-    }
+   }
+
+   process {
+      $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
+      if ($null -ne $timer) {
+         $elapsed = (Get-Date) - $timer.Start
+         if ($Unit -eq "sec") {
+            return $elapsed.TotalSeconds
+         }
+         else {
+            return $elapsed.TotalMilliseconds
+         }
+      }
+      else {
+         return [System.Int64]0
+      }
+   }
+
+   end {
+
+   }
 }
 
 function Write-vlTimerElapsedTime {
-    <#
+   <#
     .SYNOPSIS
         Write the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
     .DESCRIPTION
@@ -392,43 +431,43 @@ function Write-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Write-vlTimerElapsedTime -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name,
-        [Parameter(Mandatory = $false)]
-        [bool]$UseFile = $false,
-        [Parameter(Mandatory = $false)]
-        [ValidateSet("sec", "ms")]
-        [string]$Unit = "ms"
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name,
+      [Parameter(Mandatory = $false)]
+      [bool]$UseFile = $false,
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("sec", "ms")]
+      [string]$Unit = "ms"
+   )
+   begin {
 
-    }
-    
-    process {
-        $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
-        if ($UseFile) {
-            Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
-        }
-        else {
-            Write-Host "${Name}: $elapsed $Unit"
-        }
-    }
-    
-    end {
-    
-    }
+   }
+
+   process {
+      $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
+      if ($UseFile) {
+         Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
+      }
+      else {
+         Write-Host "${Name}: $elapsed $Unit"
+      }
+   }
+
+   end {
+
+   }
 }
 
 
 function Get-vlDefaultProgramForExtension {
-    <#
+   <#
     .SYNOPSIS
         Gets the default program for a specific file extension
     .DESCRIPTION
@@ -439,33 +478,33 @@ function Get-vlDefaultProgramForExtension {
         Get-vlDefaultProgramForExtension
     #>
 
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Extension
-    )
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Extension
+   )
 
-    $progId = Get-vlRegValue -Hive "HKCR" -Path "\$Extension"
-    if ($progId -ne $null) {
-        $command1 = (Get-vlRegValue -Hive "HKCR" -Path "\$progId\shell\open\command")
-        $command2 = (Get-vlRegValue -Hive "HKCR" -Path "\$progId\shell\printto\command")
+   $progId = Get-vlRegValue -Hive "HKCR" -Path "\$Extension"
+   if ($progId -ne $null) {
+      $command1 = (Get-vlRegValue -Hive "HKCR" -Path "\$progId\shell\open\command")
+      $command2 = (Get-vlRegValue -Hive "HKCR" -Path "\$progId\shell\printto\command")
 
-        # select the one that is not null
-        $command = if ($command1 -ne $null -and $command1 -ne "") { $command1 } else { $command2 }
-        
-        if ($command -ne $null) {
-            return $command
-        }
-        else {
-            Write-Debug "No 'open' command found for program ID $progId."
-        }
-    }
-    else {
-        Write-Debug "No default program found for extension $Extension."
-    }
+      # select the one that is not null
+      $command = if ($command1 -ne $null -and $command1 -ne "") { $command1 } else { $command2 }
+
+      if ($command -ne $null) {
+         return $command
+      }
+      else {
+         Write-Debug "No 'open' command found for program ID $progId."
+      }
+   }
+   else {
+      Write-Debug "No default program found for extension $Extension."
+   }
 }
 
 function Test-vlBlockedProgram {
-    <#
+   <#
     .SYNOPSIS
         Tests if a program is blocked by the system.
     .DESCRIPTION
@@ -476,37 +515,37 @@ function Test-vlBlockedProgram {
         Test-vlBlockedProgram
     #>
 
-    Param(
-        [string]$ProgramPath
-    )
+   Param(
+      [string]$ProgramPath
+   )
 
-    $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
-    $processStartInfo.FileName = $ProgramPath
-    $processStartInfo.RedirectStandardError = $true
-    $processStartInfo.RedirectStandardOutput = $true
-    $processStartInfo.UseShellExecute = $false
-    $processStartInfo.CreateNoWindow = $true
+   $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
+   $processStartInfo.FileName = $ProgramPath
+   $processStartInfo.RedirectStandardError = $true
+   $processStartInfo.RedirectStandardOutput = $true
+   $processStartInfo.UseShellExecute = $false
+   $processStartInfo.CreateNoWindow = $true
 
-    $process = New-Object System.Diagnostics.Process
-    $process.StartInfo = $processStartInfo
+   $process = New-Object System.Diagnostics.Process
+   $process.StartInfo = $processStartInfo
 
-    $process.Start() | Out-Null
-    $process.WaitForExit()
+   $process.Start() | Out-Null
+   $process.WaitForExit()
 
-    $exitCode = $process.ExitCode
+   $exitCode = $process.ExitCode
 
-    if ($exitCode -ne 0) {
-        # the program is blocked
-        return $true
-    }
-    else {
-        # the program is not blocked
-        return $false
-    }
+   if ($exitCode -ne 0) {
+      # the program is blocked
+      return $true
+   }
+   else {
+      # the program is not blocked
+      return $false
+   }
 }
 
 function Get-CheckHTAEnabled {
-    <#
+   <#
     .SYNOPSIS
         Checks if HTA is enabled on the system.
     .DESCRIPTION
@@ -520,52 +559,61 @@ function Get-CheckHTAEnabled {
         Get-CheckHTAEnabled
     #>
 
-    try {
-        $startProc = ""
+   try {
+      $startProc = ""
+      $score = 10
 
-        #$htaExecuteStatus = Run-vlHtaCode $htacode
-        $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "mshta.exe"
+      #$htaExecuteStatus = Run-vlHtaCode $htacode
+      $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "mshta.exe"
 
-        $defaultLink = $true
-        $startCmd = (Get-vlDefaultProgramForExtension -Extension ".hta").ToLower()
+      $defaultLink = $true
+      $startCmd = (Get-vlDefaultProgramForExtension -Extension ".hta").ToLower()
 
-        if ($null -ne $startCmd -and $startCmd -ne "") {
-            $startProc = (Split-Path $startCmd -Leaf)
+      if ($null -ne $startCmd -and $startCmd -ne "") {
+         $startProc = (Split-Path $startCmd -Leaf)
 
-            # check if $startProc contains space and if so, get the first part
-            if ($startProc.Contains(" ")) {
-                $startProc = $startProc.Split(" ")[0]
-            }
-        }
-        else {
-            $startProc = $null
-        }
+         # check if $startProc contains space and if so, get the first part
+         if ($startProc.Contains(" ")) {
+            $startProc = $startProc.Split(" ")[0]
+         }
+      }
+      else {
+         $startProc = $null
+      }
 
-        # check if $status starts with "${env:SystemRoot}" and contains "mshta.exe"
-        $winDir = ("${env:SystemRoot}").ToLower()
+      # check if $status starts with "${env:SystemRoot}" and contains "mshta.exe"
+      $winDir = ("${env:SystemRoot}").ToLower()
 
-        if ($startCmd.StartsWith($winDir) -and $startCmd.Contains("mshta.exe")) {
-            $defaultLink = $true
-        }
-        else {
-            $defaultLink = $false
-        }
+      if ($startCmd.StartsWith($winDir) -and $startCmd.Contains("mshta.exe")) {
+         $defaultLink = $true
+      }
+      else {
+         $defaultLink = $false
+      }
 
-        $result = [PSCustomObject]@{
-            RunBlocked  = $htaRunBlocked
-            OpenWith    = $startProc
-            DefaultLink = $defaultLink
-        }
+      if($htaRunBlocked -ne $true) {
+         $score -= 7
+      }
 
-        return New-vlResultObject -result $result -score 10
-    }
-    catch {
-        return New-vlErrorObject -error $_
-    }
+      if($defaultLink -eq $true) {
+         $score -= 3
+      }
+
+      $result = [PSCustomObject]@{
+         RunBlocked  = $htaRunBlocked
+         OpenWith    = $startProc
+         DefaultLink = $defaultLink
+      }
+
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
+   }
+   catch {
+      return New-vlErrorObject -error $_
+   }
 }
 
 function Get-BitlockerEnabled {
-    <#
+   <#
     .SYNOPSIS
         Checks if Bitlocker is enabled and used on the system.
     .DESCRIPTION
@@ -574,22 +622,40 @@ function Get-BitlockerEnabled {
         PSCustomObject
         enabled: true if enabled, false if not
     .EXAMPLE
-        Get-CheckHTAEnabled
+        Get-BitlockerEnabled
     #>
 
-    try {
-        #check if bitlocker is enabled using Get-BitLockerVolume
-        $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, PercentComplete
+   try {
+      $score = 10
 
-        return New-vlResultObject -result $bitlockerEnabled 
-    }
-    catch {
-        return "Cannot get BitlockerEnabled"
-    }
+      #check if bitlocker is enabled using Get-BitLockerVolume
+      $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage
+
+      if($bitlockerEnabled) {
+         $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
+      }
+
+      if ($bitlockerEnabled.ProtectionStatus -ne "On") {
+         $score = 0
+      }
+      else {
+         if($bitlockerEnabled.EncryptionPercentage -eq 100) {
+            $score = 10
+         }
+         else {
+            $score = 5
+         }
+      }
+
+      return New-vlResultObject -result $bitlockerEnabled -score $score
+   }
+   catch {
+      return New-vlErrorObject -error $_
+   }
 }
 
 function Get-COMHijacking {
-    <#
+   <#
     .SYNOPSIS
         Checks if mmc.exe is hijacked
     .DESCRIPTION
@@ -600,33 +666,33 @@ function Get-COMHijacking {
     .EXAMPLE
         Get-COMHijacking
     #>
-    try {
-        
-        $expectedValue = "$($env:SystemRoot)\system32\mmc.exe ""%1"" %*"
+   try {
 
-        $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Classes\mscfile\shell\open\command"
+      $expectedValue = "$($env:SystemRoot)\system32\mmc.exe ""%1"" %*"
 
-        if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
-            $result = [PSCustomObject]@{
-                Detected = $false
-            }
+      $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Classes\mscfile\shell\open\command"
 
-            return New-vlResultObject -result $result -score 10
-        }
-        else {
-            $result = [PSCustomObject]@{
-                Detected = $true
-            }
-            return New-vlResultObject -result $result -score 0
-        }
-    }
-    catch {
-        return New-vlErrorObject -error $_
-    }
+      if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
+         $result = [PSCustomObject]@{
+            Detected = $false
+         }
+
+         return New-vlResultObject -result $result -score 10
+      }
+      else {
+         $result = [PSCustomObject]@{
+            Detected = $true
+         }
+         return New-vlResultObject -result $result -score 0
+      }
+   }
+   catch {
+      return New-vlErrorObject -error $_
+   }
 }
 
 function Get-vlTimeProviderHijacking {
-    <#
+   <#
     .SYNOPSIS
         Checks if w32time.dll is hijacked
     .DESCRIPTION
@@ -638,32 +704,32 @@ function Get-vlTimeProviderHijacking {
         Get-vlTimeProviderHijacking
     #>
 
-    try {
-        $expectedValue = "$($env:SystemRoot)\system32\w32time.dll"
+   try {
+      $expectedValue = "$($env:SystemRoot)\system32\w32time.dll"
 
-        $value = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer" -Value "DllName"
+      $value = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer" -Value "DllName"
 
-        if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
-            $result = [PSCustomObject]@{
-                Detected = $false
-            }
+      if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
+         $result = [PSCustomObject]@{
+            Detected = $false
+         }
 
-            return New-vlResultObject -result $result -score 10
-        }
-        else {
-            $result = [PSCustomObject]@{
-                Detected = $true
-            }
-            return New-vlResultObject -result $result -score 0
-        }
-    }
-    catch {
-        return New-vlErrorObject -error $_
-    }
+         return New-vlResultObject -result $result -score 10
+      }
+      else {
+         $result = [PSCustomObject]@{
+            Detected = $true
+         }
+         return New-vlResultObject -result $result -score 0
+      }
+   }
+   catch {
+      return New-vlErrorObject -error $_
+   }
 }
 
 function Get-vlWindowsPersistanceCheck {
-    <#
+   <#
     .SYNOPSIS
         Runs sfc /verifyonly and checks if CBS.log contains "corrupt" or "repaired"
     .DESCRIPTION
@@ -674,92 +740,92 @@ function Get-vlWindowsPersistanceCheck {
     .EXAMPLE
         Get-vlWindowsPersistanceCheck
     #>
-    
-    try {
-        $log_file = "$($env:SystemRoot)\Logs\CBS\CBS.log"
 
-        #check if CBS Log exists and if so, delete it use %windir%\Logs\CBS\CBS.log
-        if (Test-Path -Path $log_file) {
-            Remove-Item -Path $log_file -Force
-        }
+   try {
+      $log_file = "$($env:SystemRoot)\Logs\CBS\CBS.log"
 
-        #run sfc /verifyonly and wait for it to finish run it hidden
-        $sfc = Start-Process -FilePath "sfc.exe" -ArgumentList "/verifyonly" -Wait -WindowStyle Hidden
-        
-        #read the log file and check if it contains "corrupt" or "repaired"
-        $defect = Get-Content $log_file | Select-String -Pattern "(corrupt|repaired)"
-        $ix = 0
-    }
-    catch {
-        $defect = $null
-    }
+      #check if CBS Log exists and if so, delete it use %windir%\Logs\CBS\CBS.log
+      if (Test-Path -Path $log_file) {
+         Remove-Item -Path $log_file -Force
+      }
+
+      #run sfc /verifyonly and wait for it to finish run it hidden
+      $sfc = Start-Process -FilePath "sfc.exe" -ArgumentList "/verifyonly" -Wait -WindowStyle Hidden
+
+      #read the log file and check if it contains "corrupt" or "repaired"
+      $defect = Get-Content $log_file | Select-String -Pattern "(corrupt|repaired)"
+      $ix = 0
+   }
+   catch {
+      $defect = $null
+   }
 }
 
 
 
 function Get-WindowsConfigurationCheck {
-    #set $params to $global:args or if empty default "all"
-    $params = if ($global:args) { $global:args } else { "all" }
-    $Output = @()
+   #set $params to $global:args or if empty default "all"
+   $params = if ($global:args) { $global:args } else { "all" }
+   $Output = @()
 
 
-    if ($params.Contains("all") -or $params.Contains("WCHta")) {
-        $checkHtaEnabled = Get-CheckHTAEnabled
-        $Output += [PSCustomObject]@{
-            Name         = "WCHta"
-            DisplayName  = "WindowsConfiguration HTA"
-            Description  = "Checks if HTA execution is enabled on the system."
-            Score        = 0
-            ResultData   = $checkHtaEnabled.Result
-            RiskScore    = 100
-            ErrorCode    = $COMHijacking.ErrorCode
-            ErrorMessage = $COMHijacking.ErrorMessage
-        }
-    }
+   if ($params.Contains("all") -or $params.Contains("WCHta")) {
+      $checkHtaEnabled = Get-CheckHTAEnabled
+      $Output += [PSCustomObject]@{
+         Name         = "WCHta"
+         DisplayName  = "WindowsConfiguration HTA"
+         Description  = "Checks if HTA execution is enabled on the system."
+         Score        = $checkHtaEnabled.Score
+         ResultData   = $checkHtaEnabled.Result
+         RiskScore    = 80
+         ErrorCode    = $checkHtaEnabled.ErrorCode
+         ErrorMessage = $checkHtaEnabled.ErrorMessage
+      }
+   }
 
-    if ($params.Contains("all") -or $params.Contains("WCBitlocker")) {
-        $checkBitlockerEnabled = Get-BitlockerEnabled
-        $Output += [PSCustomObject]@{
-            Name         = "WCBitlocker"
-            DisplayName  = "WindowsConfiguration Bitlocker"
-            Description  = "Checks if Bitlocker is enabled on the system."
-            Score        = 0
-            ResultData   = $checkBitlockerEnabled.Result
-            RiskScore    = 100
-            ErrorCode    = $COMHijacking.ErrorCode
-            ErrorMessage = $COMHijacking.ErrorMessage
-        }
-    }
+   if ($params.Contains("all") -or $params.Contains("WCBitlocker")) {
+      $checkBitlockerEnabled = Get-BitlockerEnabled
+      $Output += [PSCustomObject]@{
+         Name         = "WCBitlocker"
+         DisplayName  = "WindowsConfiguration Bitlocker"
+         Description  = "Checks if Bitlocker is enabled on the system."
+         Score        = $checkBitlockerEnabled.Score
+         ResultData   = $checkBitlockerEnabled.Result
+         RiskScore    = 80
+         ErrorCode    = $checkBitlockerEnabled.ErrorCode
+         ErrorMessage = $checkBitlockerEnabled.ErrorMessage
+      }
+   }
 
-    if ($params.Contains("all") -or $params.Contains("WCComHijacking")) {
-        $COMHijacking = Get-COMHijacking
-        $Output += [PSCustomObject]@{
-            Name         = "WCComHijacking"
-            DisplayName  = "WindowsConfiguration COM hijacking"
-            Description  = "Checks if COM is hijacked."
-            Score        = $COMHijacking.Score
-            ResultData   = $COMHijacking.Result
-            RiskScore    = 80
-            ErrorCode    = $COMHijacking.ErrorCode
-            ErrorMessage = $COMHijacking.ErrorMessage
-        }
-    }
+   if ($params.Contains("all") -or $params.Contains("WCComHijacking")) {
+      $COMHijacking = Get-COMHijacking
+      $Output += [PSCustomObject]@{
+         Name         = "WCComHijacking"
+         DisplayName  = "WindowsConfiguration COM hijacking"
+         Description  = "Checks if COM is hijacked."
+         Score        = $COMHijacking.Score
+         ResultData   = $COMHijacking.Result
+         RiskScore    = 80
+         ErrorCode    = $COMHijacking.ErrorCode
+         ErrorMessage = $COMHijacking.ErrorMessage
+      }
+   }
 
-    if ($params.Contains("all") -or $params.Contains("WCTimeProvHijacking")) {
-        $timeProviderHijacking = Get-vlTimeProviderHijacking
-        $Output += [PSCustomObject]@{
-            Name         = "WCTimeProvHijacking"
-            DisplayName  = "WindowsConfiguration time provider hijacking"
-            Description  = "Checks if the time provider is hijacked."
-            Score        = $timeProviderHijacking.Score
-            ResultData   = $timeProviderHijacking.Result
-            RiskScore    = 80
-            ErrorCode    = $timeProviderHijacking.ErrorCode
-            ErrorMessage = $timeProviderHijacking.ErrorMessage
-        }
-    }
+   if ($params.Contains("all") -or $params.Contains("WCTimeProvHijacking")) {
+      $timeProviderHijacking = Get-vlTimeProviderHijacking
+      $Output += [PSCustomObject]@{
+         Name         = "WCTimeProvHijacking"
+         DisplayName  = "WindowsConfiguration time provider hijacking"
+         Description  = "Checks if the time provider is hijacked."
+         Score        = $timeProviderHijacking.Score
+         ResultData   = $timeProviderHijacking.Result
+         RiskScore    = 80
+         ErrorCode    = $timeProviderHijacking.ErrorCode
+         ErrorMessage = $timeProviderHijacking.ErrorMessage
+      }
+   }
 
-    <#
+   <#
     TODO: Add a good log parsing logic to check for "corrupt" or "repaired" in CBS.log
     if ($params.Contains("all") -or $params.Contains("persistancecheck")) {
         $persistancecheck = Get-vlWindowsPersistanceCheck
@@ -772,9 +838,9 @@ function Get-WindowsConfigurationCheck {
             ErrorMessage = $persistancecheck.ErrorMessage
         }
     }
-    #>   
-    
-    return $output
+    #>
+
+   return $output
 }
 
 Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)

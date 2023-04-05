@@ -3,7 +3,7 @@
 $global:debug_timers = @()
 
 function Get-vlOsArchitecture {
-    <#
+   <#
     .SYNOPSIS
         Get the OS architecture
     .DESCRIPTION
@@ -18,11 +18,11 @@ function Get-vlOsArchitecture {
         return Get-vlOsArchitecture
     #>
 
-    return (Get-CimInstance Win32_operatingsystem).OSArchitecture
+   return (Get-CimInstance Win32_operatingsystem).OSArchitecture
 }
 
 function Get-vlIsWindows7 {
-    <#
+   <#
     .SYNOPSIS
         Check if the OS is Windows 7
     .DESCRIPTION
@@ -33,22 +33,58 @@ function Get-vlIsWindows7 {
         return Get-vlIsWindows7
     #>
 
-    $osVersion = (Get-WmiObject -Class Win32_OperatingSystem).Version
-    if ($osVersion -match "^6\.1") {
-        return $true
-    } else {
-        return $false
-    }
+   $osVersion = (Get-WmiObject -Class Win32_OperatingSystem).Version
+   if ($osVersion -match "^6\.1") {
+      return $true
+   }
+   else {
+      return $false
+   }
+}
+
+function Convert-vlEnumToString ($object) {
+   <#
+    .SYNOPSIS
+        Checks if the input object is an enum and converts it to a string
+    .DESCRIPTION
+        Checks if the input object is an enum and converts it to a string
+    .OUTPUTS
+         an object with all enums converted to strings
+    .EXAMPLE
+        Convert-vlEnumToString
+    #>
+
+   $outputObj = $object | ForEach-Object {
+      if ($_ -is [Enum]) {
+         $_.ToString()
+      }
+      elseif ($_ -is [Array]) {
+         $_ | ForEach-Object { Convert-vlEnumToString $_ }
+      }
+      elseif ($_ -is [PSCustomObject] -and $_.GetType().Name -eq 'PSCustomObject') {
+         $properties = $_ | Get-Member -MemberType Properties
+         $newObj = New-Object -TypeName PSCustomObject
+         foreach ($prop in $properties) {
+            $propValue = $_.($prop.Name)
+            $newObj | Add-Member -MemberType NoteProperty -Name $prop.Name -Value (Convert-vlEnumToString $propValue)
+         }
+         return $newObj
+      }
+      else {
+         return $_
+      }
+   }
+   return $outputObj
 }
 
 function New-vlErrorObject {
-    <#
+   <#
     .SYNOPSIS
         Generate an error object for the result of a function
     .DESCRIPTION
         Generate an error object for the result of a function that can be returned to the caller
     .PARAMETER Context
-        The context of the error / exception    
+        The context of the error / exception
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -59,23 +95,23 @@ function New-vlErrorObject {
         }
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        $context,
-        $score = 0
-    )
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      $context,
+      $score = 0
+   )
 
-    return [PSCustomObject]@{
-        Result       = ""
-        ErrorCode    = $context.Exception.MessageId
-        ErrorMessage = $context.Exception.Message
-        Score        = $score
-    }
+   return [PSCustomObject]@{
+      Result       = ""
+      ErrorCode    = $context.Exception.MessageId
+      ErrorMessage = $context.Exception.Message
+      Score        = $score
+   }
 }
 
 function New-vlResultObject {
-    <#
+   <#
     .SYNOPSIS
         Generate a result object for the result of a function
     .DESCRIPTION
@@ -93,25 +129,25 @@ function New-vlResultObject {
         New-vlResultObject($result)
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        $result,
-        $score,
-        $riskScore
-    )
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      $result,
+      $score,
+      $riskScore
+   )
 
-    return [PSCustomObject]@{
-        Result       = ConvertTo-Json $result -Compress
-        ErrorCode    = 0
-        ErrorMessage = ""
-        Score        = $score
-        RiskScore    = $riskScore
-    }
+   return [PSCustomObject]@{
+      Result       = ConvertTo-Json $result -Compress
+      ErrorCode    = 0
+      ErrorMessage = ""
+      Score        = $score
+      RiskScore    = $riskScore
+   }
 }
 
 function Get-vlRegValue {
-    <#
+   <#
     .SYNOPSIS
         Get the value of a registry key
     .DESCRIPTION
@@ -128,73 +164,74 @@ function Get-vlRegValue {
         Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Value "ProductName"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU", "HKCR")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path,
-        [Parameter(Mandatory = $false)]
-        [string]$Value
-    )
-    begin {
-        
-    }
-    
-    process {
+   [CmdletBinding()]
+   [OutputType([Object])]
+   param (
+      [Parameter(Mandatory = $true)]
+      [ValidateSet("HKLM", "HKU", "HKCU", "HKCR")]
+      [string]$Hive,
+      [Parameter(Mandatory = $true)]
+      [string]$Path,
+      [Parameter(Mandatory = $false)]
+      [string]$Value
+   )
+   begin {
 
-        try {
-            $regKey = $null
-            $regKeyValue = "";
-            if ($Hive -eq "HKCU") {
-                $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value)
-                }
-                return $regKeyValue;
-            }
-            elseif ($hive -eq "HKU") {
-                $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value);
-                }
-                return $regKeyValue;
-            }
-            elseif ($hive -eq "HKCR") {
-                $regKey = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value);
-                }
-                return $regKeyValue;
-            }
-            else {
-                $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path);
-                if ($null -ne $regKey) {
-                    $regKeyValue = $regKey.GetValue($Value);
-                }
-                return $regKeyValue;
-            }
-        }
-        catch {
-            Write-Verbose "Registry $Hive\$Path was not found"
-            return ""
-        }
-        finally {
+   }
+
+   process {
+
+      try {
+         $regKey = $null
+         $regKeyValue = "";
+         if ($Hive -eq "HKCU") {
+            $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path);
             if ($null -ne $regKey) {
-                Write-Verbose "Closing registry key $Hive\$Path"
-                $regKey.Dispose()
+               $regKeyValue = $regKey.GetValue($Value)
             }
-        }
-    }
+            return $regKeyValue;
+         }
+         elseif ($hive -eq "HKU") {
+            $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path);
+            if ($null -ne $regKey) {
+               $regKeyValue = $regKey.GetValue($Value);
+            }
+            return $regKeyValue;
+         }
+         elseif ($hive -eq "HKCR") {
+            $regKey = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey($Path);
+            if ($null -ne $regKey) {
+               $regKeyValue = $regKey.GetValue($Value);
+            }
+            return $regKeyValue;
+         }
+         else {
+            $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path);
+            if ($null -ne $regKey) {
+               $regKeyValue = $regKey.GetValue($Value);
+            }
+            return $regKeyValue;
+         }
+      }
+      catch {
+         Write-Verbose "Registry $Hive\$Path was not found"
+         return $null
+      }
+      finally {
+         if ($null -ne $regKey) {
+            Write-Verbose "Closing registry key $Hive\$Path"
+            $regKey.Dispose()
+         }
+      }
+   }
 
-    end {
-    }
+   end {
+   }
 }
 
 
 function Get-vlRegSubkeys {
-    <#
+   <#
     .SYNOPSIS
         Read all the subkeys from a registry path
     .DESCRIPTION
@@ -202,57 +239,58 @@ function Get-vlRegSubkeys {
     .PARAMETER Hive
         The hive to read from. Valid values are "HKLM", "HKU" and "HKCU"
     .PARAMETER Path
-        The path to the registry key        
+        The path to the registry key
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         return Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet("HKLM", "HKU", "HKCU")]
-        [string]$Hive,
-        [Parameter(Mandatory = $true)]
-        [string]$Path
-    )
-    begin {
+   [CmdletBinding()]
+   [OutputType([Object])]
+   param (
+      [Parameter(Mandatory = $true)]
+      [ValidateSet("HKLM", "HKU", "HKCU")]
+      [string]$Hive,
+      [Parameter(Mandatory = $true)]
+      [string]$Path
+   )
+   begin {
 
-    }
-    
-    process {
-        try {
-            $registryItems = @()
+   }
 
-            $path = $Hive + ":\" + $Path
-            if (Test-Path -Path $path) {
-                $keys = Get-ChildItem -Path $path
-                $registryItems = $keys | Foreach-Object { Get-ItemProperty $_.PsPath }
-            }
-            return $registryItems
-        }
-        catch {
-            Write-Verbose "Error reading registry $Hive\$Path"
-            Write-Verbose $_.Exception.Message
+   process {
+      try {
+         $registryItems = @()
 
-            return @()
-        }
-        finally {
-        }
-    }
-    
-    end {
-    
-    }
+         $path = $Hive + ":\" + $Path
+         if (Test-Path -Path $path) {
+            $keys = Get-ChildItem -Path $path
+            $registryItems = $keys | Foreach-Object { Get-ItemProperty $_.PsPath }
+         }
+         return $registryItems
+      }
+      catch {
+         Write-Verbose "Error reading registry $Hive\$Path"
+         Write-Verbose $_.Exception.Message
+
+         return [Object]@()
+      }
+      finally {
+      }
+   }
+
+   end {
+
+   }
 }
 
 ##### Debugging utilities #####
 
 function Add-vlTimer {
-    <#
+   <#
     .SYNOPSIS
         Start a timer
     .DESCRIPTION
@@ -262,35 +300,35 @@ function Add-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Start-vlTimer -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name
+   )
+   begin {
 
-    }
-    
-    process {
-        $timer = New-Object -TypeName psobject -Property @{
-            Name  = $Name
-            Start = (Get-Date)
-        }
-        $global:debug_timers += $timer
-    }
-    
-    end {
-    
-    }
+   }
+
+   process {
+      $timer = New-Object -TypeName psobject -Property @{
+         Name  = $Name
+         Start = (Get-Date)
+      }
+      $global:debug_timers += $timer
+   }
+
+   end {
+
+   }
 }
 
 function Restart-vlTimer {
-    <#
+   <#
     .SYNOPSIS
         Restart a timer
     .DESCRIPTION
@@ -300,34 +338,34 @@ function Restart-vlTimer {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Restart-vlTimer -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name
+   )
+   begin {
 
-    }
-    
-    process {
-        $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
-        if ($null -ne $timer) {
-            $timer.Start = (Get-Date)
-        }
-    }
-    
-    end {
-    
-    }
+   }
+
+   process {
+      $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
+      if ($null -ne $timer) {
+         $timer.Start = (Get-Date)
+      }
+   }
+
+   end {
+
+   }
 }
 
 function Get-vlTimerElapsedTime {
-    <#
+   <#
     .SYNOPSIS
         Get the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
     .DESCRIPTION
@@ -339,45 +377,46 @@ function Get-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Get-vlTimerElapsedTime -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name,
-        [ValidateSet("sec", "ms")]
-        [string]$Unit = "ms"
-    )
-    begin {
+   [CmdletBinding()]
+   [OutputType([System.Int64])]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name,
+      [ValidateSet("sec", "ms")]
+      [string]$Unit = "ms"
+   )
+   begin {
 
-    }
-    
-    process {
-        $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
-        if ($null -ne $timer) {
-            $elapsed = (Get-Date) - $timer.Start
-            if ($Unit -eq "sec") {
-                return $elapsed.TotalSeconds
-            }
-            else {
-                return $elapsed.TotalMilliseconds
-            }
-        }
-        else {
-            return 0
-        }
-    }
-    
-    end {
-    
-    }
+   }
+
+   process {
+      $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
+      if ($null -ne $timer) {
+         $elapsed = (Get-Date) - $timer.Start
+         if ($Unit -eq "sec") {
+            return $elapsed.TotalSeconds
+         }
+         else {
+            return $elapsed.TotalMilliseconds
+         }
+      }
+      else {
+         return [System.Int64]0
+      }
+   }
+
+   end {
+
+   }
 }
 
 function Write-vlTimerElapsedTime {
-    <#
+   <#
     .SYNOPSIS
         Write the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
     .DESCRIPTION
@@ -391,38 +430,38 @@ function Write-vlTimerElapsedTime {
     .LINK
         https://uberagent.com
     .OUTPUTS
-        
+
     .EXAMPLE
         Write-vlTimerElapsedTime -Name "timer1"
     #>
 
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$Name,
-        [Parameter(Mandatory = $false)]
-        [bool]$UseFile = $false,
-        [Parameter(Mandatory = $false)]
-        [ValidateSet("sec", "ms")]
-        [string]$Unit = "ms"
-    )
-    begin {
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Name,
+      [Parameter(Mandatory = $false)]
+      [bool]$UseFile = $false,
+      [Parameter(Mandatory = $false)]
+      [ValidateSet("sec", "ms")]
+      [string]$Unit = "ms"
+   )
+   begin {
 
-    }
-    
-    process {
-        $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
-        if ($UseFile) {
-            Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
-        }
-        else {
-            Write-Host "${Name}: $elapsed $Unit"
-        }
-    }
-    
-    end {
-    
-    }
+   }
+
+   process {
+      $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
+      if ($UseFile) {
+         Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
+      }
+      else {
+         Write-Host "${Name}: $elapsed $Unit"
+      }
+   }
+
+   end {
+
+   }
 }
 
 function Get-vlNetworkConfigurationSMBv1 {
@@ -443,9 +482,9 @@ function Get-vlNetworkConfigurationSMBv1 {
    #>
 
    try {
-      
+
       $SMBv1 = $false
-      
+
       if (Test-Path HKLM:\SYSTEM\CurrentControlSet\services\mrxsmb10) {
          $mrxsmb10 = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\services\mrxsmb10" -Value "Start"
          $LanmanWorkstation = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\LanmanWorkstation" -Value "DependOnService"
@@ -538,7 +577,7 @@ function Get-vlNetworkConfigurationSMBSigning {
             # SMB signing is not required
             return New-vlResultObject -result $result -score 2
          }
-         
+
       }
       else {
          Throw "Return of Get-vlNetworkConfigurationSMBv1 is invalid"
@@ -562,11 +601,11 @@ function Get-vlNetworkConfigurationNetBIOS {
        If NetBIOS is disabled, the function returns a PSCustomObject with the following properties:
        enabled: false
    .NOTES
-       
+
    .EXAMPLE
        Get-vlNetworkConfigurationNetBIOS
    #>
-   
+
    try {
       if ((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' | Where-Object -Property 'TcpipNetbiosOptions' -eq 1).Count -eq 0) {
          $result = [PSCustomObject]@{
@@ -600,11 +639,11 @@ function Get-vlNetworkConfigurationWINS {
        If WINS is used, the function returns a PSCustomObject with the following properties:
        enabled: false
    .NOTES
-       
+
    .EXAMPLE
        Get-vlNetworkConfigurationWINS
    #>
-   
+
    try {
       if (((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' -Filter IPEnabled=TRUE | Where-Object -Property 'WINSPrimaryServer' -ne $null).ServiceName).Count -eq 0) {
          $result = [PSCustomObject]@{
@@ -637,19 +676,19 @@ function Get-vlNetworkConfigurationSSLTLS {
        enabled: false
        If outdated SSL and TLS versions are enabled, the function returns a PSCustomObject with the protocols in use
    .NOTES
-       
+
    .EXAMPLE
        Get-vlNetworkConfigurationSSLTLS
    #>
-   
+
    try {
-      
+
       $Protocols = @("TLS 1.0", "TLS 1.1", "SSL 2.0", "SSL 3.0")
       $ProtocolsInUse = @()
       foreach ($Protocol in $Protocols) {
          $null = $Enabled
          $null = $DisabledByDefault
-         
+
          if (test-path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client") {
             $Enabled = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client" -Value "Enabled"
             $DisabledByDefault = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client" -Value "DisabledByDefault"
@@ -663,8 +702,8 @@ function Get-vlNetworkConfigurationSSLTLS {
          }
       }
 
-      
-      
+
+
       if ($ProtocolsInUse.Count -eq 0) {
          $result = [PSCustomObject]@{
             Enabled = $false
@@ -708,7 +747,7 @@ function Get-vlNetworkConfigurationCheck {
    $Output = @()
 
    if ($params.Contains("all") -or $params.Contains("NCSMBv1")) {
-      $SMBv1 = Get-vlNetworkConfigurationSMBv1    
+      $SMBv1 = Get-vlNetworkConfigurationSMBv1
       $Output += [PSCustomObject]@{
          Name         = "NCSMBv1"
          DisplayName  = "Network Configuration SMBv1"
@@ -722,7 +761,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCSMBSign")) {
-      $SMBSigning = Get-vlNetworkConfigurationSMBSigning    
+      $SMBSigning = Get-vlNetworkConfigurationSMBSigning
       $Output += [PSCustomObject]@{
          Name         = "NCSMBSign"
          DisplayName  = "Network Configuration SMB Signing"
@@ -736,7 +775,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCNetBIOS")) {
-      $NetBIOS = Get-vlNetworkConfigurationNetBIOS    
+      $NetBIOS = Get-vlNetworkConfigurationNetBIOS
       $Output += [PSCustomObject]@{
          Name         = "NCNetBIOS"
          DisplayName  = "Network configuration NetBIOS"
@@ -750,7 +789,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCWINS")) {
-      $WINS = Get-vlNetworkConfigurationWINS    
+      $WINS = Get-vlNetworkConfigurationWINS
       $Output += [PSCustomObject]@{
          Name         = "NCWINS"
          DisplayName  = "Network configuration WINS"
@@ -764,7 +803,7 @@ function Get-vlNetworkConfigurationCheck {
    }
 
    if ($params.Contains("all") -or $params.Contains("NCSSLTLS")) {
-      $SSLTLS = Get-vlNetworkConfigurationSSLTLS    
+      $SSLTLS = Get-vlNetworkConfigurationSSLTLS
       $Output += [PSCustomObject]@{
          Name         = "NCSSLTLS"
          DisplayName  = "Network configuration SSL/TLS"
@@ -777,7 +816,7 @@ function Get-vlNetworkConfigurationCheck {
       }
    }
 
-   
+
    return $output
 }
 
