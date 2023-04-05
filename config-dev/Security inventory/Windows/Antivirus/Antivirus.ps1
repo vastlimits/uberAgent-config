@@ -4,41 +4,36 @@
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
 #https://mcpforlife.com/2020/04/14/how-to-resolve-this-state-value-of-av-providers/
-[Flags()] enum ProductState 
-{
-    Off         = 0x0000
-    On          = 0x1000
-    Snoozed     = 0x2000
-    Expired     = 0x3000
+[Flags()] enum ProductState {
+   Off = 0x0000
+   On = 0x1000
+   Snoozed = 0x2000
+   Expired = 0x3000
 }
 
-[Flags()] enum SignatureStatus
-{
-    UpToDate     = 0x00
-    OutOfDate    = 0x10
+[Flags()] enum SignatureStatus {
+   UpToDate = 0x00
+   OutOfDate = 0x10
 }
 
-[Flags()] enum ProductOwner
-{
-    NonMs        = 0x000
-    Windows      = 0x100
+[Flags()] enum ProductOwner {
+   NonMs = 0x000
+   Windows = 0x100
 }
 
-[Flags()] enum ProductFlags
-{
+[Flags()] enum ProductFlags {
    SignatureStatus = 0x000000F0
-   ProductOwner    = 0x00000F00
-   ProductState    = 0x0000F000
+   ProductOwner = 0x00000F00
+   ProductState = 0x0000F000
 }
 
 function Get-vlAntivirusStatus {
-    <#
+   <#
     .SYNOPSIS
         Get the status of the antivirus software
     .DESCRIPTION
         Get the status of the antivirus software
         This cmdlet is only available on the Windows platform.
-        Get-WmiObject was added in PowerShell 3.0
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -47,60 +42,60 @@ function Get-vlAntivirusStatus {
         Get-vlAntivirusStatus
     #>
 
-    param (
+   param (
 
-    )
+   )
 
-    process {
-        try {
-            $instances = Get-WmiObject -Class AntiVirusProduct -Namespace "root\SecurityCenter2"
-        
-            $riskScore = 100
+   process {
+      try {
+         $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
+
+         $riskScore = 100
+         $score = 0
+         $result = @()
+         $avEnabledFound = $false
+
+         foreach ($instance in $instances) {
+            $avEnabled = $([ProductState]::On.value__ -eq $($instance.productState -band [ProductFlags]::ProductState) )
+            $avUp2Date = $([SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [ProductFlags]::SignatureStatus) )
+
+            if ($avEnabled) {
+               $avEnabledFound = $true
+               if ($avUp2Date) {
+                  $score = 10
+               }
+               else {
+                  $score = 4
+               }
+            }
+
+            $result += [PSCustomObject]@{
+               AntivirusEnabled  = $avEnabled
+               AntivirusName     = $instance.displayName
+               AntivirusUpToDate = $avUp2Date
+            }
+         }
+
+         if (-not $avEnabledFound) {
             $score = 0
-            $result = @()
-        
-            $avEnabledFound = $false
-        
-            foreach ($instance in $instances) {
-                $avEnabled = $([ProductState]::On.value__ -eq $($instance.productState -band [ProductFlags]::ProductState) )
-                $avUp2Date = $([SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [ProductFlags]::SignatureStatus) )
-        
-                if ($avEnabled) {
-                    $avEnabledFound = $true
-                    if ($avUp2Date) {
-                        $score = 10
-                    } else {
-                        $score = 4
-                    }
-                }
-        
-                $result += [PSCustomObject]@{
-                    AntivirusEnabled = $avEnabled
-                    AntivirusName    = $instance.displayName
-                    AntivirusUpToDate = $avUp2Date
-                }
-            }
-        
-            if (-not $avEnabledFound) {
-                $score = 0
-            }
-        
-            return New-vlResultObject -result $result -score $score -riskScore $riskScore
-        }
-        catch {
-            return New-vlErrorObject($_)
-        }
-        finally {
+         }
 
-        }
+         return New-vlResultObject -result $result -score $score -riskScore $riskScore
+      }
+      catch {
+         return New-vlErrorObject($_)
+      }
+      finally {
 
-    }
-    
+      }
+
+   }
+
 }
 
 
 function Get-vlDefenderStatus {
-    <#
+   <#
     .SYNOPSIS
         Get the status of the registrated antivirus
     .DESCRIPTION
@@ -113,43 +108,43 @@ function Get-vlDefenderStatus {
     .OUTPUTS
         A vlResultObject | vlErrorObject [psobject] containing the list of AMSI providers
     .EXAMPLE
-        Get-vlAMSIProviders
+        Get-vlDefenderStatus
     #>
 
-    [CmdletBinding()]
-    param (
-        
-    )
+   [CmdletBinding()]
+   param (
 
-    process {
-        try {
-            $instances = Get-MpComputerStatus
+   )
 
-            $result = [PSCustomObject]@{
-                AMEngineVersion                 = $instances.AMEngineVersion
-                AMServiceEnabled                = $instances.AMServiceEnabled
-                AMServiceVersion                = $instances.AMServiceVersion
-                AntispywareEnabled              = $instances.AntispywareEnabled
-                AntivirusEnabled                = $instances.AntivirusEnabled
-                AntispywareSignatureLastUpdated = $instances.AntispywareSignatureLastUpdated
-                AntispywareSignatureVersion     = $instances.AntispywareSignatureVersion
-                AntivirusSignatureLastUpdated   = $instances.AntivirusSignatureLastUpdated
-                QuickScanSignatureVersion       = $instances.QuickScanSignatureVersion
-            }
+   process {
+      try {
+         $instances = Get-MpComputerStatus
 
-            return New-vlResultObject -result $result 
-        }
-        catch {
-            return New-vlErrorObject($_)
-        }
-        finally {
+         $result = [PSCustomObject]@{
+            AMEngineVersion                 = $instances.AMEngineVersion
+            AMServiceEnabled                = $instances.AMServiceEnabled
+            AMServiceVersion                = $instances.AMServiceVersion
+            AntispywareEnabled              = $instances.AntispywareEnabled
+            AntivirusEnabled                = $instances.AntivirusEnabled
+            AntispywareSignatureLastUpdated = $instances.AntispywareSignatureLastUpdated
+            AntispywareSignatureVersion     = $instances.AntispywareSignatureVersion
+            AntivirusSignatureLastUpdated   = $instances.AntivirusSignatureLastUpdated
+            QuickScanSignatureVersion       = $instances.QuickScanSignatureVersion
+         }
 
-        }
-    }
+         return New-vlResultObject -result $result
+      }
+      catch {
+         return New-vlErrorObject($_)
+      }
+      finally {
+
+      }
+   }
 }
 
 function Get-vlAntivirusCheck {
-    <#
+   <#
     .SYNOPSIS
         Function that performs the antivirus check and returns the result to the uberAgent.
     .DESCRIPTION
@@ -166,27 +161,27 @@ function Get-vlAntivirusCheck {
         Get-vlAntivirusCheck -amsi -avStatus
     #>
 
-    #set $params to $global:args or if empty default "all"
-    $params = if ($global:args) { $global:args } else { "all" }
-    $params = $params | ForEach-Object { $_.ToLower() }
+   #set $params to $global:args or if empty default "all"
+   $params = if ($global:args) { $global:args } else { "all" }
+   $params = $params | ForEach-Object { $_.ToLower() }
 
-    $Output = @()
+   $Output = @()
 
-    if ($params.Contains("all") -or $params.Contains("AVState")) {
-        $avStatus = Get-vlAntivirusStatus
-        $Output += [PSCustomObject]@{
-            Name       = "AVState"
-            DisplayName  = "Antivirus status"
-            Description  = "Checks if the antivirus is enabled and up to date."
-            Score      = $avStatus.Score
-            ResultData = $avStatus.Result
-            RiskScore  = $avStatus.RiskScore
-            ErrorCode      = $avStatus.ErrorCode
-            ErrorMessage   = $avStatus.ErrorMessage
-        }
-    }
+   if ($params.Contains("all") -or $params.Contains("AVState")) {
+      $avStatus = Get-vlAntivirusStatus
+      $Output += [PSCustomObject]@{
+         Name         = "AVState"
+         DisplayName  = "Antivirus status"
+         Description  = "Checks if the antivirus is enabled and up to date."
+         Score        = $avStatus.Score
+         ResultData   = $avStatus.Result
+         RiskScore    = $avStatus.RiskScore
+         ErrorCode    = $avStatus.ErrorCode
+         ErrorMessage = $avStatus.ErrorMessage
+      }
+   }
 
-    <#
+   <#
     if ($params.Contains("all") -or $params.Contains("AVDefStat")) {
         $defenderStatus = Get-vlDefenderStatus
         $Output += [PSCustomObject]@{
@@ -201,8 +196,8 @@ function Get-vlAntivirusCheck {
         }
     }
     #>
-    
-    Write-Output $output
+
+   Write-Output $output
 }
 
 # Entrypoint of the script call the check function and convert the result to JSON

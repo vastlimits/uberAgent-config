@@ -9,7 +9,7 @@ except:
     print("Error: Could not get current working directory")
 
     # Exit the script
-    exit()
+    exit(1)
 
 counter_skipped = 0
 counter_success = 0
@@ -35,7 +35,7 @@ if not os.path.exists(folder_path):
     print("Error: Input folder does not exist: ", folder_path)
 
     # Exit the script
-    exit()
+    exit(1)
 
 # Count subfolders
 subfolders = [f.path for f in os.scandir(folder_path) if f.is_dir()]
@@ -46,7 +46,7 @@ if subfolders_count == 0:
     print("Error: There are no files to Process: ", folder_path)
 
     # Exit the script
-    exit()
+    exit(1)
 
 # Create the "transpiled" directory-structure if it doesn't exist
 if not os.path.exists(output_folder):
@@ -56,7 +56,7 @@ if not os.path.exists(output_folder):
         print("Error: Could not create output folder: ", output_folder)
 
         # Exit the script
-        exit()
+        exit(1)
 
 # Create the "config-dev/generated" directory-structure if it doesn't exist
 if not os.path.exists(output_csv_mapping_dir):
@@ -66,7 +66,7 @@ if not os.path.exists(output_csv_mapping_dir):
         print("Error: Could not create output folder: ", output_csv_mapping_dir)
 
         # Exit the script
-        exit()
+        exit(1)
     
 # Clean old output
 for dirpath, dirnames, filenames in os.walk(output_folder):
@@ -81,7 +81,7 @@ for dirpath, dirnames, filenames in os.walk(output_folder):
                 print("Error: Could not delete file: ", file_path)
 
                 # Exit the script
-                exit()
+                exit(1)
 
 # clean old security_inventory_checknames.csv using path output_csv_mapping
 if os.path.isfile(output_csv_mapping):
@@ -92,7 +92,7 @@ if os.path.isfile(output_csv_mapping):
         print("Error: Could not delete file: ", output_csv_mapping)
 
         # Exit the script
-        exit()
+        exit(1)
 
 print("-------------------------------------")
 
@@ -110,8 +110,43 @@ except:
     print("Error: Could not open output csv file: ", output_csv_mapping)
 
     # Exit the script
-    exit()
+    exit(1)
 print("-------------------------------------")
+
+####### ENV_WORKFLOW_FILE #######
+env_file = os.getenv('GITHUB_ENV') # Get the path of the runner file
+
+def update_key(key, value):
+    data = {}
+    try:
+        with open(env_file, 'r') as file:
+            for line in file:
+                if line.strip():
+                    k, v = line.strip().split('=')
+                    data[k] = v
+    except FileNotFoundError:
+        pass
+
+    data[key] = value
+
+    with open(env_file, 'w') as file:
+        for k, v in data.items():
+            file.write(f'{k}={v}\n')
+
+
+def read_key(key):
+    try:
+        with open(env_file, 'r') as file:
+            for line in file:
+                if line.strip():
+                    k, v = line.strip().split('=')
+                    if k == key:
+                        return v
+    except FileNotFoundError:
+        print(f"Error: The file '{env_file}' was not found.")
+
+    print(f"Error: The key '{key}' was not found.")
+    return None
 
 def extract_values(data):
     try:
@@ -279,6 +314,10 @@ print("Processed: ", counter_processed + counter_skipped, " files")
 print("Skipped: ", counter_skipped, " files")
 print("Success: ", counter_success, " files")
 print("Failed: ", counter_processed - counter_success, " files")
+
+update_key("TRANSPILER_SUCCSESS", str(counter_success))
+update_key("TRANSPILER_PROCESSED", str(counter_processed))
+update_key("TRANSPILER_FAILED", str(counter_processed - counter_success))
 
 # Close the CSV file
 csv_handle.close()

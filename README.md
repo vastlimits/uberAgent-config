@@ -1,3 +1,9 @@
+
+[comment]: # (BADGE_SECTION_START)
+![branch](https://img.shields.io/badge/branch-feature--PSAnalyzer-blue) ![transpilation](https://img.shields.io/badge/MSI%20transpilation-9%20success%2C%200%20failed%2C%209%20processed-green) ![syntax check](https://img.shields.io/badge/MSI%20syntax%20check-0%20errors%2C%200%20warnings%2C%200%20notes-green)
+
+[comment]: # (BADGE_SECTION_END)
+
 # uberAgent Configuration
 
 This repository is the home for the [uberAgent](https://uberagent.com/) configuration. This repository contains UXM configuration settings (timers, metrics, etc.) as well as ESA Activity Monitoring detection rules and Modular Security Inventory tests.
