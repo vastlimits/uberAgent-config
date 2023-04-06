@@ -37,6 +37,39 @@ jobs:
         shell: bash
         run: python config-dev/analyzeLog.py --log_level note --fail_level error
       
+      - name: Import code signing certificate
+        if: success()
+        shell: powershell
+        run: |
+          $pfxCertFilePath = Join-Path -Path $PSScriptRoot -ChildPath "CodeSigningCertificate.pfx"
+          Set-Content -Value $([System.Convert]::FromBase64String($env:BASE64_PFX)) -Path $pfxCertFilePath -Encoding Byte
+          $codeSigningCert = Import-PfxCertificate -FilePath $pfxCertFilePath -Password $($env:PFX_PASSWORD | ConvertTo-SecureString -AsPlainText -Force) -CertStoreLocation Cert:\CurrentUser\My
+        env:
+          BASE64_PFX: ${{ secrets.CERT_BASE64_PFX }}
+          PFX_PASSWORD: ${{ secrets.CERT_PFX_PASSWORD }}
+  
+      - name: Sign PowerShell Scripts
+        if: success()
+        shell: powershell
+        run: |
+          $scripts = Get-ChildItem -Path $env:BASE64_PFX -Filter "*.ps1" -Recurse -ErrorAction Stop
+ 
+          $codeSigningCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | Select-Object -First 1
+ 
+          foreach ($script in $scripts) {
+            try {
+              $scriptContent = Get-Content -Path $script.FullName
+              Write-Output "Signing script `"$($script.Name)`" with certificate `"$($codeSigningCert.Thumbprint)`""
+              # sign script
+              $null = Set-AuthenticodeSignature -Certificate $codeSigningCert -FilePath $script.FullName -TimestampServer "http://timestamp.comodoca.com/rfc3161"
+            }
+            catch {
+              Write-Error $_
+            }
+          }
+        env:
+          SCRIPT_DIR: ./config/Security inventory/Windows
+
       - name: Run badge update script
         if: success() || failure()
         run: python config-dev/updateBadge.py
