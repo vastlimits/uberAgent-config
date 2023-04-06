@@ -43,7 +43,6 @@ print(f"Generating badge for branch: {branch}")
 try:
     # Open the file
     file_size = os.path.getsize(file_read_me)
-    print(f"File size: {file_size} bytes")
 
     with open(file_read_me, 'rb') as read_file:
         # Read the file
@@ -51,7 +50,6 @@ try:
         read_file.close()
 
         readBytes = len(file_content)
-        print(f"Read bytes: {readBytes} bytes")
 
         if not file_content or file_size != readBytes:
             print(f'File is empty or not all data was read.\n{file_read_me}')
@@ -101,19 +99,23 @@ try:
             # Update the file content with the new badge. Replace result with the new badge list. join the list and add spaces
             file_content = file_content.replace(result, " ".join(badge_list))
 
+            # Convert the updated string back to bytes
+            file_content_updated = file_content.encode('utf-8')
+
             # Write the file
-            with open(file_read_me, 'w') as write_file:
-                write_file.write(file_content)
+            with open(file_read_me, 'wb') as write_file:
+                write_file.write(file_content_updated)
                 write_file.flush()
 
-            # Check if everything was written
-            with open(file_read_me, 'r') as read_file:
-                content = read_file.read()
+            # Check if the file size is the same
+            written_bytes = len(file_content_updated)
+            written_file_size = os.path.getsize(file_read_me)
 
-                if content != file_content:
-                    print('Not all data was written to the file.')
-                    # Exit the script
-                    exit(1)
+            # Check if everything was written
+            if written_bytes != written_file_size:
+                print('Not all data was written to the file.')
+                # Exit the script
+                exit(1)
 
             print("Badge updated successfully")
         else:
