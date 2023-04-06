@@ -591,11 +591,11 @@ function Get-CheckHTAEnabled {
          $defaultLink = $false
       }
 
-      if($htaRunBlocked -ne $true) {
+      if ($htaRunBlocked -ne $true) {
          $score -= 7
       }
 
-      if($defaultLink -eq $true) {
+      if ($defaultLink -eq $true) {
          $score -= 3
       }
 
@@ -608,7 +608,7 @@ function Get-CheckHTAEnabled {
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject -error $_
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -631,7 +631,7 @@ function Get-BitlockerEnabled {
       #check if bitlocker is enabled using Get-BitLockerVolume
       $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage
 
-      if($bitlockerEnabled) {
+      if ($bitlockerEnabled) {
          $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
       }
 
@@ -639,7 +639,7 @@ function Get-BitlockerEnabled {
          $score = 0
       }
       else {
-         if($bitlockerEnabled.EncryptionPercentage -eq 100) {
+         if ($bitlockerEnabled.EncryptionPercentage -eq 100) {
             $score = 10
          }
          else {
@@ -650,7 +650,7 @@ function Get-BitlockerEnabled {
       return New-vlResultObject -result $bitlockerEnabled -score $score
    }
    catch {
-      return New-vlErrorObject -error $_
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -687,7 +687,7 @@ function Get-COMHijacking {
       }
    }
    catch {
-      return New-vlErrorObject -error $_
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -724,7 +724,7 @@ function Get-vlTimeProviderHijacking {
       }
    }
    catch {
-      return New-vlErrorObject -error $_
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -744,20 +744,57 @@ function Get-vlWindowsPersistanceCheck {
    try {
       $log_file = "$($env:SystemRoot)\Logs\CBS\CBS.log"
 
-      #check if CBS Log exists and if so, delete it use %windir%\Logs\CBS\CBS.log
-      if (Test-Path -Path $log_file) {
-         Remove-Item -Path $log_file -Force
-      }
-
       #run sfc /verifyonly and wait for it to finish run it hidden
-      $sfc = Start-Process -FilePath "sfc.exe" -ArgumentList "/verifyonly" -Wait -WindowStyle Hidden
+      #$sfc = Start-Process -FilePath "sfc.exe" -ArgumentList "/verifyonly" -Wait -WindowStyle Hidden
+
+      $today = (Get-Date).ToString("yyyy-MM-dd")
+
+      # Check whether the log file exists
+      if (Test-Path $log_file) {
+         # Read the log file line by line and filter the lines that start with today's date
+         $todayEntries = Get-Content $log_file | Where-Object { $_.StartsWith($today) }
+
+         # Extract the numbers of the SR entries
+         $numbers = $todayEntries | Where-Object { $_ -match "\[SR\]" } | ForEach-Object { if ($_ -match "(\b0*[0-9]{1,8}\b)\s+\[SR\]") { $matches[1] } }
+
+         # Find the smallest and the largest SR entry
+         $smallest = $numbers | Measure-Object -Minimum | Select-Object -ExpandProperty Minimum
+         $largest = $numbers | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
+
+         # Filter the lines that are between the smallest and the largest SR entry
+         $filteredEntries = $todayEntries | Where-Object {
+            if ($_ -match "(\d{1,8})\s+\[SR\]") {
+               $number = $matches[1]
+               $number -ge $smallest -and $number -le $largest
+            }
+         }
+
+         # Output the filtered lines
+         $filteredEntries
+      }
+      else {
+         # Throw error if the log file does not exist
+         throw "Log file does not exist"
+      }
 
       #read the log file and check if it contains "corrupt" or "repaired"
       $defect = Get-Content $log_file | Select-String -Pattern "(corrupt|repaired)"
-      $ix = 0
+
+      if ($defect) {
+         $result = [PSCustomObject]@{
+            Detected = $true
+         }
+         return New-vlResultObject -result $result -score 0
+      }
+      else {
+         $result = [PSCustomObject]@{
+            Detected = $false
+         }
+         return New-vlResultObject -result $result -score 10
+      }
    }
    catch {
-      $defect = $null
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -826,7 +863,7 @@ function Get-WindowsConfigurationCheck {
    }
 
    <#
-    TODO: Add a good log parsing logic to check for "corrupt" or "repaired" in CBS.log
+    #TODO: Add a better logic to check for "corrupt" or "repaired" in CBS.log
     if ($params.Contains("all") -or $params.Contains("persistancecheck")) {
         $persistancecheck = Get-vlWindowsPersistanceCheck
         $Output += [PSCustomObject]@{
