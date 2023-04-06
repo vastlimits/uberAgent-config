@@ -50,7 +50,7 @@ try:
         read_file.close()
 
         if not file_content or file_size != len(file_content):
-            print('File is empty or not all data was read.')
+            print(f'File is empty or not all data was read.\n{file_read_me}')
             # Exit the script
             exit(1)
 
