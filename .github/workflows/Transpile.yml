@@ -68,7 +68,7 @@ jobs:
             }
           }
         env:
-          SCRIPT_DIR: ./config/Security inventory/Windows
+          SCRIPT_DIR: "./config/Security inventory/Windows"
 
       - name: Run badge update script
         if: success() || failure()
