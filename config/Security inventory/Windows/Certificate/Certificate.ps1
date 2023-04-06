@@ -761,7 +761,6 @@ function Expand-vlCabFile {
    $result = Invoke-Expression $command
 }
 
-
 $authRootCabTemp = "$env:TEMP\uAauthrootstl.cab"
 $tempAuthRootStl = "$env:TEMP\uAauthroot.stl"
 
@@ -1389,12 +1388,11 @@ function Get-vlCertificateCheck {
 
 
 Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
-
 # SIG # Begin signature block
 # MIIFowYJKoZIhvcNAQcCoIIFlDCCBZACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUNhO+oUIPhc4a7rsbcLvox7Ty
-# cLygggMsMIIDKDCCAhCgAwIBAgIQFf+KkCUt7J9Ay+NZ+dMpvjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU3JDMukcIadhseXFE4REmzjRg
+# AmegggMsMIIDKDCCAhCgAwIBAgIQFf+KkCUt7J9Ay+NZ+dMpvjANBgkqhkiG9w0B
 # AQsFADAsMSowKAYDVQQDDCFUZXN0IFBvd2VyU2hlbGwgQ29kZSBTaWduaW5nIENl
 # cnQwHhcNMjMwNDA2MDkwNDIzWhcNMjgwNDA2MDkxNDIzWjAsMSowKAYDVQQDDCFU
 # ZXN0IFBvd2VyU2hlbGwgQ29kZSBTaWduaW5nIENlcnQwggEiMA0GCSqGSIb3DQEB
@@ -1415,11 +1413,11 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # IFNpZ25pbmcgQ2VydAIQFf+KkCUt7J9Ay+NZ+dMpvjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# KH2cqzthOr9AoWpJuHUZkmXF0CcwDQYJKoZIhvcNAQEBBQAEggEALclOT7niE05u
-# oT5l7uI6FmbkvAKIyuODe9au/crs/eYc3fAwDOgqpQIp7ATQDekmh83jL3q2Infi
-# /lJcSqDZo+nPvjDIOpLqqB0y8LCytsxU8kqpe6MJa74CD7jBekuFv3mwGjjTCNGf
-# zoySF7PKikzS6T8QvJac5ojwt6gwcbpOuk3aJGCpPGyJ8FLFhmNm6Tjk0AM6qkZs
-# BpTFm1EW1bMdmpvU/iFvnEMnAt3uvtFr6KcNl708sPT15xOPt9Im6UpSWIHcyY4u
-# YwMZoCemrRFuzi4wkLDgz9Lhu3HPwE5uqwGsa0t3pBLxMT5/oKmdaaM3u3RzZqPS
-# WSwyq4KYRQ==
+# 71owwDtJtLB05BES0AmEh2bsDyQwDQYJKoZIhvcNAQEBBQAEggEAGz0bL+CH8DTT
+# hv538smCSd5cODXY1nAIu44CuWRD0xZf6xKqqujrljgjLl0EjK5Px7LVL4z6LdiB
+# v+1kSGQRdqaaRwQBWSDsLIR1b8Bzu2dAsd5CAvNZdz6MpjZhU82LwvcnCZ0WuhV5
+# cJuSPIPnqRrm33z4+pZqL77gqQSQd5zGtKbyBcOIfvnGdbn7C2RJv8pYZEKqezcO
+# WVkZiWYSfl4JlcZ9n1hwIpqRtOCfcu2rtuOECBKdRyyGg8dOYSjF6hdKt1uYD4U6
+# 28zGG8qRBGcFEa9awzLI0oDtewJa5m+M4+3YGQoz5GL9jtA+QPxuQopg5bG5OvVF
+# ogPfNK/0+w==
 # SIG # End signature block

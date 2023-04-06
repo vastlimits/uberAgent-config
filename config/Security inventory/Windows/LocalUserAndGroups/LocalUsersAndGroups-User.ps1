@@ -729,12 +729,11 @@ function Get-vlLocalUsersAndGroupsCheck {
 
 # Entrypoint of the script call the check function and convert the result to JSON
 Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
-
 # SIG # Begin signature block
 # MIIFowYJKoZIhvcNAQcCoIIFlDCCBZACAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUovMKhZTl08RiucmW6EdUSngv
-# +zOgggMsMIIDKDCCAhCgAwIBAgIQFf+KkCUt7J9Ay+NZ+dMpvjANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUzC6Wngom54ImmKFnUNGJ2zUk
+# NuCgggMsMIIDKDCCAhCgAwIBAgIQFf+KkCUt7J9Ay+NZ+dMpvjANBgkqhkiG9w0B
 # AQsFADAsMSowKAYDVQQDDCFUZXN0IFBvd2VyU2hlbGwgQ29kZSBTaWduaW5nIENl
 # cnQwHhcNMjMwNDA2MDkwNDIzWhcNMjgwNDA2MDkxNDIzWjAsMSowKAYDVQQDDCFU
 # ZXN0IFBvd2VyU2hlbGwgQ29kZSBTaWduaW5nIENlcnQwggEiMA0GCSqGSIb3DQEB
@@ -755,11 +754,11 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # IFNpZ25pbmcgQ2VydAIQFf+KkCUt7J9Ay+NZ+dMpvjAJBgUrDgMCGgUAoHgwGAYK
 # KwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIB
 # BDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkqhkiG9w0BCQQxFgQU
-# 3Cas60TH5QEla8WZjmijjVZtV/4wDQYJKoZIhvcNAQEBBQAEggEAlBH15UmphGQ+
-# augMvfyakLrBEwSlNlchx8u4ZR1Z1JwPjoJ4huXOZ8MtA831y6a3jFq70RWMluag
-# EUwzwkLmk5yNsFK13EfkaVHalNSZFXvOrsIYpzj4ozT5arqKJMTe3r2VO1ZZAdne
-# eQYyjZ4M0+dOHvqPnyl94/Meaa9JHrgUWdoBp/zvrWVLjrP0a4ZgXoj5smSt8tVL
-# PmKUl6Ep7peY9sz10vOmBbCd9OeVvmIwVAsKtx7YHjZdkKTwVHRqeiN/4/35oRPa
-# mVp4tTnFi0ht1f1uM2ZcE7jZfNWvnt6poYQzRftuvS+YDfl1wmh+QYpCcmLOPCI/
-# ZHzILR5dWw==
+# iVWEtF/4Tett1Wi4bxBxWuZDiZ0wDQYJKoZIhvcNAQEBBQAEggEAr8oF8kwg1mEH
+# Po6KqgHJi9lQs3PgTOkD7MNxGT6ghqlor32iJrXFfg4XZxHdx6fc0xxqbYXPweZ2
+# lTqd4CWrvneJgK79FQP6CFIdNwu/RSX0p1v1JwCaXULOylgSxWPqMLhs+QZSNaCX
+# SAltMETSIlDIx03HA+aCb9K/1PRCCM3k2yfA2vszlQiFtb2O7j62tDPk0lSMvJ6U
+# P3Xf7bjx/q4LV+wsZphg7HWkfyBPomO14vjM2LCJcfU25nQ9bsiyjqx2/Dyj9QwH
+# nWqp+/3m2aOJ9rMcluE/F+Vs/5IiihrnQZhte+MYY8tPCtLG4gkMOIODT3DjcyNS
+# XbDaqOdIzQ==
 # SIG # End signature block
