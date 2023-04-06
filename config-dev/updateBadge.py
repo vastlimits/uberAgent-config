@@ -43,13 +43,17 @@ print(f"Generating badge for branch: {branch}")
 try:
     # Open the file
     file_size = os.path.getsize(file_read_me)
+    print(f"File size: {file_size} bytes")
 
     with open(file_read_me, 'r') as read_file:
         # Read the file
         file_content = read_file.read()
         read_file.close()
 
-        if not file_content or file_size != len(file_content):
+        readBytes = len(file_content)
+        print(f"Read bytes: {file_size} bytes")
+
+        if not file_content or file_size != readBytes:
             print(f'File is empty or not all data was read.\n{file_read_me}')
             # Exit the script
             exit(1)
