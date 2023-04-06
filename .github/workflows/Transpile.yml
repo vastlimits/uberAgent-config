@@ -52,7 +52,7 @@ jobs:
         if: success()
         shell: powershell
         run: |
-          $scripts = Get-ChildItem -Path $env:BASE64_PFX -Filter "*.ps1" -Recurse -ErrorAction Stop
+          $scripts = Get-ChildItem -Path $env:SCRIPT_DIR -Filter "*.ps1" -Recurse -ErrorAction Stop
  
           $codeSigningCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | Select-Object -First 1
  
