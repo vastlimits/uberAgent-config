@@ -55,7 +55,7 @@ jobs:
               $null = Set-AuthenticodeSignature -HashAlgorithm SHA256 -Certificate $certificate -FilePath $script.FullName -TimestampServer "http://timestamp.comodoca.com/rfc3161"
             }
             catch {
-              Write-Error "Failed to sign script `"$($script.Name)`" with certificate `"$($certificate.Thumbprint)`"
+              Write-Error "Failed to sign script `"$($script.Name)`" with certificate `"$($certificate.Thumbprint)`""
             }
           }
         env:
