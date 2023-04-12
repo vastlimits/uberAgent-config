@@ -36,21 +36,15 @@ jobs:
         shell: bash
         run: python config-dev/analyzeLog.py --log_level note --fail_level error
       
-      - name: Import code signing certificate
+      - name: Signing Powershell scripts
         if: success()
         shell: powershell
         run: |
-          $pfxCertFilePath = Join-Path -Path $PSScriptRoot -ChildPath "CodeSigningCertificate.pfx"
-          Set-Content -Value $([System.Convert]::FromBase64String($env:BASE64_PFX)) -Path $pfxCertFilePath -Encoding Byte
-          $codeSigningCert = Import-PfxCertificate -FilePath $pfxCertFilePath -Password $($env:PFX_PASSWORD | ConvertTo-SecureString -AsPlainText -Force) -CertStoreLocation Cert:\CurrentUser\My
-        env:
-          BASE64_PFX: ${{ secrets.CERT_BASE64_PFX }}
-          PFX_PASSWORD: ${{ secrets.CERT_PFX_PASSWORD }}
-  
-      - name: Sign PowerShell Scripts
-        if: success()
-        shell: powershell
-        run: |
+          # Create buffer from the BASE64 string of the PFX stored in the secret
+          $buffer = [System.Convert]::FromBase64String($env:BASE64_PFX)
+          # Create new certificate object from the buffer and the certificate pass
+          $certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::New($buffer, $env:PFX_PASSWORD)
+
           $scripts = Get-ChildItem -Path $env:SCRIPT_DIR -Filter "*.ps1" -Recurse -ErrorAction Stop
  
           $codeSigningCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | Select-Object -First 1
@@ -60,15 +54,17 @@ jobs:
               $scriptContent = Get-Content -Path $script.FullName
               Write-Output "Signing script `"$($script.Name)`" with certificate `"$($codeSigningCert.Thumbprint)`""
               # sign script
-              $null = Set-AuthenticodeSignature -Certificate $codeSigningCert -FilePath $script.FullName -TimestampServer "http://timestamp.comodoca.com/rfc3161"
+              $null = Set-AuthenticodeSignature -HashAlgorithm SHA256 -Certificate $certificate -FilePath $script.FullName -TimestampServer "http://timestamp.comodoca.com/rfc3161"
             }
             catch {
               Write-Error $_
             }
           }
         env:
+          BASE64_PFX: ${{ secrets.CERT_BASE64_PFX }}
+          PFX_PASSWORD: ${{ secrets.CERT_PFX_PASSWORD }}
           SCRIPT_DIR: "./config/Security inventory/Windows"
-
+  
       - name: Run badge update script
         if: success() || failure()
         run: python config-dev/updateBadge.py
