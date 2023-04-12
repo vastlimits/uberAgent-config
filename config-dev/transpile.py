@@ -97,7 +97,8 @@ if os.path.isfile(output_csv_mapping):
 print("-------------------------------------")
 
 # List of folders to exclude
-exclude_folders = ['']
+exclude_folders = None #['']
+
 print("Excluding folders: ", exclude_folders)
 print("-------------------------------------")
 print("Opening output csv file: ", output_csv_mapping)
@@ -219,7 +220,7 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
         file_path = os.path.join(dirpath, filename)
             
         # Check if it's a .ps1 file and not in an excluded folder
-        if filename.endswith('.ps1') and not any(exclude_folder in file_path for exclude_folder in exclude_folders):
+        if filename.endswith('.ps1') and (exclude_folders is None or not any(exclude_folder in file_path for exclude_folder in exclude_folders)):
             print("Processing: ", file_path )
             counter_processed += 1
 
