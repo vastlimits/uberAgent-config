@@ -2,11 +2,10 @@ name: Transpile Script
 
 on:
   push:
-    branches:
-      - '*'
-      - '!main'
-      - '!version/7.0'
-      - '!version/6.2'
+    branches-ignore:
+      - 'main'
+      - 'version/7.0'
+      - 'version/6.2'
 
 jobs:
   transpile:

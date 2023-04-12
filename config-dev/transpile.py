@@ -97,7 +97,7 @@ if os.path.isfile(output_csv_mapping):
 print("-------------------------------------")
 
 # List of folders to exclude
-exclude_folders = ['Shared']
+exclude_folders = ['']
 print("Excluding folders: ", exclude_folders)
 print("-------------------------------------")
 print("Opening output csv file: ", output_csv_mapping)
@@ -233,43 +233,14 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                     if not content:
                         print("\tError: Could not read file: ", file_path)
                         continue
-        
-                    # Search for includes
-                    includes = re.findall(r'(?<=Shared\\)[^\\]+\.ps1', content, flags=re.IGNORECASE)
-                    
-                    print("\tFound: ", len(includes), " include(s)")
-        
-                    # Loop through all found includes
-                    for include in includes:
-                        # Replace the include with the contents of the corresponding file
-                        include_path = os.path.join(include_folder, include)
-
-                        # Handle exceptions when opening the file
-                        try:
-                            with open(include_path, 'r') as include_file:
-                                include_content = include_file.read()
-
-                                # Read the contents of the file and check if the content was read successfully
-                                if not include_content:
-                                    print("\tError: Could not read include file: ", include_path)
-                                    continue
-
-                                includes_ex = re.findall(r'.*(?<=Shared\\)' + re.escape(include) + r'.*', content, flags=re.IGNORECASE)
-                                
-                                if len(includes_ex) > 0:
-                                    content = content.replace(includes_ex[0], include_content)
-                                    
-                                content = re.sub(r'.*#Requires.*(\r?\n)?', '', content, flags=re.IGNORECASE)
-                        except:
-                            print("\tError: Could not open include file: ", include_path)
-        
+          
                     try:
                         # Extract DisplayName and Description
                         extract_mapping_info(content)
                     except:
                         print("\tError: Failed to extract mapping info: ", file_path)
                         continue
-
+                    
                     # Extract subfolder name
                     subfolder = os.path.relpath(os.path.dirname(file_path), folder_path)
                     
