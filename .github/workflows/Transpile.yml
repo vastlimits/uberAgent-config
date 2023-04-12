@@ -46,13 +46,11 @@ jobs:
           $certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::New($buffer, $env:PFX_PASSWORD)
 
           $scripts = Get-ChildItem -Path $env:SCRIPT_DIR -Filter "*.ps1" -Recurse -ErrorAction Stop
- 
-          $codeSigningCert = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert | Select-Object -First 1
- 
+  
           foreach ($script in $scripts) {
             try {
               $scriptContent = Get-Content -Path $script.FullName
-              Write-Output "Signing script `"$($script.Name)`" with certificate `"$($codeSigningCert.Thumbprint)`""
+              Write-Output "Signing script `"$($script.Name)`" with certificate `"$($certificate.Thumbprint)`""
               # sign script
               $null = Set-AuthenticodeSignature -HashAlgorithm SHA256 -Certificate $certificate -FilePath $script.FullName -TimestampServer "http://timestamp.comodoca.com/rfc3161"
             }
