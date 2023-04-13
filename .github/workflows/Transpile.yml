@@ -14,7 +14,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.head_ref }}
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.VLSVC_PAT }}
 
       - name: Setup Python environment
         uses: actions/setup-python@v4
@@ -82,6 +83,7 @@ jobs:
         with:
           commit_message: Updated transpiled output
           commit_user_name: vastlimits
+          commit_user_email: devops@vastlimits.com
 
       - name: Commit only README.md
         if: failure()
