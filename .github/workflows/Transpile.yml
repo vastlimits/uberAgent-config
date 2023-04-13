@@ -40,10 +40,16 @@ jobs:
         if: success() && (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/'))
         shell: powershell
         run: |
-          # Create buffer from the BASE64 string of the PFX stored in the secret
-          $buffer = [System.Convert]::FromBase64String($env:BASE64_PFX)
-          # Create new certificate object from the buffer and the certificate pass
-          $certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::New($buffer, $env:PFX_PASSWORD)
+          try {
+            # Create buffer from the BASE64 string of the PFX stored in the secret
+            $buffer = [System.Convert]::FromBase64String($env:BASE64_PFX)
+            # Create new certificate object from the buffer and the certificate pass
+            $certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::New($buffer, $env:PFX_PASSWORD)
+          }
+          catch {
+            Write-Error "Failed to decrypt certificate"
+            return
+          }
 
           $scripts = Get-ChildItem -Path $env:SCRIPT_DIR -Filter "*.ps1" -Recurse -ErrorAction Stop
   
