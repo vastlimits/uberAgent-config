@@ -9,7 +9,7 @@ on:
 
 jobs:
   transpile:
-    runs-on: windows-2019
+    runs-on: ${{ (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/')) && 'windows-2019' || 'ubuntu-latest' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -37,7 +37,7 @@ jobs:
         run: python config-dev/analyzeLog.py --log_level note --fail_level error
       
       - name: Signing Powershell scripts
-        if: success()
+        if: success() && (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/'))
         shell: powershell
         run: |
           # Create buffer from the BASE64 string of the PFX stored in the secret
