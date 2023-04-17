@@ -9,7 +9,7 @@ on:
 
 jobs:
   transpile:
-    runs-on: ${{ (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/')) && 'windows-2019' || 'ubuntu-latest' }}
+    runs-on: ${{ (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/')) && 'windows-latest' || 'ubuntu-latest' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
