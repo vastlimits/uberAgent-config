@@ -57,7 +57,12 @@ try:
             exit(1)
             
         # Convert bytes to string
-        file_content = file_content.decode('utf-8')
+        try:
+            file_content = file_content.decode('utf-8')
+        except:
+            print("Error: Could not decode file content")
+            # Exit the script
+            exit(1)
 
         pattern = r'\[comment\]: # \(BADGE_SECTION_START\)(.*?)\[comment\]: # \(BADGE_SECTION_END\)'
         match = re.search(pattern, file_content, flags=re.DOTALL)
@@ -100,7 +105,12 @@ try:
             file_content = file_content.replace(result, " ".join(badge_list))
 
             # Convert the updated string back to bytes
-            file_content_updated = file_content.encode('utf-8')
+            try:
+                file_content_updated = file_content.encode('utf-8')
+            except:
+                print("Error: Could not encode file content")
+                # Exit the script
+                exit(1)
 
             # Write the file
             with open(file_read_me, 'wb') as write_file:
@@ -108,11 +118,11 @@ try:
                 write_file.flush()
 
             # Check if the file size is the same
-            written_bytes = len(file_content_updated)
+            content_updated_size = len(file_content_updated)
             written_file_size = os.path.getsize(file_read_me)
 
             # Check if everything was written
-            if written_bytes != written_file_size:
+            if content_updated_size != written_file_size:
                 print('Not all data was written to the file.')
                 # Exit the script
                 exit(1)
