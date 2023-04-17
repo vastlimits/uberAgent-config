@@ -232,6 +232,7 @@ function Get-vlLastGetSyncTimeByKey {
 
    # Parameter Value
    [CmdletBinding()]
+   [OutputType([System.DateTime])]
    param (
       $syncKey
    )
