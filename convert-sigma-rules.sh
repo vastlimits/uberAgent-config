@@ -28,22 +28,18 @@ git config --global user.email "github.action@localhost.local"
 git config --global user.name "vastlimits"
 git config --global --add safe.directory /github/workspace
 
-# checkout our fork of the sigma project (including the newest converter)
-git clone --branch feature/uberAgent-backend-macOS-integration https://github.com/vastlimits/sigma.git
+# checkout our fork of the legacy-sigmatools project (including the converter in develop)
+git clone --branch feature/uberAgent-backend https://github.com/vastlimits/legacy-sigmatools.git
 
-# navigate to sigma directory for further git commands
-cd sigma
-
-# add sigma remote and fetch
-git remote add sigma https://github.com/SigmaHQ/sigma.git
-git fetch sigma
-
-# rebase our working copy on the latest sigma branch
-git rebase sigma/master
+# checkout the main rule repository
+git clone https://github.com/SigmaHQ/sigma.git
 
 # remove files causing crashes
-rm rules/windows/builtin/security/win_security_successful_external_remote_rdp_login.yml
-rm rules/windows/builtin/security/win_security_successful_external_remote_smb_login.yml
+rm ./sigma/rules/windows/builtin/security/win_security_successful_external_remote_rdp_login.yml
+rm ./sigma/rules/windows/builtin/security/win_security_successful_external_remote_smb_login.yml
+
+# navigate to sigma directory for further git commands
+cd legacy-sigmatools
 
 # navigate to sigmac
 cd tools
@@ -85,7 +81,7 @@ pip install termcolor
 pip install sigma
 
 # begin converting rules as usual
-python sigmac -I --target uberagent -r ../rules/ --backend-config config/uberagent.yml
+python sigmac -I --target uberagent -r ../../sigma/rules/ --backend-config config/uberagent.yml
 
 # navigate back
 cd ../../
@@ -98,10 +94,11 @@ git rm $TARGET_DIR/uberAgent-ESA-am-sigma-*.conf || true
 mkdir -p $TARGET_DIR
 
 # copy current converted configuration
-cp -v sigma/tools/uberAgent-ESA-am-sigma-*.conf $TARGET_DIR/
+cp -v legacy-sigmatools/tools/uberAgent-ESA-am-sigma-*.conf $TARGET_DIR/
 
 # clean up sigma checkout
 rm -f -r sigma/
+rm -f -r legacy-sigmatools/
 
 # push changes
 echo "machine github.com" > "$HOME/.netrc"
