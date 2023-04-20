@@ -9,16 +9,13 @@ on:
 
 jobs:
   transpile:
-    runs-on: 'windows-latest'
+    runs-on: ${{ (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/')) && 'windows-latest' || 'ubuntu-latest' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           ref: ${{ github.ref_name }}
           token: ${{ secrets.VLSVC_PAT }}
-
-      - name: Set Git core.autocrlf to true
-        run: git config --global core.autocrlf true
 
       - name: Setup Python environment
         uses: actions/setup-python@v4
@@ -41,7 +38,7 @@ jobs:
         run: python config-dev/analyzeLog.py --log_level note --fail_level error
       
       - name: Signing Powershell scripts
-        if: success()
+        if: success() && (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/'))
         shell: powershell
         run: |
           try {
@@ -62,12 +59,6 @@ jobs:
               Write-Output "Signing script `"$($script.Name)`" with certificate `"$($certificate.Thumbprint)`""
               # sign script
               $null = Set-AuthenticodeSignature -HashAlgorithm SHA256 -Certificate $certificate -FilePath $script.FullName -TimestampServer "http://timestamp.comodoca.com/rfc3161"
-              $fileContent = Get-Content -Path $script.FullName -Encoding Byte
-              $sha1 = New-Object -TypeName System.Security.Cryptography.SHA1CryptoServiceProvider
-              $hashBytes = $sha1.ComputeHash($fileContent)
-
-              $hashString = [System.BitConverter]::ToString($hashBytes) -replace '-'
-              Write-Output "SHA1 hash of `"$($script.Name)`" is `"$($hashString)`""
             }
             catch {
               Write-Error "Failed to sign script `"$($script.Name)`" with certificate `"$($certificate.Thumbprint)`""
