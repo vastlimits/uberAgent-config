@@ -250,7 +250,7 @@ function Get-vlMachineAvailableFactors () {
 
 }
 
-function Get-vlWindowsHelloStatusLocalUser () {
+function Get-vlWindowsHelloStatusLocalMachine () {
    <#
     .SYNOPSIS
         Function that checks if Windows Hello is enabled.
@@ -262,7 +262,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
         If the Windows Hello is enabled, the script will return a vlResultObject with the WindowsHelloEnabled property set to true.
         If the Windows Hello is disabled, the script will return a vlResultObject with the WindowsHelloEnabled property set to false.
     .EXAMPLE
-        Get-vlWindowsHelloStatusLocalUser
+        Get-vlWindowsHelloStatusLocalMachine
     #>
 
    try {
@@ -343,7 +343,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       }
    }
    if ($params.Contains("all") -or $params.Contains("LUMWinBio")) {
-      $windowsHelloStatus = Get-vlWindowsHelloStatusLocalUser
+      $windowsHelloStatus = Get-vlWindowsHelloStatusLocalMachine
       $Output += [PSCustomObject]@{
          Name         = "LUMWinBio"
          DisplayName  = "Windows Hello / biometrics"
