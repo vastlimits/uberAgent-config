@@ -66,9 +66,9 @@ public class StlParser
     [StructLayout(LayoutKind.Sequential)]
     public struct CTL_ENTRY
     {
-        public CRYPT_DATA_BLOB SubjectIdentifier; // Zum Beispiel dessen Hash
+        public CRYPT_DATA_BLOB SubjectIdentifier;
         public uint cAttribute;
-        public IntPtr rgAttribute; // OPTIONAL
+        public IntPtr rgAttribute;
     }
 
     [StructLayout(LayoutKind.Sequential)]
