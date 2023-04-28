@@ -49,20 +49,33 @@ function Get-vlIsFirewallEnabled {
     #>
 
    try {
+      $privateNetwork = Get-NetConnectionProfile | Where-Object {$_.NetworkCategory -eq "Private"}
+      $publicNetwork = Get-NetConnectionProfile | Where-Object {$_.NetworkCategory -eq "Public"}
+      $domainAuthenticatedNetwork = Get-NetConnectionProfile | Where-Object {$_.NetworkCategory -eq "DomainAuthenticated"}
+
       $firewall = Get-NetFirewallProfile -All
       $result = [PSCustomObject]@{
-         Domain  = $firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled
-         Private = $firewall | where-object { $_.Profile -eq "Private" } | select-object -ExpandProperty Enabled
-         Public  = $firewall | where-object { $_.Profile -eq "Public" } | select-object -ExpandProperty Enabled
+         Domain  = [PSCustomObject]@{
+            Enabled = $firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled
+            Connected = if ($domainAuthenticatedNetwork) { $true } else { $false }
+         }
+         Private = [PSCustomObject]@{
+            Enabled = $firewall | where-object { $_.Profile -eq "Private" } | select-object -ExpandProperty Enabled
+            Connected = if ($privateNetwork) { $true } else { $false }
+         }
+         Public  = [PSCustomObject]@{
+            Enabled = $firewall | where-object { $_.Profile -eq "Public" } | select-object -ExpandProperty Enabled
+            Connected = if ($publicNetwork) { $true } else { $false }
+         }
       }
 
       $score = 10
 
-      if ($result.Domain -eq $false -or $result.Private -eq $false) {
+      if ($result.Domain.Enabled -eq $false -or $result.Private.Enabled -eq $false) {
          $score = 5
       }
 
-      if ($result.Public -eq $false) {
+      if ($result.Public.Enabled -eq $false) {
          $score = 0
       }
 
@@ -71,48 +84,6 @@ function Get-vlIsFirewallEnabled {
    catch {
       return New-vlErrorObject($_)
    }
-}
-
-Function Get-vlEnabledRules {
-   <#
-    .SYNOPSIS
-        Function that returns all enabled rules for a specific profile.
-    .DESCRIPTION
-        Function that returns all enabled rules for a specific profile.
-    .LINK
-        https://uberagent.com
-    .NOTES
-        This function is used by Get-vlOpenFirewallPorts. The results are filtered by the following properties:
-        Enabled = true
-        Profiles = $profile
-        Direction = IN
-        Action = ALLOW
-        ApplicationName or ServiceName or LocalPort or RemotePort = not null
-
-    .OUTPUTS
-        Returns an array of objects containing the following properties:
-
-        Name
-        ApplicationName
-        LocalPorts
-        RemotePorts
-
-    .EXAMPLE
-        Get-vlEnabledRules
-    #>
-
-   Param($profile)
-   $rules = (New-Object -comObject HNetCfg.FwPolicy2).rules
-   $rules = $rules | where-object { $_.Enabled -eq $true }
-   $rules = $rules | where-object { $_.Profiles -bAND $profile }
-   $rules = $rules | where-object { $_.Direction -bAND [FW_RULE_DIRECTION]::IN }
-   $rules = $rules | where-object { $_.Action -bAND [FW_ACTION]::ALLOW }
-   $rules = $rules | where-object { $_.ApplicationName -ne $null -or $_.ServiceName -ne $null -or $_localPorts -ne $null -or $_.RemotePorts -ne $null }
-
-   #remove every property excepted Name, ApplicationName and LocalPorts and RemotePorts
-   $rules = $rules | select-object -Property Name, ApplicationName, LocalPorts, RemotePorts
-
-   return $rules
 }
 
 # function to check open firewall ports returns array of open ports
@@ -138,57 +109,30 @@ function Get-vlOpenFirewallPorts {
     #>
 
    try {
-      $openPorts = [FW_PROFILE].GetEnumNames() | ForEach-Object { Get-vlEnabledRules -profile ([FW_PROFILE]::$_) }
+      $rulesEx = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore ActiveStore
+      $rulesSystemDefaults = Get-NetFirewallRule  -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore SystemDefaults
+      $rulesStaticServiceStore = Get-NetFirewallRule  -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore StaticServiceStore
+      #$RSOP = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore RSOP
 
-      return New-vlResultObject -result $openPorts -score 10
+      # To get the GPO Rules use $RSOP. They are not included in $rulesEx by default.
+
+      # get rule that contains GPO Test from rulesEx
+      $rulesPersistentStore = $rulesEx | Where-Object { $_.DisplayName -like "*GPO Test RULE*" }
+
+      # remove $rulesSystemDefaults, $rulesPersistentStore and $rulesStaticServiceStore from $rulesEx
+      $rulesEx = $rulesEx | Where-Object { $_.ID -notin $rulesSystemDefaults.ID }
+      $rulesEx = $rulesEx | Where-Object { $_.ID -notin $rulesStaticServiceStore.ID }
+      $rulesEx = $rulesEx | Where-Object { $_.ID -notin $rulesPersistentStore.ID }
+
+      # only keep rules where group is "" or $null
+      $rulesEx = $rulesEx | Where-Object { $_.Group -eq "" -or $_.Group -eq $null }
+
+      $rules = $rules | select-object -Property Name, DisplayName, Group, Profile, PolicyStoreSourceType
+
+      return New-vlResultObject -result $rulesEx -score 10
    }
    catch [Microsoft.Management.Infrastructure.CimException] {
       return "[Get-vlOpenFirewallPorts] You need elevated privileges"
-   }
-   catch {
-      return New-vlErrorObject($_)
-   }
-}
-
-function Get-vlListeningPorts {
-   <#
-    .SYNOPSIS
-        Function that returns all listening ports.
-    .DESCRIPTION
-        Function that returns all listening ports.
-    .LINK
-        https://uberagent.com
-
-    .OUTPUTS
-        Returns an array of objects containing the following properties:
-
-        LocalAddress
-        LocalPort
-        OwningProcess
-        OwningProcessName
-        OwningProcessPath
-
-    .EXAMPLE
-        Get-vlListeningPorts
-    #>
-
-   try {
-      $listenApps = Get-NetTCPConnection -State Listen
-
-      # use $listenApps and get local port, local address, process name
-      $listeningPorts = $listenApps | select-object -Property LocalAddress, LocalPort, OwningProcess, OwningProcessName, OwningProcessPath
-
-      # use $openPorts and find out the name of the OwningProcess id and add it to the object as OwningProcessName and OwningProcessPath
-      $listeningPorts | ForEach-Object {
-         $process = Get-Process -Id $_.OwningProcess
-         $_.OwningProcessName = $process.Name
-         $_.OwningProcessPath = $process.Path
-      }
-
-      return New-vlResultObject -result $listeningPorts -score 10
-   }
-   catch [Microsoft.Management.Infrastructure.CimException] {
-      return "[Get-vlListeningPorts] You need elevated privileges"
    }
    catch {
       return New-vlErrorObject($_)
@@ -244,23 +188,6 @@ function Get-vlFirewallCheck {
          ErrorMessage = $openPorts.ErrorMessage
       }
    }
-
-   <#
-    Disabled for now, because a port can have the status LISTENING and still be blocked by the firewall.
-    if ($params.Contains("all") -or $params.Contains("FWListPorts")) {
-        $listeningPorts = Get-vlListeningPorts
-        $Output += [PSCustomObject]@{
-            Name       = "FWListPorts"
-            DisplayName  = "Listening Firewall Ports"
-            Description  = "Checks if there are ports with the status LISTENING and returns the list of listening ports."
-            Score      = $listeningPorts.Score
-            ResultData = $listeningPorts.Result
-            RiskScore  = 50
-            ErrorCode      = $listeningPorts.ErrorCode
-            ErrorMessage   = $listeningPorts.ErrorMessage
-        }
-    }
-    #>
 
    return $output
 }
