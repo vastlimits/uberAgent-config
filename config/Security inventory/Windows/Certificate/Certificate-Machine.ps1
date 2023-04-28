@@ -621,5 +621,6 @@ function Get-vlCertificateCheck {
    return $output
 }
 
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)

@@ -416,4 +416,6 @@ function Get-WindowsConfigurationCheck {
    return $output
 }
 
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)

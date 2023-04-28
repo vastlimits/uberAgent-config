@@ -147,5 +147,7 @@ function Get-vlAntivirusCheck {
    Write-Output $output
 }
 
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 # Entrypoint of the script call the check function and convert the result to JSON
 Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
