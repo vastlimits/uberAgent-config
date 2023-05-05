@@ -35,8 +35,8 @@ git clone --branch feature/uberAgent-backend https://github.com/vastlimits/legac
 git clone https://github.com/SigmaHQ/sigma.git
 
 # remove files causing crashes
-rm ./sigma/rules/windows/builtin/security/win_security_successful_external_remote_rdp_login.yml
-rm ./sigma/rules/windows/builtin/security/win_security_successful_external_remote_smb_login.yml
+rm ./sigma/rules/windows/builtin/security/account_management/win_security_successful_external_remote_rdp_login.yml
+rm ./sigma/rules/windows/builtin/security/account_management/win_security_successful_external_remote_smb_login.yml
 
 # navigate to sigma directory for further git commands
 cd legacy-sigmatools
