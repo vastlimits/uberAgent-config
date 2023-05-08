@@ -160,11 +160,7 @@ function Get-vlGetCTLCheck {
          CurrentUser = $currentUser.Name
       }
 
-      if($result.CurrentUser.Count -gt 0) {
-         $score -= 5
-      }
-
-      if($result.LocalMachine.Count -gt 0) {
+      if($result.Unknown.Count -gt 0) {
          $score -= 5
       }
 
