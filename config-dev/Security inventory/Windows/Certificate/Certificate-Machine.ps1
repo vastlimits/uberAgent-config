@@ -412,21 +412,13 @@ function Get-vlGetCTLCheck {
         Get-vlGetCTLCheck
     #>
 
-   <#
-    # Get-ChildItem -Path cert:\LocalMachine\My | Where-Object { $_.Issuer -eq $_.Subject }
-    # Get-ChildItem -Path cert:\CurrentUser\My | Where-Object { $_.Issuer -eq $_.Subject }
-    # Get-ChildItem -Path cert:\LocalMachine\Root | Where-Object { $_.Issuer -eq $_.Subject }
-    # Get-ChildItem -Path cert:\CurrentUser\Root | Where-Object { $_.Issuer -eq $_.Subject }
-    #>
-
-   #last time the AuthRoot.stl file was synced
    try {
       $score = 10
 
       #Load Stl
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
-      #get all certificates that are not expired from the local machine
+      #get all certificates from the local machine
       $localMachineCerts = (Get-ChildItem cert:\LocalMachine\Root | Where-Object { $_.NotAfter -ge (Get-Date) }) | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
 
       #extract CTL
@@ -437,11 +429,7 @@ function Get-vlGetCTLCheck {
          Unknown = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts
       }
 
-      if($result.CurrentUser.Count -gt 0) {
-         $score -= 5
-      }
-
-      if($result.LocalMachine.Count -gt 0) {
+      if($result.Unknown.Count -gt 0) {
          $score -= 5
       }
 
