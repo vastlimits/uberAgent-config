@@ -56,15 +56,15 @@ function Get-vlIsFirewallEnabled {
       $firewall = Get-NetFirewallProfile -All
       $result = [PSCustomObject]@{
          Domain  = [PSCustomObject]@{
-            Enabled = $firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled
+            Enabled = [bool]($firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled)
             Connected = if ($domainAuthenticatedNetwork) { $true } else { $false }
          }
          Private = [PSCustomObject]@{
-            Enabled = $firewall | where-object { $_.Profile -eq "Private" } | select-object -ExpandProperty Enabled
+            Enabled = [bool]($firewall | where-object { $_.Profile -eq "Private" } | select-object -ExpandProperty Enabled)
             Connected = if ($privateNetwork) { $true } else { $false }
          }
          Public  = [PSCustomObject]@{
-            Enabled = $firewall | where-object { $_.Profile -eq "Public" } | select-object -ExpandProperty Enabled
+            Enabled = [bool]($firewall | where-object { $_.Profile -eq "Public" } | select-object -ExpandProperty Enabled)
             Connected = if ($publicNetwork) { $true } else { $false }
          }
       }
@@ -108,29 +108,37 @@ function Get-vlOpenFirewallPorts {
         Get-vlOpenFirewallPorts
     #>
 
-   try {
+    try {
       $rulesEx = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore ActiveStore
-      $rulesSystemDefaults = Get-NetFirewallRule  -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore SystemDefaults
-      $rulesStaticServiceStore = Get-NetFirewallRule  -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore StaticServiceStore
-      #$RSOP = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore RSOP
+      $rulesSystemDefaults = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore SystemDefaults
+      $rulesStaticServiceStore = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore StaticServiceStore
 
-      # To get the GPO Rules use $RSOP. They are not included in $rulesEx by default.
-
-      # get rule that contains GPO Test from rulesEx
-      $rulesPersistentStore = $rulesEx | Where-Object { $_.DisplayName -like "*GPO Test RULE*" }
-
-      # remove $rulesSystemDefaults, $rulesPersistentStore and $rulesStaticServiceStore from $rulesEx
       $rulesEx = $rulesEx | Where-Object { $_.ID -notin $rulesSystemDefaults.ID }
       $rulesEx = $rulesEx | Where-Object { $_.ID -notin $rulesStaticServiceStore.ID }
-      $rulesEx = $rulesEx | Where-Object { $_.ID -notin $rulesPersistentStore.ID }
 
-      # only keep rules where group is "" or $null
+      # microsoft uses the group property to identify rules that are created by default
       $rulesEx = $rulesEx | Where-Object { $_.Group -eq "" -or $_.Group -eq $null }
 
-      $rules = $rules | select-object -Property Name, DisplayName, Group, Profile, PolicyStoreSourceType
+      $rulesEx = $rulesEx | ForEach-Object {
+          $rule = $_
+          $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule
+          $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule
+
+          [PSCustomObject]@{
+              Name = $rule.Name
+              DisplayName = $rule.DisplayName
+              ApplicationName = $appFilter.Program
+              LocalPorts = $portFilter.LocalPort
+              RemotePorts = $portFilter.RemotePort
+              Protocol = $portFilter.Protocol
+              Group = $rule.Group
+              Profile = $rule.Profile
+              PolicyStoreSourceType = $rule.PolicyStoreSourceType
+          }
+      }
 
       return New-vlResultObject -result $rulesEx -score 10
-   }
+  }
    catch [Microsoft.Management.Infrastructure.CimException] {
       return "[Get-vlOpenFirewallPorts] You need elevated privileges"
    }
