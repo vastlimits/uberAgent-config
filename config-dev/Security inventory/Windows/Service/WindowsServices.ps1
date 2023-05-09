@@ -176,4 +176,6 @@ function Get-vlWindowsServicesCheck {
    return $output
 }
 
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)

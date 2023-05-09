@@ -19,17 +19,16 @@ function Get-vlPowerShellV2Status {
         Get-vlPowerShellV2Status
     #>
 
-   param (
-
-   )
-
    process {
       try {
+         $currentPowerShellVersion = Get-vlPowerShellVersion | Select-Object -ExpandProperty result | Select-Object -ExpandProperty Version
+
          #check if PowerShell V2 is installed on the system
          $installationStatus = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2
 
          $result = [PSCustomObject]@{
             PowerShellV2Enabled = ($installationStatus.State -eq "Enabled")
+            DefaultVersion      = $currentPowerShellVersion
          }
 
          if ($result.PowerShellV2Enabled) {
@@ -43,12 +42,7 @@ function Get-vlPowerShellV2Status {
 
          return New-vlErrorObject($_)
       }
-      finally {
-
-      }
-
    }
-
 }
 
 function Get-vlPowerShellCL {
@@ -67,8 +61,6 @@ function Get-vlPowerShellCL {
         Get-vlPowerShellCL
     #>
 
-   param ()
-
    process {
       try {
          $result = [PSCustomObject]@{
@@ -80,9 +72,6 @@ function Get-vlPowerShellCL {
       catch {
 
          return New-vlErrorObject($_)
-      }
-      finally {
-
       }
    }
 
@@ -617,20 +606,6 @@ function Get-vlPowerShellCheck {
       }
    }
 
-   if ($params.Contains("all") -or $params.Contains("PSVersion")) {
-      $powerShellMode = Get-vlPowerShellVersion
-      $Output += [PSCustomObject]@{
-         Name         = "PSVersion"
-         DisplayName  = "PowerShell version"
-         Description  = "The PowerShell version in use"
-         Score        = 10
-         ResultData   = $powerShellMode.Result
-         RiskScore    = 0
-         ErrorCode    = $powerShellMode.ErrorCode
-         ErrorMessage = $powerShellMode.ErrorMessage
-      }
-   }
-
    if ($params.Contains("all") -or $params.Contains("PSPolicy")) {
       $powerShellExecutionPolicy = Get-vlPowerShellExecutionPolicy
       $Output += [PSCustomObject]@{
@@ -662,6 +637,7 @@ function Get-vlPowerShellCheck {
    Write-Output $output
 }
 
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # Entrypoint of the script call the check function and convert the result to JSON
 Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)

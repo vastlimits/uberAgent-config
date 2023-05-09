@@ -44,11 +44,14 @@ function Get-vlIsLocalAdmin {
     #>
 
    try {
+      $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+
       #checks if use has claim object S-1-5-32-544 (local admin group)
-      $isLocalAdmin = [Security.Principal.WindowsIdentity]::GetCurrent().Claims.Value.Contains('S-1-5-32-544')
+      $isLocalAdmin = $currentUser.Claims.Value.Contains('S-1-5-32-544')
       if ($isLocalAdmin) {
          $result = [PSCustomObject]@{
             IsLocalAdmin = $true
+            CurrentUser = $currentUser.Name
          }
 
          return New-vlResultObject -result $result -score 3
@@ -56,6 +59,7 @@ function Get-vlIsLocalAdmin {
       else {
          $result = [PSCustomObject]@{
             IsLocalAdmin = $false
+            CurrentUser = $currentUser.Name
          }
          return New-vlResultObject -result $result -score 10
       }
@@ -173,7 +177,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
          if ($registryItems.Where({ $_.PSChildName -eq $currentUserSID }).LogonCredsAvailable -eq 1) {
             $result = [PSCustomObject]@{
                WindowsHelloEnabled = $true
-               EnrolledFactors     = $enroledFactors
+               EnrolledFactors     = ($enroledFactors + "PIN")
             }
 
             return New-vlResultObject -result $result -score 10
@@ -191,7 +195,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
          if (($registryItems.PSChildName -eq $currentUserSID) -AND ($registryItems.LogonCredsAvailable -eq 1)) {
             $result = [PSCustomObject]@{
                WindowsHelloEnabled = $true
-               EnrolledFactors     = $enroledFactors
+               EnrolledFactors     = ($enroledFactors + "PIN")
             }
 
             return New-vlResultObject -result $result -score 10
@@ -264,5 +268,7 @@ function Get-vlLocalUsersAndGroupsCheck {
    return $output
 }
 
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 # Entrypoint of the script call the check function and convert the result to JSON
-Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
+Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json )# -Compress)

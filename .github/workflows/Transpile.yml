@@ -56,7 +56,6 @@ jobs:
   
           foreach ($script in $scripts) {
             try {
-              $scriptContent = Get-Content -Path $script.FullName
               Write-Output "Signing script `"$($script.Name)`" with certificate `"$($certificate.Thumbprint)`""
               # sign script
               $null = Set-AuthenticodeSignature -HashAlgorithm SHA256 -Certificate $certificate -FilePath $script.FullName -TimestampServer "http://timestamp.comodoca.com/rfc3161"

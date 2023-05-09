@@ -412,24 +412,13 @@ function Get-vlGetCTLCheck {
         Get-vlGetCTLCheck
     #>
 
-   <#
-    # Get-ChildItem -Path cert:\LocalMachine\My | Where-Object { $_.Issuer -eq $_.Subject }
-    # Get-ChildItem -Path cert:\CurrentUser\My | Where-Object { $_.Issuer -eq $_.Subject }
-    # Get-ChildItem -Path cert:\LocalMachine\Root | Where-Object { $_.Issuer -eq $_.Subject }
-    # Get-ChildItem -Path cert:\CurrentUser\Root | Where-Object { $_.Issuer -eq $_.Subject }
-    #>
-
-   #last time the AuthRoot.stl file was synced
    try {
       $score = 10
 
       #Load Stl
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
-      #add all certificates that are not expired from the current user
-      $currentUserCerts = (Get-ChildItem cert:\CurrentUser\Root | Where-Object { $_.NotAfter -ge (Get-Date) }) | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
-
-      #get all certificates that are not expired from the local machine
+      #get all certificates from the local machine
       $localMachineCerts = (Get-ChildItem cert:\LocalMachine\Root | Where-Object { $_.NotAfter -ge (Get-Date) }) | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
 
       #extract CTL
@@ -437,19 +426,14 @@ function Get-vlGetCTLCheck {
 
       # Create the result object
       $result = [PSCustomObject]@{
-         CurrentUser  = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
-         LocalMachine = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts
+         Unknown = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts
       }
 
-      if($result.CurrentUser.Count -gt 0) {
+      if($result.Unknown.Count -gt 0) {
          $score -= 5
       }
 
-      if($result.LocalMachine.Count -gt 0) {
-         $score -= 5
-      }
-
-      return New-vlResultObject -result $result -score $score -riskScore 70
+      return New-vlResultObject -result $result -score $score
    }
    catch {
       return New-vlErrorObject -context $_
@@ -505,7 +489,6 @@ function Get-vlCheckSyncTimes {
     #>
 
    $score = 10
-   $riskScore = 50
 
    try {
       $lastCTLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "LastSyncTime" # Gets the last time the AuthRoot.stl file was synced
@@ -513,7 +496,7 @@ function Get-vlCheckSyncTimes {
       $lastPRLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "PinRulesLastSyncTime" # Gets the last time the PinRules file was synced
 
 
-      # worse score would be 1 if all 3 are not synced in the last 14 days
+      # worsed score would be 1 if all 3 are not synced in the last 14 days
       $score += Get-vlTimeScore -time $lastCTLSyncTime
       $score += Get-vlTimeScore -time $lastCRLSyncTime
 
@@ -529,21 +512,19 @@ function Get-vlCheckSyncTimes {
          PRL = $lastPRLSyncTime
       }
 
-      return New-vlResultObject -result $result -score $score -riskScore $riskScore
+      return New-vlResultObject -result $result -score $score
    }
    catch {
       return New-vlErrorObject -context $_
    }
 }
 
-
-
 function Get-vlCertificateCheck {
    <#
     .SYNOPSIS
-        Function that performs the Certificate check and returns the result to the uberAgent.
+        Function that performs the Certificate check and returns the result to uberAgent.
     .DESCRIPTION
-        Function that performs the Certificate check and returns the result to the uberAgent.
+        Function that performs the Certificate check and returns the result to uberAgent.
     .NOTES
         The result will be converted to JSON. Each test returns a vlResultObject or vlErrorObject.
         Specific tests can be called by passing the test name as a parameter to the script args.
@@ -559,10 +540,10 @@ function Get-vlCertificateCheck {
    $params = if ($global:args) { $global:args } else { "all" }
    $Output = @()
 
-   if ($params.Contains("all") -or $params.Contains("CProtRoot")) {
+   if ($params.Contains("all") -or $params.Contains("CMProtRoot")) {
       $protectedRoots = Get-vlRootCertificateInstallationCheck
       $Output += [PSCustomObject]@{
-         Name         = "CProtRoot"
+         Name         = "CMProtRoot"
          DisplayName  = "Protected root certificates"
          Description  = "Checks if root certificates can be installed by users."
          Score        = $protectedRoots.Score
@@ -572,10 +553,10 @@ function Get-vlCertificateCheck {
          ErrorMessage = $protectedRoots.ErrorMessage
       }
    }
-   if ($params.Contains("all") -or $params.Contains("CExpCerts")) {
+   if ($params.Contains("all") -or $params.Contains("CMExpCerts")) {
       $protectedRoots = Get-vlExpiredCertificateCheck
       $Output += [PSCustomObject]@{
-         Name         = "CExpCerts"
+         Name         = "CMExpCerts"
          DisplayName  = "Expired certificates"
          Description  = "Checks if there are expired certificates installed."
          Score        = $protectedRoots.Score
@@ -585,10 +566,10 @@ function Get-vlCertificateCheck {
          ErrorMessage = $protectedRoots.ErrorMessage
       }
    }
-   if ($params.Contains("all") -or $params.Contains("CAuCerUp")) {
+   if ($params.Contains("all") -or $params.Contains("CMAuCerUp")) {
       $autoCertUpdateCheck = Get-vlAutoCertificateUpdateCheck
       $Output += [PSCustomObject]@{
-         Name         = "CAuCerUp"
+         Name         = "CMAuCerUp"
          DisplayName  = "Auto certificate update"
          Description  = "Checks if the auto certificate update is enabled."
          Score        = $autoCertUpdateCheck.Score
@@ -598,28 +579,28 @@ function Get-vlCertificateCheck {
          ErrorMessage = $autoCertUpdateCheck.ErrorMessage
       }
    }
-   if ($params.Contains("all") -or $params.Contains("CLaSync")) {
+   if ($params.Contains("all") -or $params.Contains("CMLaSync")) {
       $lastSync = Get-vlCheckSyncTimes
       $Output += [PSCustomObject]@{
-         Name         = "CLaSync"
+         Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"
          Description  = "Checks when the certificates were last synced."
          Score        = $lastSync.Score
          ResultData   = $lastSync.Result
-         RiskScore    = $lastSync.RiskScore
+         RiskScore    = 50
          ErrorCode    = $lastSync.ErrorCode
          ErrorMessage = $lastSync.ErrorMessage
       }
    }
-   if ($params.Contains("all") -or $params.Contains("CTrByWin")) {
+   if ($params.Contains("all") -or $params.Contains("CMTrByWin")) {
       $ctlCheck = Get-vlGetCTLCheck
       $Output += [PSCustomObject]@{
-         Name         = "CTrByWin"
+         Name         = "CMTrByWin"
          DisplayName  = "Certificates trusted by Windows"
-         Description  = "Checks if the certificates are trusted by Windows using the Certificate Trust List."
+         Description  = "Checks if there are unknown certificates installed within the trusted root certificate store."
          Score        = $ctlCheck.Score
          ResultData   = $ctlCheck.Result
-         RiskScore    = $ctlCheck.RiskScore
+         RiskScore    = 70
          ErrorCode    = $ctlCheck.ErrorCode
          ErrorMessage = $ctlCheck.ErrorMessage
       }
@@ -628,5 +609,6 @@ function Get-vlCertificateCheck {
    return $output
 }
 
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
