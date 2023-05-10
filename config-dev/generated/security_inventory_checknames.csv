@@ -1,33 +1,33 @@
 SecurityInventoryName,SecurityInventoryDisplayName,SecurityInventoryNameDescription
-CMProtRoot,Protected root certificates,Checks if root certificates can be installed by users.
-CMExpCerts,Expired certificates,Checks if there are expired certificates installed.
-CMAuCerUp,Auto certificate update,Checks if the auto certificate update is enabled.
-CMLaSync,Certificate last sync,Checks when the certificates were last synced.
-CMTrByWin,Certificates trusted by Windows,Checks if there are unknown certificates installed within the trusted root certificate store.
-CUExpCerts,Expired certificates,Checks if there are expired certificates installed within the CurrentUser store.
-CUTrByWin,Certificates trusted by Windows - User,Checks if there are unknown certificates installed within the CurrentUser store.
+AVState,Antivirus status,Checks if the antivirus is enabled and up to date.
 NCSMBv1,Network Configuration SMBv1,Checks whether SMBv1 is enabled.
 NCSMBSign,Network Configuration SMB Signing,Checks whether SMB signing is enabled.
 NCNetBIOS,Network configuration NetBIOS,Checks whether NetBIOS is enabled.
 NCWINS,Network configuration WINS,Checks whether WINS is enabled.
 NCSSLTLS,Network configuration SSL/TLS,Checks whether outdated SSL and TLS versions are enabled.
-Locations,Uncommon locations,Checks whether services are running in uncommon locations
-Service.dll,Uncommon locations of service.dll,Checks whether services use service.dll in uncommon locations
-WCHta,WindowsConfiguration HTA,Checks if HTA execution is enabled on the system.
-WCBitlocker,WindowsConfiguration Bitlocker,Checks if Bitlocker is enabled on the system.
-WCComHijacking,WindowsConfiguration COM hijacking,Checks if COM is hijacked.
-WCTimeProvHijacking,WindowsConfiguration time provider hijacking,Checks if the time provider is hijacked.
-PSV2,PowerShell V2,Checks if PowerShell V2 is enabled
-PSRemoting,PowerShell Remoting,Checks if PowerShell remoting is enabled
-PSCL,PowerShell common language mode,Checks if PowerShell Common Language Mode is enabled
-PSPolicy,PowerShell policy,Checks and evaluates the PowerShell Execution Policy
-PSLogging,PowerShell logging,Checks if PowerShell Logging is enabled
 FWState,Firewall status,Checks if the firewall is enabled.
 FWPorts,Open firewall ports,Checks if there are open firewall ports and returns the list of open ports.
+CUExpCerts,Expired certificates,Checks if there are expired certificates installed within the CurrentUser store.
+CUTrByWin,Certificates trusted by Windows - User,Checks if there are unknown certificates installed within the CurrentUser store.
+CMProtRoot,Protected root certificates,Checks if root certificates can be installed by users.
+CMExpCerts,Expired certificates,Checks if there are expired certificates installed.
+CMAuCerUp,Auto certificate update,Checks if the auto certificate update is enabled.
+CMLaSync,Certificate last sync,Checks when the certificates were last synced.
+CMTrByWin,Certificates trusted by Windows,Checks if there are unknown certificates installed within the trusted root certificate store.
 LUUIsAdmin,Local user is admin,Checks if the local user is a member of the local Administrators group.
 LUUWinBio,Local user Windows Hello / biometrics,Checks if Windows Hello is enabled and if the local user has enrolled factors.
 LUMUac,User account control,Checks if the User Account Control is enabled.
 LUMLaps,Local administrator password solution,Checks if the Local Administrator Password Solution is enabled.
 LUMSecrets,Local security authority secrets,Checks if LSA secrets are available.
 LUMWinBio,Windows Hello / biometrics,Checks if Windows Hello is enabled and what factors are available.
-AVState,Antivirus status,Checks if the antivirus is enabled and up to date.
+PSV2,PowerShell V2,Checks if PowerShell V2 is enabled
+PSRemoting,PowerShell Remoting,Checks if PowerShell remoting is enabled
+PSCL,PowerShell common language mode,Checks if PowerShell Common Language Mode is enabled
+PSPolicy,PowerShell policy,Checks and evaluates the PowerShell Execution Policy
+PSLogging,PowerShell logging,Checks if PowerShell Logging is enabled
+WCHta,WindowsConfiguration HTA,Checks if HTA execution is enabled on the system.
+WCBitlocker,WindowsConfiguration Bitlocker,Checks if Bitlocker is enabled on the system.
+WCComHijacking,WindowsConfiguration COM hijacking,Checks if COM is hijacked.
+WCTimeProvHijacking,WindowsConfiguration time provider hijacking,Checks if the time provider is hijacked.
+Locations,Uncommon locations,Checks whether services are running in uncommon locations
+Service.dll,Uncommon locations of service.dll,Checks whether services use service.dll in uncommon locations
