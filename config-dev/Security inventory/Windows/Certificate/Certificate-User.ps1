@@ -21,9 +21,29 @@ function Get-vlExpiredCertificateCheck {
       $score = 10
 
       $certs = Get-ChildItem cert:\ -Recurse
-      $expCets = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and $_.NotAfter -lt (Get-Date) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
-      $willExpire30 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date) -and $_.NotAfter -lt (Get-Date).AddDays(30)) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
-      $willExpire60 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date).AddDays(30) -and $_.NotAfter -lt (Get-Date).AddDays(60)) } | Select-Object -Property FriendlyName, Issuer, NotAfter, Thumbprint
+      $expCets = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and $_.NotAfter -lt (Get-Date) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
+      $willExpire30 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date) -and $_.NotAfter -lt (Get-Date).AddDays(30)) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
+      $willExpire60 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date).AddDays(30) -and $_.NotAfter -lt (Get-Date).AddDays(60)) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
+
+
+      # convert Date object to ISO timestring
+      $expCets = $expCets | ForEach-Object {
+         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_
+      }
+
+      $willExpire30 = $willExpire30 | ForEach-Object {
+         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_
+      }
+
+      $willExpire60 = $willExpire60 | ForEach-Object {
+         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_
+      }
 
       if( $willExpire60.Length -gt 0 ){
          $score = 7
@@ -150,6 +170,14 @@ function Get-vlGetCTLCheck {
 
       #add all certificates that are not expired from the current user
       $currentUserCerts = (Get-ChildItem cert:\CurrentUser\Root | Where-Object { $_.NotAfter -ge (Get-Date) }) | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
+
+
+      # convert NotAfter and NotBefore to string iso format
+      $currentUserCerts = $currentUserCerts | ForEach-Object {
+         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         return $_
+      }
 
       #extract CTL
       $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl

@@ -52,9 +52,9 @@ function Get-vlAntivirusStatus {
             AMServiceVersion                = $instances.AMServiceVersion
             AntispywareEnabled              = $instances.AntispywareEnabled
             AntivirusEnabled                = $instances.AntivirusEnabled
-            AntispywareSignatureLastUpdated = $instances.AntispywareSignatureLastUpdated
+            AntispywareSignatureLastUpdated = $instances.AntispywareSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss")
             AntispywareSignatureVersion     = $instances.AntispywareSignatureVersion
-            AntivirusSignatureLastUpdated   = $instances.AntivirusSignatureLastUpdated
+            AntivirusSignatureLastUpdated   = $instances.AntivirusSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss")
             QuickScanSignatureVersion       = $instances.QuickScanSignatureVersion
          }
 
