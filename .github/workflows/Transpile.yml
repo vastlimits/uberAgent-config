@@ -23,7 +23,7 @@ jobs:
           python-version: 3.11
       
       - name: Print Hello World
-        run: echo "Hello World"
+        run: echo "Hello World 2"
 
       - name: Run transpiler script
         shell: bash
