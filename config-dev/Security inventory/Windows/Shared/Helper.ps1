@@ -174,45 +174,59 @@ function Get-vlRegValue {
       [Parameter(Mandatory = $true)]
       [string]$Path,
       [Parameter(Mandatory = $false)]
-      [string]$Value
+      [string]$Value,
+      [Parameter(Mandatory = $false)]
+      [bool]$IncludePolicies = $false
    )
-   begin {
-
-   }
 
    process {
-
       try {
+         #check if $Path starts with \ then remove it
+         if ($Path.StartsWith("\")) {
+            $Path = $Path.Substring(1)
+         }
+
          $regKey = $null
-         $regKeyValue = "";
+         $regKeyValue = $null;
          if ($Hive -eq "HKCU") {
+            # Get the registry key for the current user
             $regKey = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey($Path);
-            if ($null -ne $regKey) {
-               $regKeyValue = $regKey.GetValue($Value)
-            }
-            return $regKeyValue;
          }
          elseif ($hive -eq "HKU") {
+            # Get the registry key for all users
             $regKey = [Microsoft.Win32.Registry]::Users.OpenSubKey($Path);
-            if ($null -ne $regKey) {
-               $regKeyValue = $regKey.GetValue($Value);
-            }
-            return $regKeyValue;
          }
          elseif ($hive -eq "HKCR") {
+            # Get the registry key for the classes root
             $regKey = [Microsoft.Win32.Registry]::ClassesRoot.OpenSubKey($Path);
-            if ($null -ne $regKey) {
-               $regKeyValue = $regKey.GetValue($Value);
-            }
-            return $regKeyValue;
          }
          else {
+            # Get the registry key for the local machine
             $regKey = [Microsoft.Win32.Registry]::LocalMachine.OpenSubKey($Path);
-            if ($null -ne $regKey) {
-               $regKeyValue = $regKey.GetValue($Value);
-            }
-            return $regKeyValue;
          }
+
+         if ($IncludePolicies -eq $true) {
+            # check if $path contains "SOFTWARE" if true then replace with "SOFTWARE\Policies\"
+            $gpo_store32_path = $Path -replace "SOFTWARE\\", "SOFTWARE\Policies\"
+            $gpo_store32 = Get-vlRegValue -Hive $Hive -Path $gpo_store32_path -Value $Value
+
+            $gpo_store64_path = $Path -replace "SOFTWARE\\", "SOFTWARE\WOW6432Node\Policies\"
+            $gpo_store64 = Get-vlRegValue -Hive $Hive -Path $gpo_store64_path -Value $Value
+
+         }
+
+         if ($null -ne $regKey) {
+            $regKeyValue = $regKey.GetValue($Value);
+         }
+
+         if ($gpo_store32) {
+            $regKeyValue = $gpo_store32
+         }
+         elseif ($gpo_store64) {
+            $regKeyValue = $gpo_store64
+         }
+
+         return $regKeyValue;
       }
       catch {
          Write-Verbose "Registry $Hive\$Path was not found"
