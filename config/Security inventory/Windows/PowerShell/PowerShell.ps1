@@ -350,20 +350,17 @@ Function Get-vlPowerShellLoggingTranscriptionStatus {
         Get-vlPowerShellLoggingTranscriptionStatus
     #>
 
-   $result = [PSCustomObject]@{
-      Registry    = $false
-      GroupPolicy = $false
-   }
+   $result = $false
 
    try {
-      $transcription = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\WOW6432Node\Policies\Microsoft\Windows\PowerShell\Transcription" -Value "EnableTranscripting"
+      $transcription = Get-vlRegValue -Hive "HKLM" -Path "\Software\Microsoft\Windows\PowerShell\Transcription" -Value "EnableTranscripting"
       if ( $transcription -eq 1) {
-         $result.Registry = $true
+         $result = $true
       }
 
-      $transcription = (Get-GPRegistryValue -Name "EnableTranscripting" -Key "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell").Value
+      $transcription = Get-vlRegValue -Hive "HKLM" -Path "\Software\Policies\Microsoft\Windows\PowerShell\Transcription" -Value "EnableTranscripting"
       if ($transcription -eq 1) {
-         $result.GroupPolicy = $true
+         $result = $true
       }
    }
    catch {
@@ -388,20 +385,17 @@ Function Get-vlPowerShellLoggingScriptBlockStatus {
     #>
 
 
-   $result = [PSCustomObject]@{
-      Registry    = $false
-      GroupPolicy = $false
-   }
+   $result = $false
 
    try {
-      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Value "EnableScriptBlockLogging"
+      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Value "EnableScriptBlockLogging"
       if ($scriptBlockLogging -eq 1) {
-         $result.Registry = $true
+         $result = $true
       }
 
-      $scriptBlockLogging = (Get-GPRegistryValue -Name "EnableScriptBlockLogging" -Key "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell").Value
+      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Value "EnableScriptBlockLogging"
       if ($scriptBlockLogging -eq 1) {
-         $result.GroupPolicy = $true
+         $result = $true
       }
    }
    catch {
@@ -425,20 +419,17 @@ Function Get-vlPowerShellLoggingModuleLogging {
         Get-vlPowerShellLoggingModuleLogging
     #>
 
-   $result = [PSCustomObject]@{
-      Registry    = $false
-      GroupPolicy = $false
-   }
+   $result = $false
 
    try {
-      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\WOW6432Node\Policies\Microsoft\Windows\PowerShell\ModuleLogging\ModuleNames" -Value "EnableModuleLogging"
+      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "\SOFTWARE\Windows\Microsoft\PowerShell\ModuleLogging" -Value "EnableModuleLogging"
       if ($scriptBlockLogging -eq 1) {
-         $result.Registry = $true
+         $result = $true
       }
 
-      $scriptBlockLogging = (Get-GPRegistryValue -Name "EnableModuleLogging" -Key "HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell").Value
+      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging" -Value "EnableModuleLogging"
       if ($scriptBlockLogging -eq 1) {
-         $result.GroupPolicy = $true
+         $result = $true
       }
    }
    catch {
