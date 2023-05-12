@@ -353,13 +353,8 @@ Function Get-vlPowerShellLoggingTranscriptionStatus {
    $result = $false
 
    try {
-      $transcription = Get-vlRegValue -Hive "HKLM" -Path "\Software\Microsoft\Windows\PowerShell\Transcription" -Value "EnableTranscripting"
+      $transcription = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\PowerShell\Transcription" -Value "EnableTranscripting" -IncludePolicies $true
       if ( $transcription -eq 1) {
-         $result = $true
-      }
-
-      $transcription = Get-vlRegValue -Hive "HKLM" -Path "\Software\Policies\Microsoft\Windows\PowerShell\Transcription" -Value "EnableTranscripting"
-      if ($transcription -eq 1) {
          $result = $true
       }
    }
@@ -388,12 +383,7 @@ Function Get-vlPowerShellLoggingScriptBlockStatus {
    $result = $false
 
    try {
-      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Value "EnableScriptBlockLogging"
-      if ($scriptBlockLogging -eq 1) {
-         $result = $true
-      }
-
-      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Value "EnableScriptBlockLogging"
+      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Value "EnableScriptBlockLogging" -IncludePolicies $true
       if ($scriptBlockLogging -eq 1) {
          $result = $true
       }
@@ -422,13 +412,8 @@ Function Get-vlPowerShellLoggingModuleLogging {
    $result = $false
 
    try {
-      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "\SOFTWARE\Windows\Microsoft\PowerShell\ModuleLogging" -Value "EnableModuleLogging"
-      if ($scriptBlockLogging -eq 1) {
-         $result = $true
-      }
-
-      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging" -Value "EnableModuleLogging"
-      if ($scriptBlockLogging -eq 1) {
+      $enableModuleLogging = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\PowerShell\ModuleLogging" -Value "EnableModuleLogging" -IncludePolicies $true
+      if ($enableModuleLogging -eq 1) {
          $result = $true
       }
    }
