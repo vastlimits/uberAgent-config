@@ -342,6 +342,7 @@ function Get-WindowsConfigurationCheck {
    $Output = @()
 
 
+   <# disabled for now - since we would trigger a lot of false positives
    if ($params.Contains("all") -or $params.Contains("WCHta")) {
       $checkHtaEnabled = Get-CheckHTAEnabled
       $Output += [PSCustomObject]@{
@@ -355,6 +356,7 @@ function Get-WindowsConfigurationCheck {
          ErrorMessage = $checkHtaEnabled.ErrorMessage
       }
    }
+   #>
 
    if ($params.Contains("all") -or $params.Contains("WCBitlocker")) {
       $checkBitlockerEnabled = Get-BitlockerEnabled
