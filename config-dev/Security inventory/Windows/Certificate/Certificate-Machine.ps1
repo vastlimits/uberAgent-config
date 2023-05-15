@@ -580,6 +580,7 @@ function Get-vlCertificateCheck {
          ErrorMessage = $protectedRoots.ErrorMessage
       }
    }
+   <# disabled for now since there is no real security impact if the certificate is expired
    if ($params.Contains("all") -or $params.Contains("CMExpCerts")) {
       $protectedRoots = Get-vlExpiredCertificateCheck
       $Output += [PSCustomObject]@{
@@ -593,6 +594,7 @@ function Get-vlCertificateCheck {
          ErrorMessage = $protectedRoots.ErrorMessage
       }
    }
+   #>
    if ($params.Contains("all") -or $params.Contains("CMAuCerUp")) {
       $autoCertUpdateCheck = Get-vlAutoCertificateUpdateCheck
       $Output += [PSCustomObject]@{

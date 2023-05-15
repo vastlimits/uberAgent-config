@@ -222,6 +222,7 @@ function Get-vlCertificateCheck {
    $params = if ($global:args) { $global:args } else { "all" }
    $Output = @()
 
+   <# disabled for now since there is no real security impact if the certificate is expired
    if ($params.Contains("all") -or $params.Contains("CUExpCerts")) {
       $protectedRoots = Get-vlExpiredCertificateCheck
       $Output += [PSCustomObject]@{
@@ -235,6 +236,7 @@ function Get-vlCertificateCheck {
          ErrorMessage = $protectedRoots.ErrorMessage
       }
    }
+   #>
    if ($params.Contains("all") -or $params.Contains("CUTrByWin")) {
       $ctlCheck = Get-vlGetCTLCheck
       $Output += [PSCustomObject]@{
