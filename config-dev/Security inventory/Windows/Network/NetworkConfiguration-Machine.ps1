@@ -202,58 +202,48 @@ function Get-vlNetworkConfigurationWINS {
    }
 }
 
-function Get-vlNetworkConfigurationSSLTLS {
+function Get-vlNetworkConfigurationSSLTLSLocalMachine {
    <#
    .SYNOPSIS
-       Checks whether outdated SSL and TLS versions are enabled
+       Checks whether only secure protocols are used
    .DESCRIPTION
-       Checks whether outdated SSL and TLS versions are enabled
+      Checks whether only secure protocols are used
    .OUTPUTS
-       If outdated SSL and TLS versions are disabled, the function returns a PSCustomObject with the following properties:
-       enabled: false
-       If outdated SSL and TLS versions are enabled, the function returns a PSCustomObject with the protocols in use
+       If only secure protocols are used, the function returns a PSCustomObject with the following properties:
+       SecureProtocolsOnly: true
+       If not only secure protocols are used, the function returns a PSCustomObject with the following properties:
+       SecureProtocolsOnly: false
    .NOTES
 
    .EXAMPLE
-       Get-vlNetworkConfigurationSSLTLS
+       Get-vlNetworkConfigurationSSLTLSLocalMachine
    #>
 
    try {
 
-      $Protocols = @("TLS 1.0", "TLS 1.1", "SSL 2.0", "SSL 3.0")
-      $ProtocolsInUse = @()
-      foreach ($Protocol in $Protocols) {
-         $null = $Enabled
-         $null = $DisabledByDefault
+      try {
 
-         if (test-path "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client") {
-            $Enabled = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client" -Value "Enabled"
-            $DisabledByDefault = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\$Protocol\Client" -Value "DisabledByDefault"
+         $DesiredValue = 2560 # Use TLS 1.1 and TLS 1.2
 
-            if ($Enabled -eq 1 -OR $DisabledByDefault -eq 0) {
-               $ProtocolsInUse += $Protocol
+         $SecureProtocols = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\Internet Settings" -Value SecureProtocols -IncludePolicies $true
+
+         if ($SecureProtocols -eq $DesiredValue) {
+            $result = [PSCustomObject]@{
+               SecureProtocolsOnly = $true
             }
+
+            return New-vlResultObject -result $result -score 10
          }
          else {
-            $ProtocolsInUse += $Protocol
+            $result = [PSCustomObject]@{
+               SecureProtocolsOnly = $false
+            }
+
+            return New-vlResultObject -result $result -score 4
          }
       }
-
-
-
-      if ($ProtocolsInUse.Count -eq 0) {
-         $result = [PSCustomObject]@{
-            Enabled = $false
-         }
-         # Outdated protocols are disabled
-         return New-vlResultObject -result $result -score 10
-      }
-      else {
-         $result = [PSCustomObject]@{
-            Enabled = $ProtocolsInUse
-         }
-         # Outdated protocols are enabled
-         return New-vlResultObject -result $result -score 2
+      catch {
+         return New-vlErrorObject($_)
       }
    }
    catch {
@@ -339,12 +329,12 @@ function Get-vlNetworkConfigurationCheck {
       }
    }
 
-   if ($params.Contains("all") -or $params.Contains("NCSSLTLS")) {
-      $SSLTLS = Get-vlNetworkConfigurationSSLTLS
+   if ($params.Contains("all") -or $params.Contains("MNCSSLTLS")) {
+      $SSLTLS = Get-vlNetworkConfigurationSSLTLSLocalMachine
       $Output += [PSCustomObject]@{
-         Name         = "NCSSLTLS"
-         DisplayName  = "Network configuration SSL/TLS"
-         Description  = "Checks whether outdated SSL and TLS versions are enabled."
+         Name         = "MNCSSLTLS"
+         DisplayName  = "Network configuration SSL/TLS - Machine"
+         Description  = "Checks whether only secure protocols are used"
          Score        = $SSLTLS.Score
          ResultData   = $SSLTLS.Result
          RiskScore    = 40
