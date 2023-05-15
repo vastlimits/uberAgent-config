@@ -21,7 +21,7 @@ function Get-vlPowerShellV2Status {
 
    process {
       try {
-         $currentPowerShellVersion = Get-vlPowerShellVersion | Select-Object -ExpandProperty result | Select-Object -ExpandProperty Version
+         $currentPowerShellVersion = $PSVersionTable.PSVersion.ToString()
 
          #check if PowerShell V2 is installed on the system
          $installationStatus = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2
@@ -72,41 +72,6 @@ function Get-vlPowerShellCL {
       catch {
 
          return New-vlErrorObject($_)
-      }
-   }
-
-}
-
-function Get-vlPowerShellVersion {
-   <#
-    .SYNOPSIS
-        Checks the current PowerShell version
-    .DESCRIPTION
-        Checks the current PowerShell version
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A [psobject] containing the current PowerShell version
-    .EXAMPLE
-        Get-vlPowerShellVersion
-    #>
-
-   param ()
-
-   process {
-      try {
-         $result = [PSCustomObject]@{
-            Version = $PSVersionTable.PSVersion.ToString()
-         }
-
-         return New-vlResultObject -result $result
-      }
-      catch {
-
-         return New-vlErrorObject($_)
-      }
-      finally {
-
       }
    }
 
