@@ -159,6 +159,8 @@ function Get-vlRegValue {
         The path to the registry key
     .PARAMETER Value
         The name of the value to read
+    .PARAMETER IncludePolicies
+        Checks also the GPO policies path
     .OUTPUTS
         The value of the registry key or an empty string if the key was not found
     .EXAMPLE
@@ -207,10 +209,10 @@ function Get-vlRegValue {
 
          if ($IncludePolicies -eq $true) {
             # check if $path contains "SOFTWARE" if true then replace with "SOFTWARE\Policies\"
-            $gpo_store32_path = $Path -replace "SOFTWARE\\", "SOFTWARE\Policies\"
+            $gpo_store32_path = $Path -replace "^SOFTWARE\\", "SOFTWARE\Policies\"
             $gpo_store32 = Get-vlRegValue -Hive $Hive -Path $gpo_store32_path -Value $Value
 
-            $gpo_store64_path = $Path -replace "SOFTWARE\\", "SOFTWARE\WOW6432Node\Policies\"
+            $gpo_store64_path = $Path -replace "^SOFTWARE\\", "SOFTWARE\WOW6432Node\Policies\"
             $gpo_store64 = Get-vlRegValue -Hive $Hive -Path $gpo_store64_path -Value $Value
 
          }
