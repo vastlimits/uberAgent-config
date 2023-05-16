@@ -65,18 +65,24 @@ function Test-vlBlockedProgram {
    $process = New-Object System.Diagnostics.Process
    $process.StartInfo = $processStartInfo
 
-   $process.Start() | Out-Null
-   $process.WaitForExit()
+   try {
+      $process.Start() | Out-Null
+      $process.WaitForExit()
 
-   $exitCode = $process.ExitCode
+      $exitCode = $process.ExitCode
 
-   if ($exitCode -ne 0) {
-      # the program is blocked
-      return $true
+      if ($exitCode -ne 0) {
+         # the program is blocked
+         return $true
+      }
+      else {
+         # the program is not blocked
+         return $false
+      }
    }
-   else {
-      # the program is not blocked
-      return $false
+   catch {
+      # an exception occurred, indicating the program is blocked
+      return $true
    }
 }
 
@@ -342,7 +348,7 @@ function Get-WindowsConfigurationCheck {
    $Output = @()
 
 
-   <# disabled for now - since we would trigger a lot of false positives
+   #disabled for now - since we would trigger a lot of false positives
    if ($params.Contains("all") -or $params.Contains("WCHta")) {
       $checkHtaEnabled = Get-CheckHTAEnabled
       $Output += [PSCustomObject]@{
@@ -356,7 +362,7 @@ function Get-WindowsConfigurationCheck {
          ErrorMessage = $checkHtaEnabled.ErrorMessage
       }
    }
-   #>
+
 
    if ($params.Contains("all") -or $params.Contains("WCBitlocker")) {
       $checkBitlockerEnabled = Get-BitlockerEnabled

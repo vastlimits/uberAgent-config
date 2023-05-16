@@ -78,7 +78,7 @@ function Get-vlAutoCertificateUpdateCheck {
       #EnableDisallowedCertAutoUpdate
       #RootDirUrl
       # check if 'HKLM:\Software\Policies\Microsoft\SystemCertificates\AuthRoot' -Name DisableRootAutoUpdate is set to 1
-      $disableRootAutoUpdate = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft\SystemCertificates\AuthRoot" -Value "DisableRootAutoUpdate"
+      $disableRootAutoUpdate = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot" -Value "DisableRootAutoUpdate" -IncludePolicies $true
 
       if ($disableRootAutoUpdate -eq 1) {
          $result = [PSCustomObject]@{
@@ -498,7 +498,6 @@ function Get-vlTimeScore($time) {
    if ($time -lt (Get-Date).AddDays(-2)) {
       return -1
    }
-
 
    return 0
 }
