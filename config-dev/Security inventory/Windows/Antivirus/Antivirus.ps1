@@ -47,16 +47,16 @@ function Get-vlAntivirusStatus {
          $instances = Get-MpComputerStatus
 
          $defenderStatus = [PSCustomObject]@{
-            AMEngineVersion                 = $instances.AMEngineVersion
-            AMServiceEnabled                = $instances.AMServiceEnabled
-            AMServiceVersion                = $instances.AMServiceVersion
-            AntispywareEnabled              = $instances.AntispywareEnabled
-            AntivirusEnabled                = $instances.AntivirusEnabled
-            AntispywareSignatureLastUpdated = $instances.AntispywareSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss")
-            AntispywareSignatureVersion     = $instances.AntispywareSignatureVersion
-            AntivirusSignatureLastUpdated   = $instances.AntivirusSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss")
-            QuickScanSignatureVersion       = $instances.QuickScanSignatureVersion
-         }
+            AMEngineVersion                 = if ($instances.AMEngineVersion) { $instances.AMEngineVersion } else { "" }
+            AMServiceEnabled                = if ($instances.AMServiceEnabled) { $instances.AMServiceEnabled } else { "" }
+            AMServiceVersion                = if ($instances.AMServiceVersion) { $instances.AMServiceVersion } else { "" }
+            AntispywareEnabled              = if ($instances.AntispywareEnabled) { $instances.AntispywareEnabled } else { "" }
+            AntivirusEnabled                = if ($instances.AntivirusEnabled) { $instances.AntivirusEnabled } else { "" }
+            AntispywareSignatureLastUpdated = if ($instances.AntispywareSignatureLastUpdated) { $instances.AntispywareSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
+            AntispywareSignatureVersion     = if ($instances.AntispywareSignatureVersion) { $instances.AntispywareSignatureVersion } else { "" }
+            AntivirusSignatureLastUpdated   = if ($instances.AntivirusSignatureLastUpdated) { $instances.AntivirusSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
+            QuickScanSignatureVersion       = if ($instances.QuickScanSignatureVersion) { $instances.QuickScanSignatureVersion } else { "" }
+        }
 
          $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
          $score = 0
