@@ -381,6 +381,54 @@ function Restart-vlTimer {
    }
 }
 
+function Get-vlDefaultProgramForExtension {
+   <#
+   .SYNOPSIS
+       Gets the default program for a specific file extension
+   .DESCRIPTION
+       Gets the default program for a specific file extension
+   .OUTPUTS
+       A [string] containing the path to the default program
+   .EXAMPLE
+       Get-vlDefaultProgramForExtension
+   #>
+
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Extension,
+      [Parameter(Mandatory = $false)]
+      [string]$Context = "User"
+  )
+
+   if ($Context -eq "User") {
+       $hive = "HKCR"
+       $path = "\"
+   }
+   else {
+       $hive = "HKLM"
+       $path = "\Software\Classes\"
+   }
+
+   $progId = Get-vlRegValue -Hive $hive -Path $path$Extension
+   if ($progId -ne $null) {
+       $command1 = (Get-vlRegValue -Hive $hive -Path "$path$progId\shell\open\command")
+       $command2 = (Get-vlRegValue -Hive $hive -Path "$path$progId\shell\printto\command")
+
+       # select the one that is not null
+       $command = if ($command1 -ne $null -and $command1 -ne "") { $command1 } else { $command2 }
+
+       if ($command -ne $null) {
+           return $command
+       }
+       else {
+           Write-Debug "No 'open' command found for program ID $progId."
+       }
+   }
+   else {
+       Write-Debug "No default program found for extension $Extension."
+   }
+}
+
 function Get-vlTimerElapsedTime {
    <#
     .SYNOPSIS
