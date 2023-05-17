@@ -1,44 +1,6 @@
 
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
-
-function Get-vlDefaultProgramForExtension {
-   <#
-    .SYNOPSIS
-        Gets the default program for a specific file extension
-    .DESCRIPTION
-        Gets the default program for a specific file extension
-    .OUTPUTS
-        A [string] containing the path to the default program
-    .EXAMPLE
-        Get-vlDefaultProgramForExtension
-    #>
-
-   param (
-      [Parameter(Mandatory = $true)]
-      [string]$Extension
-   )
-
-   $progId = Get-vlRegValue -Hive "HKCR" -Path "\$Extension"
-   if ($progId -ne $null) {
-      $command1 = (Get-vlRegValue -Hive "HKCR" -Path "\$progId\shell\open\command")
-      $command2 = (Get-vlRegValue -Hive "HKCR" -Path "\$progId\shell\printto\command")
-
-      # select the one that is not null
-      $command = if ($command1 -ne $null -and $command1 -ne "") { $command1 } else { $command2 }
-
-      if ($command -ne $null) {
-         return $command
-      }
-      else {
-         Write-Debug "No 'open' command found for program ID $progId."
-      }
-   }
-   else {
-      Write-Debug "No default program found for extension $Extension."
-   }
-}
-
 function Test-vlBlockedProgram {
    <#
     .SYNOPSIS
@@ -65,18 +27,24 @@ function Test-vlBlockedProgram {
    $process = New-Object System.Diagnostics.Process
    $process.StartInfo = $processStartInfo
 
-   $process.Start() | Out-Null
-   $process.WaitForExit()
+   try {
+      $process.Start() | Out-Null
+      $process.WaitForExit()
 
-   $exitCode = $process.ExitCode
+      $exitCode = $process.ExitCode
 
-   if ($exitCode -ne 0) {
-      # the program is blocked
-      return $true
+      if ($exitCode -ne 0) {
+         # the program is blocked
+         return $true
+      }
+      else {
+         # the program is not blocked
+         return $false
+      }
    }
-   else {
-      # the program is not blocked
-      return $false
+   catch {
+      # an exception occurred, indicating the program is blocked
+      return $true
    }
 }
 
@@ -103,7 +71,7 @@ function Get-CheckHTAEnabled {
       $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "mshta.exe"
 
       $defaultLink = $true
-      $startCmd = (Get-vlDefaultProgramForExtension -Extension ".hta").ToLower()
+      $startCmd = (Get-vlDefaultProgramForExtension -Extension ".hta" -Context "System").ToLower()
 
       if ($null -ne $startCmd -and $startCmd -ne "") {
          $startProc = (Split-Path $startCmd -Leaf)
@@ -342,7 +310,7 @@ function Get-WindowsConfigurationCheck {
    $Output = @()
 
 
-   <# disabled for now - since we would trigger a lot of false positives
+   # disabled for now - since we would trigger a lot of false positives
    if ($params.Contains("all") -or $params.Contains("WCHta")) {
       $checkHtaEnabled = Get-CheckHTAEnabled
       $Output += [PSCustomObject]@{
@@ -356,7 +324,7 @@ function Get-WindowsConfigurationCheck {
          ErrorMessage = $checkHtaEnabled.ErrorMessage
       }
    }
-   #>
+
 
    if ($params.Contains("all") -or $params.Contains("WCBitlocker")) {
       $checkBitlockerEnabled = Get-BitlockerEnabled
