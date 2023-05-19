@@ -15,7 +15,6 @@ MNCSSLTLS,Network configuration SSL/TLS - Machine,Checks whether only secure pro
 Locations,Uncommon locations,Checks whether services are running in uncommon locations
 Service.dll,Uncommon locations of service.dll,Checks whether services use service.dll in uncommon locations
 WCHta,WindowsConfiguration HTA,Checks if HTA execution is enabled on the system.
-WCHta,WindowsConfiguration HTA,Checks if HTA execution is enabled on the system.
 WCBitlocker,WindowsConfiguration Bitlocker,Checks if Bitlocker is enabled on the system.
 WCComHijacking,WindowsConfiguration COM hijacking,Checks if COM is hijacked.
 WCTimeProvHijacking,WindowsConfiguration time provider hijacking,Checks if the time provider is hijacked.
