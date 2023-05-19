@@ -19,7 +19,7 @@ function Get-vlUACState {
 
    try {
       $uac = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Value "EnableLUA"
-      if ($uac.EnableLUA -eq 1) {
+      if ($uac -eq 1) {
          $result = [PSCustomObject]@{
             UACEnabled = $true
          }
