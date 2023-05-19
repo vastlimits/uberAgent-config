@@ -72,7 +72,7 @@ function Get-CheckHTAEnabled {
       $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "mshta.exe"
 
       $defaultLink = $true
-      $startCmd = (Get-vlDefaultProgramForExtension -Extension ".hta" -Context "User").ToLower()
+      $startCmd = [AppLinkHelper]::AssocQueryString(".hta")
 
       if ($null -ne $startCmd -and $startCmd -ne "") {
          $startProc = (Split-Path $startCmd -Leaf)
