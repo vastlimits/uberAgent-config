@@ -29,6 +29,5 @@ LUUIsAdmin,Local user is admin,Checks if the local user is a member of the local
 LUUWinBio,Local user Windows Hello / biometrics,Checks if Windows Hello is enabled and if the local user has enrolled factors.
 LUMUac,User account control,Checks if the User Account Control is enabled.
 LUMLaps,Local administrator password solution,Checks if the Local Administrator Password Solution is enabled.
-LUMSecrets,Local security authority secrets,Checks if LSA secrets are available.
 LUMWinBio,Windows Hello / biometrics,Checks if Windows Hello is enabled and what factors are available.
 AVState,Antivirus status,Checks if the antivirus is enabled and up to date.
