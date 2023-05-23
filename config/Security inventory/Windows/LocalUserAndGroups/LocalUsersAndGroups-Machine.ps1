@@ -139,7 +139,7 @@ function Get-vlLAPSSettings {
       $hkey = "Software\Policies\Microsoft Services\AdmPwd"
       $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey -Value "AdmPwdEnabled"
 
-      if ($AdmPwdEnabled -ne "") {
+      if ($null -ne $AdmPwdEnabled) {
          $lapsAdminAccountName = Get-vlRegValue -Hive "HKLM" -Path $hkey "AdminAccountName"
          $lapsPasswordComplexity = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"
          $lapsPasswordLength = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordLength"
@@ -147,11 +147,11 @@ function Get-vlLAPSSettings {
 
          $lapsSettings =
          [PSCustomObject]@{
-            LAPSEnabled                             = $AdmPwdEnabled
+            LAPSEnabled                             = $AdmPwdEnabled -eq 1
             LAPSAdminAccountName                    = $lapsAdminAccountName
             LAPSPasswordComplexity                  = $lapsPasswordComplexity
             LAPSPasswordLength                      = $lapsPasswordLength
-            LAPSPasswordExpirationProtectionEnabled = $lapsExpirationProtectionEnabled
+            LAPSPasswordExpirationProtectionEnabled = $lapsExpirationProtectionEnabled -eq 1
          }
          return New-vlResultObject -result $lapsSettings -score 10
       }
