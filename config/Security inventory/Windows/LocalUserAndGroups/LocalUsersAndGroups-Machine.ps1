@@ -77,43 +77,6 @@ function Get-vlLAPSState {
    }
 }
 
-function Get-vlSecrets {
-   <#
-    .SYNOPSIS
-        Function that checks if LSA secrets are enabled.
-    .DESCRIPTION
-        Function that checks if LSA secrets are enabled.
-        This check is using the registry key HKLM:\Security\Policy\Secrets
-    .LINK
-        https://uberagent.com
-        https://www.passcape.com/index.php?section=docsys&cmd=details&id=23
-    .OUTPUTS
-        If the LSA secrets are enabled, the script will return a vlResultObject with the SecretsEnabled property set to true.
-        If the LSA secrets are disabled, the script will return a vlResultObject with the SecretsEnabled property set to false.
-    .EXAMPLE
-        Get-vlSecrets
-    #>
-
-   try {
-      $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path "Security\Policy\Secrets" -Value ""
-      if ($AdmPwdEnabled) {
-         $result = [PSCustomObject]@{
-            SecretsEnabled = $true
-         }
-         return New-vlResultObject -result $result -score 10
-      }
-      else {
-         $result = [PSCustomObject]@{
-            SecretsEnabled = $false
-         }
-         return New-vlResultObject -result $result -score 6
-      }
-   }
-   catch {
-      return New-vlErrorObject($_)
-   }
-}
-
 function Get-vlLAPSSettings {
    <#
     .SYNOPSIS
@@ -327,19 +290,6 @@ function Get-vlLocalUsersAndGroupsCheck {
          RiskScore    = 40
          ErrorCode    = $laps.ErrorCode
          ErrorMessage = $laps.ErrorMessage
-      }
-   }
-   if ($params.Contains("all") -or $params.Contains("LUMSecrets")) {
-      $secrets = Get-vlSecrets
-      $Output += [PSCustomObject]@{
-         Name         = "LUMSecrets"
-         DisplayName  = "Local security authority secrets"
-         Description  = "Checks if LSA secrets are available."
-         Score        = $secrets.Score
-         ResultData   = $secrets.Result
-         RiskScore    = 40
-         ErrorCode    = $secrets.ErrorCode
-         ErrorMessage = $secrets.ErrorMessage
       }
    }
    if ($params.Contains("all") -or $params.Contains("LUMWinBio")) {
