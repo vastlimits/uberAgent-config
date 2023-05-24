@@ -29,20 +29,20 @@ function Get-vlExpiredCertificateCheck {
 
       # convert Date object to ISO timestring
       $expCets = $expCets | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
       $willExpire30 = $willExpire30 | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
       $willExpire60 = $willExpire60 | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
@@ -175,8 +175,8 @@ function Get-vlGetCTLCheck {
 
       # convert NotAfter and NotBefore to string iso format
       $currentUserCerts = $currentUserCerts | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          return $_
       }
 

@@ -77,6 +77,77 @@ function Get-vlLAPSState {
    }
 }
 
+function Get-vlLAPSEventLog {
+   <#
+    .SYNOPSIS
+        Retrieves LAPS (Local Administrator Password Solution) event logs from the Microsoft-Windows-LAPS/Operational log.
+
+    .DESCRIPTION
+        This function searches for LAPS events in the Microsoft-Windows-LAPS/Operational event log. It retrieves events with level 2 (error) and 3 (warning) that occurred within the given time range.
+
+    .LINK
+        https://learn.microsoft.com/en-us/troubleshoot/windows-server/windows-security/windows-laps-troubleshooting-guidance
+
+    .OUTPUTS
+        Returns a custom object with two properties:
+        - Errors: An array containing LAPS events with Event ID 2 (error).
+        - Warnings: An array containing LAPS events with Event ID 3 (warning).
+
+    .EXAMPLE
+         #Retrieves LAPS events from the Microsoft-Windows-LAPS/Operational log that occurred within the last 24 hours.
+        Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24)
+   #>
+
+   [CmdletBinding()]
+   param (
+      [DateTime]$StartTime = (Get-Date).AddHours(-24),
+      [DateTime]$EndTime = (Get-Date)
+   )
+
+   $errors = @()
+   $warnings = @()
+
+   try {
+      # Define the log name (for LAPS)
+      $logName = 'Microsoft-Windows-LAPS/Operational'
+
+      # Search the Event Logs for each Event ID
+      Get-WinEvent -LogName $logName | Where-Object { $_.Level -eq 2 -or $_.Level -eq 3 -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
+         # only keep: TimeCreated, Id, Message
+         $winEvent = [PSCustomObject]@{
+            TimeCreated      = Get-vlTimeString -time $_.TimeCreated
+            Id               = $_.Id
+            Message          = $_.Message
+         }
+
+         # add the event to the errors array if the event id is 2 (error)
+         if ($_.Level -eq 2) {
+            $errors += $winEvent
+         }
+
+         # add the event to the warnings array if the event id is 3 (warning)
+         if ($_.Level -eq 3) {
+            $warnings += $winEvent
+         }
+      }
+
+      $result = [PSCustomObject]@{
+         Errors   = $errors
+         Warnings = $warnings
+      }
+
+      return $result
+   }
+   catch {
+      $result = [PSCustomObject]@{
+         Errors   = $errors
+         Warnings = $warnings
+      }
+
+      return $result
+   }
+}
+
 function Get-vlLAPSSettings {
    <#
     .SYNOPSIS
@@ -103,6 +174,8 @@ function Get-vlLAPSSettings {
       $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey -Value "AdmPwdEnabled"
 
       if ($null -ne $AdmPwdEnabled) {
+         $eventLog = Get-vlLAPSEventLog
+
          $lapsAdminAccountName = Get-vlRegValue -Hive "HKLM" -Path $hkey "AdminAccountName"
          $lapsPasswordComplexity = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"
          $lapsPasswordLength = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordLength"
@@ -115,7 +188,16 @@ function Get-vlLAPSSettings {
             LAPSPasswordComplexity                  = $lapsPasswordComplexity
             LAPSPasswordLength                      = $lapsPasswordLength
             LAPSPasswordExpirationProtectionEnabled = $lapsExpirationProtectionEnabled -eq 1
+            LAPSEventLog                            = $eventLog
          }
+
+         if ($eventLog.Errors.Count -gt 0) {
+            return New-vlResultObject -result $lapsSettings -score 8
+         }
+         elseif ($eventLog.Warnings.Count -gt 0) {
+            return New-vlResultObject -result $lapsSettings -score 9
+         }
+
          return New-vlResultObject -result $lapsSettings -score 10
       }
       else {

@@ -139,7 +139,7 @@ function New-vlResultObject {
    )
 
    return [PSCustomObject]@{
-      Result       = ConvertTo-Json $result -Compress
+      Result       = ConvertTo-Json $result -Compress -Depth 3
       ErrorCode    = 0
       ErrorMessage = ""
       Score        = $score
@@ -301,6 +301,49 @@ function Get-vlRegSubkeys {
 
    end {
 
+   }
+}
+
+function Get-vlTimeString {
+   <#
+   .SYNOPSIS
+      Converts a timestamp to a formatted string representing the date and time.
+
+   .DESCRIPTION
+      The Get-vlTimeString function takes a timestamp as input and returns a formatted string representation of the date and time. It uses the "yyyy-MM-ddTHH:mm:ss" format.
+
+   .PARAMETER timeStamp
+      Specifies the timestamp to convert to a string representation. This parameter is mandatory.
+
+   .OUTPUTS
+      The function outputs a string representing the formatted date and time.
+
+   .EXAMPLE
+      Get-vlTimeString time (Get-Date)
+      Returns the current date and time in the "yyyy-MM-ddTHH:mm:ss" format.
+
+   .EXAMPLE
+      Get-vlTimeString time $null
+      Returns an empty string.
+   #>
+
+   [CmdletBinding()]
+   [OutputType([string])]
+   param (
+      [Parameter(Mandatory = $true)]
+      $time
+   )
+
+   try {
+      if ($null -ne $time) {
+         return $time.ToString("yyyy-MM-ddTHH:mm:ss")
+      }
+      else {
+         return ""
+      }
+   }
+   catch {
+      return ""
    }
 }
 
