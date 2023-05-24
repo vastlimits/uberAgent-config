@@ -126,20 +126,20 @@ function Get-vlExpiredCertificateCheck {
 
       # convert Date object to ISO timestring
       $expCets = $expCets | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
       $willExpire30 = $willExpire30 | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
       $willExpire60 = $willExpire60 | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
@@ -443,8 +443,8 @@ function Get-vlGetCTLCheck {
 
       # convert NotAfter and NotBefore to string iso format
       $localMachineCerts = $localMachineCerts | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          return $_
       }
 
@@ -533,9 +533,9 @@ function Get-vlCheckSyncTimes {
 
       # Create the result object
       $result = [PSCustomObject]@{
-         CTL = $lastCTLSyncTime.ToString("yyyy-MM-ddTHH:mm:ss")
-         CRL = $lastCRLSyncTime.ToString("yyyy-MM-ddTHH:mm:ss")
-         PRL = $lastPRLSyncTime.ToString("yyyy-MM-ddTHH:mm:ss")
+         CTL = Get-vlTimeString -time $lastCTLSyncTime
+         CRL = Get-vlTimeString -time $lastCRLSyncTime
+         PRL = Get-vlTimeString -time $lastPRLSyncTime
       }
 
       return New-vlResultObject -result $result -score $score
