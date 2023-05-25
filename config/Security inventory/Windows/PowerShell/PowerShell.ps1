@@ -396,7 +396,6 @@ function Get-vlPowerShellLogging {
     .DESCRIPTION
         Checks the current PowerShell logging settings by reading the registry
     .LINK
-        https://uberagent.com
         https://adamtheautomator.com/powershell-logging-2/
         https://www.splunk.com/en_us/blog/security/hunting-for-malicious-powershell-using-script-block-logging.html
     .OUTPUTS
@@ -420,10 +419,10 @@ function Get-vlPowerShellLogging {
             ModuleLogging = $moduleLoggingStatus
          }
 
-         if (($transcriptionStatus.Registry -eq $false -and $transcriptionStatus.GroupPolicy -eq $false) -and ($scriptBlockStatus.Registry -eq $false -and $scriptBlockStatus.GroupPolicy -eq $false) -and ($moduleLoggingStatus.Registry -eq $false -and $moduleLoggingStatus.GroupPolicy -eq $false)) {
+         if (($transcriptionStatus -eq $false) -and ($scriptBlockStatus -eq $false) -and ($moduleLoggingStatus -eq $false)) {
             $score = 8
          }
-         elseif (($transcriptionStatus.Registry -eq $true -or $transcriptionStatus.GroupPolicy -eq $true ) -and ($scriptBlockStatus.Registry -eq $true -or $scriptBlockStatus.GroupPolicy -eq $true ) -and ($moduleLoggingStatus.Registry -eq $true -or $moduleLoggingStatus.GroupPolicy -eq $true )) {
+         elseif (($transcriptionStatus -eq $true ) -and ($scriptBlockStatus -eq $true ) -and ($moduleLoggingStatus -eq $true )) {
             $score = 10
          }
          else {
