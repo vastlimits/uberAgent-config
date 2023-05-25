@@ -131,6 +131,10 @@ function Get-vlLAPSEventLog {
          }
       }
 
+      # filter $errors and $warnings for unique events. Only keep latest event for each event id
+      $errors = $errors | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
+      $warnings = $warnings | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
+
       $result = [PSCustomObject]@{
          Errors   = $errors
          Warnings = $warnings
