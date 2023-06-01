@@ -304,6 +304,41 @@ function Get-vlRegSubkeys {
    }
 }
 
+
+function Get-vlTimeScore($time) {
+   <#
+    .SYNOPSIS
+        Function that calculates the last sync score based on the time.
+    .DESCRIPTION
+        Function that calculates the last sync score based on the time.
+    .OUTPUTS
+        Returns the score based on the time.
+    .EXAMPLE
+        Get-vlTimeScore
+    #>
+
+   if ($null -eq $time) {
+      return -3
+   }
+
+   #check if time is less than 14 days
+   if ($time -lt (Get-Date).AddDays(-14)) {
+      return -3
+   }
+
+   #check if time is less than 7 days
+   if ($time -lt (Get-Date).AddDays(-7)) {
+      return -2
+   }
+
+   #check if time is less than 2 days
+   if ($time -lt (Get-Date).AddDays(-2)) {
+      return -1
+   }
+
+   return 0
+}
+
 function Get-vlTimeString {
    <#
    .SYNOPSIS
