@@ -56,7 +56,7 @@ function Get-vlAntivirusStatus {
             AntispywareSignatureVersion     = if ($instances.AntispywareSignatureVersion) { $instances.AntispywareSignatureVersion } else { "" }
             AntivirusSignatureLastUpdated   = if ($instances.AntivirusSignatureLastUpdated) { $instances.AntivirusSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
             QuickScanSignatureVersion       = if ($instances.QuickScanSignatureVersion) { $instances.QuickScanSignatureVersion } else { "" }
-        }
+         }
 
          $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
          $score = 0
@@ -77,12 +77,25 @@ function Get-vlAntivirusStatus {
                }
             }
 
-            if($instance.displayName -eq "Windows Defender" -or "{D68DDC3A-831F-4fae-9E44-DA132C1ACF46}" -eq $instance.instanceGuid) {
-               $result += [PSCustomObject]@{
-                  AntivirusEnabled  = $avEnabled
-                  AntivirusName     = $instance.displayName
-                  AntivirusUpToDate = $avUp2Date
-                  DefenderStatus = $defenderStatus
+            if ($instance.displayName -eq "Windows Defender" -or "{D68DDC3A-831F-4fae-9E44-DA132C1ACF46}" -eq $instance.instanceGuid) {
+
+               if ($avEnabled -eq $false) {
+                  $result += [PSCustomObject]@{
+                     AntivirusEnabled  = $avEnabled
+                     AntivirusName     = $instance.displayName
+                     AntivirusUpToDate = $avUp2Date
+                  }
+               }
+               else {
+                  $result += [PSCustomObject]@{
+                     AntivirusEnabled  = $avEnabled
+                     AntivirusName     = $instance.displayName
+                     AntivirusUpToDate = $avUp2Date
+                     DefenderStatus    = $defenderStatus
+                  }
+
+                  $score -= Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
+                  $score -= Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
                }
             }
             else {
