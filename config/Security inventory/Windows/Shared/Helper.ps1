@@ -139,7 +139,7 @@ function New-vlResultObject {
    )
 
    return [PSCustomObject]@{
-      Result       = ConvertTo-Json $result -Compress
+      Result       = ConvertTo-Json $result -Compress -Depth 3
       ErrorCode    = 0
       ErrorMessage = ""
       Score        = $score
@@ -302,6 +302,181 @@ function Get-vlRegSubkeys {
    end {
 
    }
+}
+
+
+function Get-vlTimeScore($time) {
+   <#
+    .SYNOPSIS
+        Function that calculates the last sync score based on the time.
+    .DESCRIPTION
+        Function that calculates the last sync score based on the time.
+    .OUTPUTS
+        Returns the score based on the time.
+    .EXAMPLE
+        Get-vlTimeScore
+    #>
+
+   if ($null -eq $time) {
+      return -3
+   }
+
+   #check if time is less than 14 days
+   if ($time -lt (Get-Date).AddDays(-14)) {
+      return -3
+   }
+
+   #check if time is less than 7 days
+   if ($time -lt (Get-Date).AddDays(-7)) {
+      return -2
+   }
+
+   #check if time is less than 2 days
+   if ($time -lt (Get-Date).AddDays(-2)) {
+      return -1
+   }
+
+   return 0
+}
+
+function Get-vlTimeString {
+   <#
+   .SYNOPSIS
+      Converts a timestamp to a formatted string representing the date and time.
+
+   .DESCRIPTION
+      The Get-vlTimeString function takes a timestamp as input and returns a formatted string representation of the date and time. It uses the "yyyy-MM-ddTHH:mm:ss" format.
+
+   .PARAMETER timeStamp
+      Specifies the timestamp to convert to a string representation. This parameter is mandatory.
+
+   .OUTPUTS
+      The function outputs a string representing the formatted date and time.
+
+   .EXAMPLE
+      Get-vlTimeString time (Get-Date)
+      Returns the current date and time in the "yyyy-MM-ddTHH:mm:ss" format.
+
+   .EXAMPLE
+      Get-vlTimeString time $null
+      Returns an empty string.
+   #>
+
+   [CmdletBinding()]
+   [OutputType([string])]
+   param (
+      [Parameter(Mandatory = $true)]
+      $time
+   )
+
+   try {
+      if ($null -ne $time) {
+         return $time.ToString("yyyy-MM-ddTHH:mm:ss")
+      }
+      else {
+         return ""
+      }
+   }
+   catch {
+      return ""
+   }
+}
+
+$getLinkedAppCSharp = @"
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
+
+public static class AppLinkHelper
+{
+    // Declare the DLL function
+    [DllImport("Shlwapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+    static extern uint AssocQueryString(AssocF flags, AssocStr str, string pszAssoc, string pszExtra, [Out] StringBuilder pszOut, ref uint pcchOut);
+
+    // Public method to get associated command for a file extension
+    public static string AssocQueryString(string extension)
+    {
+        return AssocQueryString(AssocF.None, AssocStr.Executable, extension);
+    }
+
+    // Internal method to call the DLL function and process its return
+    internal static string AssocQueryString(AssocF assocF, AssocStr association, string assocString)
+    {
+        uint length = 0;
+        uint ret = AssocQueryString(assocF, association, assocString, null, null, ref length);
+
+        if (ret != 1) // Expected S_FALSE
+        {
+            return null;
+        }
+
+        // Create a StringBuilder with the required length
+        var sb = new StringBuilder((int)length);
+
+        ret = AssocQueryString(assocF, association, assocString, null, sb, ref length);
+
+        if (ret != 0) // Expected S_OK
+        {
+            return null;
+        }
+
+        return sb.ToString();
+    }
+
+    // Define AssocF enum
+    [Flags]
+    internal enum AssocF : uint
+    {
+        None = 0,
+        Init_NoRemapCLSID = 0x1,
+        Init_ByExeName = 0x2,
+        Open_ByExeName = 0x2,
+        Init_DefaultToStar = 0x4,
+        Init_DefaultToFolder = 0x8,
+        NoUserSettings = 0x10,
+        NoTruncate = 0x20,
+        Verify = 0x40,
+        RemapRunDll = 0x80,
+        NoFixUps = 0x100,
+        IgnoreBaseClass = 0x200,
+        Init_IgnoreUnknown = 0x400,
+        Init_FixedProgId = 0x800,
+        IsProtocol = 0x1000,
+        InitForFile = 0x2000,
+    }
+
+    // Define AssocStr enum
+    internal enum AssocStr
+    {
+        Command = 1,
+        Executable,
+        FriendlyDocName,
+        FriendlyAppName,
+        NoOpen,
+        ShellNewValue,
+        DDECommand,
+        DDEIfExec,
+        DDEApplication,
+        DDETopic,
+        InfoTip,
+        QuickTip,
+        TileInfo,
+        ContentType,
+        DefaultIcon,
+        ShellExtension,
+        DropTarget,
+        DelegateExecute,
+        SupportedUriProtocols,
+        Max,
+    }
+}
+"@
+
+if ("AppLinkHelper" -as [type]) {
+   Write-Verbose "AppLinkHelper already loaded";
+}
+else {
+   Add-Type -TypeDefinition $getLinkedAppCSharp -Language CSharp;
 }
 
 ##### Debugging utilities #####
@@ -480,98 +655,3 @@ function Write-vlTimerElapsedTime {
 
    }
 }
-# SIG # Begin signature block
-# MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
-# BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDRzdDvvevTgA6j
-# PSUdXw8X45OcYVeY8K3JFoDjvW4nVaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
-# CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
-# EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
-# A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
-# Fw0xNjA2MjQyMDQ0MzBaFw0zMTA2MjQyMDQ0MzBaMHgxCzAJBgNVBAYTAlVTMQ4w
-# DAYDVQQIDAVUZXhhczEQMA4GA1UEBwwHSG91c3RvbjERMA8GA1UECgwIU1NMIENv
-# cnAxNDAyBgNVBAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBD
-# QSBSU0EgUjEwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCfgxNzqrDG
-# bSHL24t6h3TQcdyOl3Ka5LuINLTdgAPGL0WkdJq/Hg9Q6p5tePOf+lEmqT2d0bKU
-# Vz77OYkbkStW72fL5gvjDjmMxjX0jD3dJekBrBdCfVgWQNz51ShEHZVkMGE6ZPKX
-# 13NMfXsjAm3zdetVPW+qLcSvvnSsXf5qtvzqXHnpD0OctVIFD+8+sbGP0EmtpuNC
-# GVQ/8y8Ooct8/hP5IznaJRy4PgBKOm8yMDdkHseudQfYVdIYyQ6KvKNc8HwKp4WB
-# wg6vj5lc02AlvINaaRwlE81y9eucgJvcLGfE3ckJmNVz68Qho+Uyjj4vUpjGYDdk
-# jLJvSlRyGMwnh/rNdaJjIUy1PWT9K6abVa8mTGC0uVz+q0O9rdATZlAfC9KJpv/X
-# gAbxwxECMzNhF/dWH44vO2jnFfF3VkopngPawismYTJboFblSSmNNqf1x1KiVgMg
-# Lzh4gL32Bq5BNMuURb2bx4kYHwu6/6muakCZE93vUN8BuvIE1tAx3zQ4XldbyDge
-# VtSsSKbt//m4wTvtwiS+RGCnd83VPZhZtEPqqmB9zcLlL/Hr9dQg1Zc0bl0EawUR
-# 0tOSjAknRO1PNTFGfnQZBWLsiePqI3CY5NEv1IoTGEaTZeVYc9NMPSd6Ij/D+KNV
-# t/nmh4LsRR7Fbjp8sU65q2j3m2PVkUG8qQIDAQABo4H7MIH4MA8GA1UdEwEB/wQF
-# MAMBAf8wHwYDVR0jBBgwFoAU3QQJB6L1en1SUxKSle44gCUNplkwMAYIKwYBBQUH
-# AQEEJDAiMCAGCCsGAQUFBzABhhRodHRwOi8vb2NzcHMuc3NsLmNvbTARBgNVHSAE
-# CjAIMAYGBFUdIAAwEwYDVR0lBAwwCgYIKwYBBQUHAwMwOwYDVR0fBDQwMjAwoC6g
-# LIYqaHR0cDovL2NybHMuc3NsLmNvbS9zc2wuY29tLXJzYS1Sb290Q0EuY3JsMB0G
-# A1UdDgQWBBRUwv4QlQCTzWr158DX2bJLuI8M4zAOBgNVHQ8BAf8EBAMCAYYwDQYJ
-# KoZIhvcNAQELBQADggIBAPUPJodwr5miyvXWyfCNZj05gtOII9iCv49UhCe204MH
-# 154niU2EjlTRIO5gQ9tXQjzHsJX2vszqoz2OTwbGK1mGf+tzG8rlQCbgPW/M9r1x
-# xs19DiBAOdYF0q+UCL9/wlG3K7V7gyHwY9rlnOFpLnUdTsthHvWlM98CnRXZ7WmT
-# V7pGRS6AvGW+5xI+3kf/kJwQrfZWsqTU+tb8LryXIbN2g9KR+gZQ0bGAKID+260P
-# Z+34fdzZcFt6umi1s0pmF4/n8OdX3Wn+vF7h1YyfE7uVmhX7eSuF1W0+Z0duGwdc
-# +1RFDxYRLhHDsLy1bhwzV5Qe/kI0Ro4xUE7bM1eV+jjk5hLbq1guRbfZIsr0WkdJ
-# LCjoT4xCPGRo6eZDrBmRqccTgl/8cQo3t51Qezxd96JSgjXktefTCm9r/o35pNfV
-# HUvnfWII+NnXrJlJ27WEQRQu9i5gl1NLmv7xiHp0up516eDap8nMLDt7TAp4z5T3
-# NmC2gzyKVMtODWgqlBF1JhTqIDfM63kXdlV4cW3iSTgzN9vkbFnHI2LmvM4uVEv9
-# XgMqyN0eS3FE0HU+MWJliymm7STheh2ENH+kF3y0rH0/NVjLw78a3Z9UVm1F5VPz
-# iIorMaPKPlDRADTsJwjDZ8Zc6Gi/zy4WZbg8Zv87spWrmo2dzJTw7XhQf+xkR6Od
-# MIIG8zCCBNugAwIBAgIQfYHMItEnwWprKIwmkVmsVDANBgkqhkiG9w0BAQsFADB4
-# MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMxEDAOBgNVBAcMB0hvdXN0b24x
-# ETAPBgNVBAoMCFNTTCBDb3JwMTQwMgYDVQQDDCtTU0wuY29tIENvZGUgU2lnbmlu
-# ZyBJbnRlcm1lZGlhdGUgQ0EgUlNBIFIxMB4XDTIzMDMwNzIyNTIyNloXDTI2MDMw
-# NjIyNTIyNlowfDELMAkGA1UEBhMCREUxHDAaBgNVBAgME05vcmRyaGVpbi1XZXN0
-# ZmFsZW4xGTAXBgNVBAcMEE1vbmhlaW0gYW0gUmhlaW4xGTAXBgNVBAoMEHZhc3Qg
-# bGltaXRzIEdtYkgxGTAXBgNVBAMMEHZhc3QgbGltaXRzIEdtYkgwggIiMA0GCSqG
-# SIb3DQEBAQUAA4ICDwAwggIKAoICAQDmsmxRhHnZ47SQfWJmJje0vVjTVhDfA15d
-# Q99NkNBuxZV4F+zSdMuCH+CT77aJIa6fbQQzQCs5Z2bfia82RXAKgC9SPALFAdLq
-# 3OyQ8IICyivsVn4IkLzGuEJPETDHWfRAJmICajFqyxX6DXcuOmxIm3c/s3F413DO
-# uBn+oTebJu1lk/Mp0L+pd1MYnY3rKEsv+FuXE6valQqJRrIlkQA7sC2ji6A4tsA8
-# 9NxK7IQlGIh4P2sEBq9YVrXOpCoxuzGC9zDwE1et1BrcviHr2z9AEfOD5te7CAbZ
-# CukDEri7zskt8pL5vT+Djdn+u5yo689L3QcFG4JVs0AIPmxt91l8UJDX/I2oKBz8
-# 4KuZGLExHDYETtIiCjB0gKBOWl4kojgqewBe8cL0HNcuCxmfMTubepSTF3R3UOrv
-# bcSP2W34eJ353EEuCZMmkgQnj+Cu+g7fY379ddWO24rS9gonoSrsoCK7iVlGPLjz
-# whKRe6S2vpFpsoEPo9bhdP5w1aCf/TQZixffdQSB2gFgGivgXjZ60ld5XUOG5eyZ
-# ow6vEzKq7Bqnipd7t8xgBq6jIQ0y2fFS8o656pZvf7fvZ7bMM47uBXN9812/R4mX
-# Zw6kvsH2k5YKZh97i9oBa+XCSeFVecFT5JY9uRj3SutCj5JvxsX5z5FH4qVedwse
-# PYM6LtsztwIDAQABo4IBczCCAW8wDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBRU
-# wv4QlQCTzWr158DX2bJLuI8M4zBYBggrBgEFBQcBAQRMMEowSAYIKwYBBQUHMAKG
-# PGh0dHA6Ly9jZXJ0LnNzbC5jb20vU1NMY29tLVN1YkNBLUNvZGVTaWduaW5nLVJT
-# QS00MDk2LVIxLmNlcjBRBgNVHSAESjBIMAgGBmeBDAEEATA8BgwrBgEEAYKpMAED
-# AwEwLDAqBggrBgEFBQcCARYeaHR0cHM6Ly93d3cuc3NsLmNvbS9yZXBvc2l0b3J5
-# MBMGA1UdJQQMMAoGCCsGAQUFBwMDME0GA1UdHwRGMEQwQqBAoD6GPGh0dHA6Ly9j
-# cmxzLnNzbC5jb20vU1NMY29tLVN1YkNBLUNvZGVTaWduaW5nLVJTQS00MDk2LVIx
-# LmNybDAdBgNVHQ4EFgQUH4wxTfruqchOioKCaULdd2n1d6AwDgYDVR0PAQH/BAQD
-# AgeAMA0GCSqGSIb3DQEBCwUAA4ICAQA+C1FID5jlerfUMR3DnJAe3ngwe/3YaItK
-# 40Ccvd2ZG7lwmpho0ITP5EcXvQnkfsL5pGrXT1iRXMYrDgTz6eqtfpyC99F+fUGj
-# aLrlOJvtzl1KypxHDRCvZKs2Qc7pceyvDZb+Wb4VrthpOYYTVfI+HWIYLiMH4fKB
-# pkxCGLDipaPXHEQ+DNPUs1J7GpVyrh6jyMtfYZSEHz9YACvlT0FHooj7QDIlAX/u
-# 6988XxGO8N4LZaaWUcLBb+LlQwiskVg+FXUMTarv7MS/e8ZirVfiHGXtiV9texcf
-# 0LepL2nKtbcUTXYLucaW/8G+v0lO1H++K0/ziwqCCdxADzNR3/NGDth9vnLl+UPN
-# 4QXCJEaw37RnipOxudFJOMqFSvNvARWNlxHvwgk+dRI5RDLKKSWdCKrC1/svMuG4
-# sj+PgtITa3nWNVb56FpB6TXPc04Jqj7aeGcS7IfDKcZKXknVW/ngvZxLuKhdyJrk
-# aovWHDjJNX2YuS6mAaw5CJ/5QDnxVD78qn9Zq4uqEg6aEnS1+FPuo42P+78sMuys
-# +sjER4hLMrLhXfvwEOOHeweV75IF7rm5zDmZFJv54tJP3vuvNF1opr9ccWzhO3BG
-# ufTWS/qKYurtB8uEmbJCH8ltE56bquVL0YRfVwVSV7gyp355x3Ptgu+v8YPDuzn3
-# ZJjydk0JATGCAz8wggM7AgEBMIGMMHgxCzAJBgNVBAYTAlVTMQ4wDAYDVQQIDAVU
-# ZXhhczEQMA4GA1UEBwwHSG91c3RvbjERMA8GA1UECgwIU1NMIENvcnAxNDAyBgNV
-# BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
-# EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
-# DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgsQ/RsrEZNheL
-# M3zJT8Ewmtn3bGMSkKBEBnWhiJW1J+IwDQYJKoZIhvcNAQEBBQAEggIAJnUJFcIf
-# 7AJKWba3INCUAkHyMpvTEOn+uKQQBUv41XgbIXS6sZONKeEaWK5GLSVwHpEsz7+3
-# ieIsz4xL/x903D2i1lna0t2mKuIVoEDsitkVTqCGojgUBGpc8CLRIVQOKfqZQtrj
-# AiPst1mL/Yyu7YtTv/xb9bR6SbcrB/lFp+6XcMIcrnwGKvqXpnqnOZcvJNG/xAmA
-# K/f0WPqUviD898HQag4yUsdPyCsEHKaDpBRjDLdSFFMchO2JJ6D9HSLNQ9J1IdIw
-# ZUXKPcI7ZS6Hi+rGEvMl8Po/qsij+E9zU3INN/ZJcV+IspmEWw81m9k3yZ4COhNW
-# 47GgfZiCKdg3BBaGrNEAdEbPUWVy0p2GTQbY6Qzyr0RkyVSIQadjXtX9vXi1xQ6k
-# xSI0BhN0pMLfHvBnL27D0iwBUfOoDBuf75m6DR8Kd3ZKqosq5mIRmoaL26ym2oNq
-# nSUAH1heTgFh4DZfl6k/2NgfSnyqyS3ozNgkZ3Q3FY9WzFObCrTBJ42JklymTVDc
-# jo5yjm7SoUatH0RKNEZw0xQrq/thfOUDRDrzCn+WBoq7uEBBdF+dnmAOZMxSEfrd
-# mVQiuTalXxHtpTluctxJADv5yzyVMiO/bfsw8M3WTtPwJmir+sFnxnyp7oGf5Dsl
-# ea0yze+69Ta3w6gCqnNwfsAQ9ZxTGFdAmBk=
-# SIG # End signature block

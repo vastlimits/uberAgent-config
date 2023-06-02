@@ -78,7 +78,7 @@ function Get-vlAutoCertificateUpdateCheck {
       #EnableDisallowedCertAutoUpdate
       #RootDirUrl
       # check if 'HKLM:\Software\Policies\Microsoft\SystemCertificates\AuthRoot' -Name DisableRootAutoUpdate is set to 1
-      $disableRootAutoUpdate = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft\SystemCertificates\AuthRoot" -Value "DisableRootAutoUpdate"
+      $disableRootAutoUpdate = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot" -Value "DisableRootAutoUpdate" -IncludePolicies $true
 
       if ($disableRootAutoUpdate -eq 1) {
          $result = [PSCustomObject]@{
@@ -126,20 +126,20 @@ function Get-vlExpiredCertificateCheck {
 
       # convert Date object to ISO timestring
       $expCets = $expCets | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
       $willExpire30 = $willExpire30 | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
       $willExpire60 = $willExpire60 | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
@@ -443,8 +443,8 @@ function Get-vlGetCTLCheck {
 
       # convert NotAfter and NotBefore to string iso format
       $localMachineCerts = $localMachineCerts | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          return $_
       }
 
@@ -466,41 +466,6 @@ function Get-vlGetCTLCheck {
       return New-vlErrorObject -context $_
    }
 
-}
-
-function Get-vlTimeScore($time) {
-   <#
-    .SYNOPSIS
-        Function that calculates the last sync score based on the time.
-    .DESCRIPTION
-        Function that calculates the last sync score based on the time.
-    .OUTPUTS
-        Returns the score based on the time.
-    .EXAMPLE
-        Get-vlTimeScore
-    #>
-
-   if ($null -eq $time) {
-      return -3
-   }
-
-   #check if time is less than 14 days
-   if ($time -lt (Get-Date).AddDays(-14)) {
-      return -3
-   }
-
-   #check if time is less than 7 days
-   if ($time -lt (Get-Date).AddDays(-7)) {
-      return -2
-   }
-
-   #check if time is less than 2 days
-   if ($time -lt (Get-Date).AddDays(-2)) {
-      return -1
-   }
-
-
-   return 0
 }
 
 function Get-vlCheckSyncTimes {
@@ -534,9 +499,9 @@ function Get-vlCheckSyncTimes {
 
       # Create the result object
       $result = [PSCustomObject]@{
-         CTL = $lastCTLSyncTime.ToString("yyyy-MM-ddTHH:mm:ss")
-         CRL = $lastCRLSyncTime.ToString("yyyy-MM-ddTHH:mm:ss")
-         PRL = $lastPRLSyncTime.ToString("yyyy-MM-ddTHH:mm:ss")
+         CTL = Get-vlTimeString -time $lastCTLSyncTime
+         CRL = Get-vlTimeString -time $lastCRLSyncTime
+         PRL = Get-vlTimeString -time $lastPRLSyncTime
       }
 
       return New-vlResultObject -result $result -score $score
@@ -580,6 +545,7 @@ function Get-vlCertificateCheck {
          ErrorMessage = $protectedRoots.ErrorMessage
       }
    }
+   <# disabled for now since there is no real security impact if the certificate is expired
    if ($params.Contains("all") -or $params.Contains("CMExpCerts")) {
       $protectedRoots = Get-vlExpiredCertificateCheck
       $Output += [PSCustomObject]@{
@@ -593,6 +559,7 @@ function Get-vlCertificateCheck {
          ErrorMessage = $protectedRoots.ErrorMessage
       }
    }
+   #>
    if ($params.Contains("all") -or $params.Contains("CMAuCerUp")) {
       $autoCertUpdateCheck = Get-vlAutoCertificateUpdateCheck
       $Output += [PSCustomObject]@{

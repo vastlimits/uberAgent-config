@@ -19,7 +19,7 @@ function Get-vlUACState {
 
    try {
       $uac = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Value "EnableLUA"
-      if ($uac.EnableLUA -eq 1) {
+      if ($uac -eq 1) {
          $result = [PSCustomObject]@{
             UACEnabled = $true
          }
@@ -77,40 +77,78 @@ function Get-vlLAPSState {
    }
 }
 
-function Get-vlSecrets {
+function Get-vlLAPSEventLog {
    <#
     .SYNOPSIS
-        Function that checks if LSA secrets are enabled.
+        Retrieves LAPS (Local Administrator Password Solution) event logs from the Microsoft-Windows-LAPS/Operational log.
+
     .DESCRIPTION
-        Function that checks if LSA secrets are enabled.
-        This check is using the registry key HKLM:\Security\Policy\Secrets
+        This function searches for LAPS events in the Microsoft-Windows-LAPS/Operational event log. It retrieves events with level 2 (error) and 3 (warning) that occurred within the given time range.
+
     .LINK
-        https://uberagent.com
-        https://www.passcape.com/index.php?section=docsys&cmd=details&id=23
+        https://learn.microsoft.com/en-us/troubleshoot/windows-server/windows-security/windows-laps-troubleshooting-guidance
+
     .OUTPUTS
-        If the LSA secrets are enabled, the script will return a vlResultObject with the SecretsEnabled property set to true.
-        If the LSA secrets are disabled, the script will return a vlResultObject with the SecretsEnabled property set to false.
+        Returns a custom object with two properties:
+        - Errors: An array containing LAPS events with Event ID 2 (error).
+        - Warnings: An array containing LAPS events with Event ID 3 (warning).
+
     .EXAMPLE
-        Get-vlSecrets
-    #>
+         #Retrieves LAPS events from the Microsoft-Windows-LAPS/Operational log that occurred within the last 24 hours.
+        Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24)
+   #>
+
+   [CmdletBinding()]
+   param (
+      [DateTime]$StartTime = (Get-Date).AddHours(-24),
+      [DateTime]$EndTime = (Get-Date)
+   )
+
+   $errors = @()
+   $warnings = @()
 
    try {
-      $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path "Security\Policy\Secrets" -Value ""
-      if ($AdmPwdEnabled) {
-         $result = [PSCustomObject]@{
-            SecretsEnabled = $true
+      # Define the log name (for LAPS)
+      $logName = 'Microsoft-Windows-LAPS/Operational'
+
+      # Search the Event Logs for each Event ID
+      Get-WinEvent -LogName $logName | Where-Object { $_.Level -eq 2 -or $_.Level -eq 3 -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
+         # only keep: TimeCreated, Id, Message
+         $winEvent = [PSCustomObject]@{
+            TimeCreated      = Get-vlTimeString -time $_.TimeCreated
+            Id               = $_.Id
+            Message          = $_.Message
          }
-         return New-vlResultObject -result $result -score 10
-      }
-      else {
-         $result = [PSCustomObject]@{
-            SecretsEnabled = $false
+
+         # add the event to the errors array if the event id is 2 (error)
+         if ($_.Level -eq 2) {
+            $errors += $winEvent
          }
-         return New-vlResultObject -result $result -score 6
+
+         # add the event to the warnings array if the event id is 3 (warning)
+         if ($_.Level -eq 3) {
+            $warnings += $winEvent
+         }
       }
+
+      # filter $errors and $warnings for unique events. Only keep latest event for each event id
+      $errors = $errors | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
+      $warnings = $warnings | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
+
+      $result = [PSCustomObject]@{
+         Errors   = $errors
+         Warnings = $warnings
+      }
+
+      return $result
    }
    catch {
-      return New-vlErrorObject($_)
+      $result = [PSCustomObject]@{
+         Errors   = $errors
+         Warnings = $warnings
+      }
+
+      return $result
    }
 }
 
@@ -139,20 +177,31 @@ function Get-vlLAPSSettings {
       $hkey = "Software\Policies\Microsoft Services\AdmPwd"
       $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey -Value "AdmPwdEnabled"
 
-      if ($AdmPwdEnabled -ne "") {
-         $lapsAdminAccountName = Get-RegValue -Hive "HKLM" -Path $hkey "AdminAccountName"
-         $lapsPasswordComplexity = Get-RegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"
-         $lapsPasswordLength = Get-RegValue -Hive "HKLM" -Path $hkey "PasswordLength"
-         $lapsExpirationProtectionEnabled = Get-RegValue -Hive "HKLM" -Path $hkey "PwdExpirationProtectionEnabled"
+      if ($null -ne $AdmPwdEnabled) {
+         $eventLog = Get-vlLAPSEventLog
+
+         $lapsAdminAccountName = Get-vlRegValue -Hive "HKLM" -Path $hkey "AdminAccountName"
+         $lapsPasswordComplexity = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"
+         $lapsPasswordLength = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordLength"
+         $lapsExpirationProtectionEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey "PwdExpirationProtectionEnabled"
 
          $lapsSettings =
          [PSCustomObject]@{
-            LAPSEnabled                             = $AdmPwdEnabled
+            LAPSEnabled                             = $AdmPwdEnabled -eq 1
             LAPSAdminAccountName                    = $lapsAdminAccountName
             LAPSPasswordComplexity                  = $lapsPasswordComplexity
             LAPSPasswordLength                      = $lapsPasswordLength
-            LAPSPasswordExpirationProtectionEnabled = $lapsExpirationProtectionEnabled
+            LAPSPasswordExpirationProtectionEnabled = $lapsExpirationProtectionEnabled -eq 1
+            LAPSEventLog                            = $eventLog
          }
+
+         if ($eventLog.Errors.Count -gt 0) {
+            return New-vlResultObject -result $lapsSettings -score 8
+         }
+         elseif ($eventLog.Warnings.Count -gt 0) {
+            return New-vlResultObject -result $lapsSettings -score 9
+         }
+
          return New-vlResultObject -result $lapsSettings -score 10
       }
       else {
@@ -327,19 +376,6 @@ function Get-vlLocalUsersAndGroupsCheck {
          RiskScore    = 40
          ErrorCode    = $laps.ErrorCode
          ErrorMessage = $laps.ErrorMessage
-      }
-   }
-   if ($params.Contains("all") -or $params.Contains("LUMSecrets")) {
-      $secrets = Get-vlSecrets
-      $Output += [PSCustomObject]@{
-         Name         = "LUMSecrets"
-         DisplayName  = "Local security authority secrets"
-         Description  = "Checks if LSA secrets are available."
-         Score        = $secrets.Score
-         ResultData   = $secrets.Result
-         RiskScore    = 40
-         ErrorCode    = $secrets.ErrorCode
-         ErrorMessage = $secrets.ErrorMessage
       }
    }
    if ($params.Contains("all") -or $params.Contains("LUMWinBio")) {

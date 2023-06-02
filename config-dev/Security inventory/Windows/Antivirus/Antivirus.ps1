@@ -47,15 +47,15 @@ function Get-vlAntivirusStatus {
          $instances = Get-MpComputerStatus
 
          $defenderStatus = [PSCustomObject]@{
-            AMEngineVersion                 = $instances.AMEngineVersion
-            AMServiceEnabled                = $instances.AMServiceEnabled
-            AMServiceVersion                = $instances.AMServiceVersion
-            AntispywareEnabled              = $instances.AntispywareEnabled
-            AntivirusEnabled                = $instances.AntivirusEnabled
-            AntispywareSignatureLastUpdated = $instances.AntispywareSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss")
-            AntispywareSignatureVersion     = $instances.AntispywareSignatureVersion
-            AntivirusSignatureLastUpdated   = $instances.AntivirusSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss")
-            QuickScanSignatureVersion       = $instances.QuickScanSignatureVersion
+            AMEngineVersion                 = if ($instances.AMEngineVersion) { $instances.AMEngineVersion } else { "" }
+            AMServiceEnabled                = if ($instances.AMServiceEnabled) { $instances.AMServiceEnabled } else { "" }
+            AMServiceVersion                = if ($instances.AMServiceVersion) { $instances.AMServiceVersion } else { "" }
+            AntispywareEnabled              = if ($instances.AntispywareEnabled) { $instances.AntispywareEnabled } else { "" }
+            AntivirusEnabled                = if ($instances.AntivirusEnabled) { $instances.AntivirusEnabled } else { "" }
+            AntispywareSignatureLastUpdated = if ($instances.AntispywareSignatureLastUpdated) { $instances.AntispywareSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
+            AntispywareSignatureVersion     = if ($instances.AntispywareSignatureVersion) { $instances.AntispywareSignatureVersion } else { "" }
+            AntivirusSignatureLastUpdated   = if ($instances.AntivirusSignatureLastUpdated) { $instances.AntivirusSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
+            QuickScanSignatureVersion       = if ($instances.QuickScanSignatureVersion) { $instances.QuickScanSignatureVersion } else { "" }
          }
 
          $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
@@ -77,12 +77,25 @@ function Get-vlAntivirusStatus {
                }
             }
 
-            if($instance.displayName -eq "Windows Defender" -or "{D68DDC3A-831F-4fae-9E44-DA132C1ACF46}" -eq $instance.instanceGuid) {
-               $result += [PSCustomObject]@{
-                  AntivirusEnabled  = $avEnabled
-                  AntivirusName     = $instance.displayName
-                  AntivirusUpToDate = $avUp2Date
-                  DefenderStatus = $defenderStatus
+            if ($instance.displayName -eq "Windows Defender" -or "{D68DDC3A-831F-4fae-9E44-DA132C1ACF46}" -eq $instance.instanceGuid) {
+
+               if ($avEnabled -eq $false) {
+                  $result += [PSCustomObject]@{
+                     AntivirusEnabled  = $avEnabled
+                     AntivirusName     = $instance.displayName
+                     AntivirusUpToDate = $avUp2Date
+                  }
+               }
+               else {
+                  $result += [PSCustomObject]@{
+                     AntivirusEnabled  = $avEnabled
+                     AntivirusName     = $instance.displayName
+                     AntivirusUpToDate = $avUp2Date
+                     DefenderStatus    = $defenderStatus
+                  }
+
+                  $score -= Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
+                  $score -= Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
                }
             }
             else {
