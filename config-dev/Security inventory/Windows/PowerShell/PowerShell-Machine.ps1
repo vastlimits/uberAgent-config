@@ -21,7 +21,7 @@ function Get-vlPowerShellV2Status {
 
    process {
       try {
-         $currentPowerShellVersion = Get-vlPowerShellVersion | Select-Object -ExpandProperty result | Select-Object -ExpandProperty Version
+         $currentPowerShellVersion = $PSVersionTable.PSVersion.ToString()
 
          #check if PowerShell V2 is installed on the system
          $installationStatus = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2
@@ -56,6 +56,7 @@ function Get-vlPowerShellCL {
     .OUTPUTS
         A [psobject] containing the current PowerShell LanguageMode
     .NOTES
+        https://devblogs.microsoft.com/powershell/powershell-constrained-language-mode/
         https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_language_modes?view=powershell-7.3
     .EXAMPLE
         Get-vlPowerShellCL
@@ -72,41 +73,6 @@ function Get-vlPowerShellCL {
       catch {
 
          return New-vlErrorObject($_)
-      }
-   }
-
-}
-
-function Get-vlPowerShellVersion {
-   <#
-    .SYNOPSIS
-        Checks the current PowerShell version
-    .DESCRIPTION
-        Checks the current PowerShell version
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A [psobject] containing the current PowerShell version
-    .EXAMPLE
-        Get-vlPowerShellVersion
-    #>
-
-   param ()
-
-   process {
-      try {
-         $result = [PSCustomObject]@{
-            Version = $PSVersionTable.PSVersion.ToString()
-         }
-
-         return New-vlResultObject -result $result
-      }
-      catch {
-
-         return New-vlErrorObject($_)
-      }
-      finally {
-
       }
    }
 
@@ -190,8 +156,7 @@ function Get-vlPowerShellExecutionPolicy {
    process {
       try {
          $result = [PSCustomObject]@{
-            ExecutionPolicyLM = "Undefined"
-            ExecutionPolicyCU = "Undefined"
+            ExecutionPolicy = "Undefined"
          }
 
          $policys = Get-ExecutionPolicy -List
@@ -203,7 +168,7 @@ function Get-vlPowerShellExecutionPolicy {
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "LocalMachine"
-            $result.ExecutionPolicyLM = $policy.ExecutionPolicy.ToString()
+            $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
          # check CurrentUser policy
@@ -211,7 +176,7 @@ function Get-vlPowerShellExecutionPolicy {
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "CurrentUser"
-            $result.ExecutionPolicyCU = $policy.ExecutionPolicy.ToString()
+            $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
          # check UserPolicy policy
@@ -219,7 +184,7 @@ function Get-vlPowerShellExecutionPolicy {
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "UserPolicy"
-            $result.ExecutionPolicyCU = $policy.ExecutionPolicy.ToString()
+            $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
          # check MachinePolicy policy
@@ -227,13 +192,11 @@ function Get-vlPowerShellExecutionPolicy {
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "MachinePolicy"
-            $result.ExecutionPolicyLM = $policy.ExecutionPolicy.ToString()
+            $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
          $LMrisk = 80
-         $CUrisk = 80
          $LMLevel = 2
-         $CULevel = 2
 
          # Level 0: Unrestricted
          # Level 1: Bypass
@@ -242,8 +205,7 @@ function Get-vlPowerShellExecutionPolicy {
          # Level 4: Restricted
          # Level 5: Undefined
 
-         # check $result.ExecutionPolicyLM and $result.ExecutionPolicyCU and set $LMLevel and $CULevel accordingly
-         switch ($result.ExecutionPolicyLM) {
+         switch ($result.ExecutionPolicy) {
             "Unrestricted" {
                $LMLevel = 2
                $LMrisk = 80
@@ -270,41 +232,14 @@ function Get-vlPowerShellExecutionPolicy {
             }
          }
 
-         switch ($result.ExecutionPolicyCU) {
-            "Unrestricted" {
-               $CULevel = 2
-               $CUrisk = 80
-            }
-            "Bypass" {
-               $CULevel = 2
-               $CUrisk = 80
-            }
-            "RemoteSigned" {
-               $CULevel = 6
-               $CUrisk = 40
-            }
-            "AllSigned" {
-               $CULevel = 8
-               $CUrisk = 20
-            }
-            "Restricted" {
-               $CULevel = 10
-               $CUrisk = 20
-            }
-            "Undefined" {
-               $CULevel = 10
-               $CUrisk = 20
-            }
-         }
-
          if ($highestPolicy -eq "MachinePolicy") {
             return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
          }
          elseif ($highestPolicy -eq "UserPolicy") {
-            return New-vlResultObject -result $result -score $CULevel -riskScore $CUrisk
+            return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
          }
          elseif ($highestPolicy -eq "CurrentUser") {
-            return New-vlResultObject -result $result -score $CULevel -riskScore $CUrisk
+            return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
          }
          elseif ($highestPolicy -eq "LocalMachine") {
             return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
@@ -431,7 +366,6 @@ function Get-vlPowerShellLogging {
     .DESCRIPTION
         Checks the current PowerShell logging settings by reading the registry
     .LINK
-        https://uberagent.com
         https://adamtheautomator.com/powershell-logging-2/
         https://www.splunk.com/en_us/blog/security/hunting-for-malicious-powershell-using-script-block-logging.html
     .OUTPUTS
@@ -455,10 +389,10 @@ function Get-vlPowerShellLogging {
             ModuleLogging = $moduleLoggingStatus
          }
 
-         if (($transcriptionStatus.Registry -eq $false -and $transcriptionStatus.GroupPolicy -eq $false) -and ($scriptBlockStatus.Registry -eq $false -and $scriptBlockStatus.GroupPolicy -eq $false) -and ($moduleLoggingStatus.Registry -eq $false -and $moduleLoggingStatus.GroupPolicy -eq $false)) {
+         if (($transcriptionStatus -eq $false) -and ($scriptBlockStatus -eq $false) -and ($moduleLoggingStatus -eq $false)) {
             $score = 8
          }
-         elseif (($transcriptionStatus.Registry -eq $true -or $transcriptionStatus.GroupPolicy -eq $true ) -and ($scriptBlockStatus.Registry -eq $true -or $scriptBlockStatus.GroupPolicy -eq $true ) -and ($moduleLoggingStatus.Registry -eq $true -or $moduleLoggingStatus.GroupPolicy -eq $true )) {
+         elseif (($transcriptionStatus -eq $true ) -and ($scriptBlockStatus -eq $true ) -and ($moduleLoggingStatus -eq $true )) {
             $score = 10
          }
          else {
@@ -539,10 +473,10 @@ function Get-vlPowerShellCheck {
 
    $Output = @()
 
-   if ($params.Contains("all") -or $params.Contains("PSV2")) {
+   if ($params.Contains("all") -or $params.Contains("PSLMV2")) {
       $powerShellV2 = Get-vlPowerShellV2Status
       $Output += [PSCustomObject]@{
-         Name         = "PSV2"
+         Name         = "PSLMV2"
          DisplayName  = "PowerShell V2"
          Description  = "Checks if PowerShell V2 is enabled"
          Score        = $powerShellV2.Score
@@ -553,10 +487,10 @@ function Get-vlPowerShellCheck {
       }
    }
 
-   if ($params.Contains("all") -or $params.Contains("PSRemoting")) {
+   if ($params.Contains("all") -or $params.Contains("PSLMRemoting")) {
       $powerShellRemoting = Get-vlPowerShellRemotingStatus
       $Output += [PSCustomObject]@{
-         Name         = "PSRemoting"
+         Name         = "PSLMRemoting"
          DisplayName  = "PowerShell Remoting"
          Description  = "Checks if PowerShell remoting is enabled"
          Score        = $powerShellRemoting.Score
@@ -568,10 +502,11 @@ function Get-vlPowerShellCheck {
    }
 
    ## If CL is enabled, the test cannot be run
-   if ($params.Contains("all") -or $params.Contains("PSCL")) {
+   <# disabled for now due to limits of the current implementation
+   if ($params.Contains("all") -or $params.Contains("PSLMCL")) {
       $powerShellMode = Get-vlPowerShellCL
       $Output += [PSCustomObject]@{
-         Name         = "PSCL"
+         Name         = "PSLMCL"
          DisplayName  = "PowerShell common language mode"
          Description  = "Checks if PowerShell Common Language Mode is enabled"
          Score        = 10
@@ -581,11 +516,12 @@ function Get-vlPowerShellCheck {
          ErrorMessage = $powerShellMode.ErrorMessage
       }
    }
+   #>
 
-   if ($params.Contains("all") -or $params.Contains("PSPolicy")) {
+   if ($params.Contains("all") -or $params.Contains("PSLMPolicy")) {
       $powerShellExecutionPolicy = Get-vlPowerShellExecutionPolicy
       $Output += [PSCustomObject]@{
-         Name         = "PSPolicy"
+         Name         = "PSLMPolicy"
          DisplayName  = "PowerShell policy"
          Description  = "Checks and evaluates the PowerShell Execution Policy"
          Score        = $powerShellExecutionPolicy.Score
@@ -596,10 +532,10 @@ function Get-vlPowerShellCheck {
       }
    }
 
-   if ($params.Contains("all") -or $params.Contains("PSLogging")) {
+   if ($params.Contains("all") -or $params.Contains("PSLMLogging")) {
       $powerShellLogging = Get-vlPowerShellLogging
       $Output += [PSCustomObject]@{
-         Name         = "PSLogging"
+         Name         = "PSLMLogging"
          DisplayName  = "PowerShell logging"
          Description  = "Checks if PowerShell Logging is enabled"
          Score        = $powerShellLogging.Score

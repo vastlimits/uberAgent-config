@@ -29,20 +29,20 @@ function Get-vlExpiredCertificateCheck {
 
       # convert Date object to ISO timestring
       $expCets = $expCets | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
       $willExpire30 = $willExpire30 | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
       $willExpire60 = $willExpire60 | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          $_
       }
 
@@ -175,8 +175,8 @@ function Get-vlGetCTLCheck {
 
       # convert NotAfter and NotBefore to string iso format
       $currentUserCerts = $currentUserCerts | ForEach-Object {
-         $_.NotAfter = $_.NotAfter.ToString("yyyy-MM-ddTHH:mm:ss")
-         $_.NotBefore = $_.NotBefore.ToString("yyyy-MM-ddTHH:mm:ss")
+         $_.NotAfter = Get-vlTimeString -time $_.NotAfter
+         $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          return $_
       }
 
@@ -222,6 +222,7 @@ function Get-vlCertificateCheck {
    $params = if ($global:args) { $global:args } else { "all" }
    $Output = @()
 
+   <# disabled for now since there is no real security impact if the certificate is expired
    if ($params.Contains("all") -or $params.Contains("CUExpCerts")) {
       $protectedRoots = Get-vlExpiredCertificateCheck
       $Output += [PSCustomObject]@{
@@ -235,6 +236,7 @@ function Get-vlCertificateCheck {
          ErrorMessage = $protectedRoots.ErrorMessage
       }
    }
+   #>
    if ($params.Contains("all") -or $params.Contains("CUTrByWin")) {
       $ctlCheck = Get-vlGetCTLCheck
       $Output += [PSCustomObject]@{
