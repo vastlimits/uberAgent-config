@@ -8,9 +8,9 @@ $tempAuthRootStl = "$env:TEMP\uAauthroot.stl"
 function Get-vlRootCertificateInstallationCheck {
    <#
     .SYNOPSIS
-        Function that checks if current user root certificate installation is enabled.
+        Function that checks if a user can install root certificates on the system.
     .DESCRIPTION
-        Function that checks if current user root certificate installation is enabled.
+        Function that checks if a user can install root certificates on the system.
     .OUTPUTS
         If root certificate installation is enabled, the function returns a PSCustomObject with the following properties:
         enabled: true
