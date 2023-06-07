@@ -438,6 +438,7 @@ Function Get-vlJEACheck {
 
       # check if there are any JEA configurations apart from the default ones
       $jeaSessions = Get-PSSessionConfiguration | Where-Object { $_.Name.ToLower() -notlike 'microsoft.*' }
+
       if ($jeaSessions.Count -eq 0) {
          return $false
       }

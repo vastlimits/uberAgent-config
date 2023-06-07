@@ -654,4 +654,3 @@ function Write-vlTimerElapsedTime {
    end {
 
    }
-}

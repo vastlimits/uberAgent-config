@@ -31,4 +31,3 @@ NCSMBSign,Network Configuration SMB Signing,Checks whether SMB signing is enable
 NCNetBIOS,Network configuration NetBIOS,Checks whether NetBIOS is enabled.
 NCWINS,Network configuration WINS,Checks whether WINS is enabled.
 MNCSSLTLS,Network configuration SSL/TLS - Machine,Checks whether only secure protocols are used
-AVState,Antivirus status,Checks if the antivirus is enabled and up to date.
