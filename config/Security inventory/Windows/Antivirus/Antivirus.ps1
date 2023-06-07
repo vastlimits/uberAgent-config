@@ -81,6 +81,17 @@ function Get-vlAntivirusStatus {
 
                if ($avEnabled -eq $false) {
                   $result += [PSCustomObject]@{
+                     Enabled  = $avEnabled
+                     Name     = $instance.displayName
+                     UpToDate = $avUp2Date
+                  }
+               }
+               else {
+                  $result += [PSCustomObject]@{
+                     Enabled  = $avEnabled
+                     Name     = $instance.displayName
+                     UpToDate = $avUp2Date
+                     Defender    = $defenderStatus
                   }
 
                   $score -= Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
