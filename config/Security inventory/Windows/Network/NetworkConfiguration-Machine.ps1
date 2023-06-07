@@ -222,14 +222,12 @@ function Get-vlNetworkConfigurationSSLTLSLocalMachine {
    try {
 
       try {
-         # 10240 = TLS 1.2 & TLS 1.3
-         # 8192  = TLS 1.3
-         # 2048  = TLS 1.2
-         $DesiredValues = @(10240,8192,2048)
+
+         $DesiredValue = 2560 # Use TLS 1.1 and TLS 1.2
 
          $SecureProtocols = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings" -Value SecureProtocols -IncludePolicies $true
 
-         if ($DesiredValues -contains $SecureProtocols) {
+         if ($SecureProtocols -eq $DesiredValue) {
             $result = [PSCustomObject]@{
                SecureProtocolsOnly = $true
             }
