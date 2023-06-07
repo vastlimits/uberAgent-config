@@ -436,8 +436,8 @@ Function Get-vlJEACheck {
          return $false
       }
 
-      # check if there are any JEA sessions
-      $jeaSessions = Get-PSSessionConfiguration | Where-Object { $_.RunAsVirtualAccount -eq $true }
+      # check if there are any JEA configurations apart from the default ones
+      $jeaSessions = Get-PSSessionConfiguration | Where-Object { $_.Name.ToLower() -notlike 'microsoft.*' }
       if ($jeaSessions.Count -eq 0) {
          return $false
       }
@@ -501,22 +501,19 @@ function Get-vlPowerShellCheck {
       }
    }
 
-   ## If CL is enabled, the test cannot be run
-   <# disabled for now due to limits of the current implementation
    if ($params.Contains("all") -or $params.Contains("PSLMCL")) {
       $powerShellMode = Get-vlPowerShellCL
       $Output += [PSCustomObject]@{
          Name         = "PSLMCL"
          DisplayName  = "PowerShell common language mode"
          Description  = "Checks if PowerShell Common Language Mode is enabled"
-         Score        = 10
+         Score        = 7
          ResultData   = $powerShellMode.Result
-         RiskScore    = 0
+         RiskScore    = 30
          ErrorCode    = $powerShellMode.ErrorCode
          ErrorMessage = $powerShellMode.ErrorMessage
       }
    }
-   #>
 
    if ($params.Contains("all") -or $params.Contains("PSLMPolicy")) {
       $powerShellExecutionPolicy = Get-vlPowerShellExecutionPolicy

@@ -1,4 +1,13 @@
 SecurityInventoryName,SecurityInventoryDisplayName,SecurityInventoryNameDescription
+FWState,Firewall status,Checks if the firewall is enabled.
+FWPorts,Open firewall ports,Checks if there are open firewall ports and returns the list of open ports.
+Locations,Uncommon locations,Checks whether services are running in uncommon locations
+Service.dll,Uncommon locations of service.dll,Checks whether services use service.dll in uncommon locations
+LUUIsAdmin,Local user is admin,Checks if the local user is a member of the local Administrators group.
+LUUWinBio,Local user Windows Hello / biometrics,Checks if Windows Hello is enabled and if the local user has enrolled factors.
+LUMUac,User account control,Checks if the User Account Control is enabled.
+LUMLaps,Local administrator password solution,Checks if the Local Administrator Password Solution is enabled.
+LUMWinBio,Windows Hello / biometrics,Checks if Windows Hello is enabled and what factors are available.
 CMProtRoot,Protected root certificates,Checks if root certificates can be installed by users.
 CMExpCerts,Expired certificates,Checks if there are expired certificates installed.
 CMAuCerUp,Auto certificate update,Checks if the auto certificate update is enabled.
@@ -6,29 +15,20 @@ CMLaSync,Certificate last sync,Checks when the certificates were last synced.
 CMTrByWin,Certificates trusted by Windows,Checks if there are unknown certificates installed within the trusted root certificate store.
 CUExpCerts,Expired certificates,Checks if there are expired certificates installed within the CurrentUser store.
 CUTrByWin,Certificates trusted by Windows - User,Checks if there are unknown certificates installed within the CurrentUser store.
+PSLMV2,PowerShell V2,Checks if PowerShell V2 is enabled
+PSLMRemoting,PowerShell Remoting,Checks if PowerShell remoting is enabled
+PSLMCL,PowerShell common language mode,Checks if PowerShell Common Language Mode is enabled
+PSLMPolicy,PowerShell policy,Checks and evaluates the PowerShell Execution Policy
+PSLMLogging,PowerShell logging,Checks if PowerShell Logging is enabled
+PSCUPolicy,PowerShell policy,Checks and evaluates the PowerShell Execution Policy
+WCBitlocker,WindowsConfiguration Bitlocker,Checks if Bitlocker is enabled on the system.
+WCComHijacking,WindowsConfiguration COM hijacking,Checks if COM is hijacked.
+WCTimeProvHijacking,WindowsConfiguration time provider hijacking,Checks if the time provider is hijacked.
+WCHta,WindowsConfiguration HTA,Checks if HTA execution is enabled for the current user.
 UNCSSLTLS,Network configuration SSL/TLS - User,Checks whether only secure protocols are used
 NCSMBv1,Network Configuration SMBv1,Checks whether SMBv1 is enabled.
 NCSMBSign,Network Configuration SMB Signing,Checks whether SMB signing is enabled.
 NCNetBIOS,Network configuration NetBIOS,Checks whether NetBIOS is enabled.
 NCWINS,Network configuration WINS,Checks whether WINS is enabled.
 MNCSSLTLS,Network configuration SSL/TLS - Machine,Checks whether only secure protocols are used
-Locations,Uncommon locations,Checks whether services are running in uncommon locations
-Service.dll,Uncommon locations of service.dll,Checks whether services use service.dll in uncommon locations
-WCHta,WindowsConfiguration HTA,Checks if HTA execution is enabled for the current user.
-WCBitlocker,WindowsConfiguration Bitlocker,Checks if Bitlocker is enabled on the system.
-WCComHijacking,WindowsConfiguration COM hijacking,Checks if COM is hijacked.
-WCTimeProvHijacking,WindowsConfiguration time provider hijacking,Checks if the time provider is hijacked.
-PSCUPolicy,PowerShell policy,Checks and evaluates the PowerShell Execution Policy
-PSLMV2,PowerShell V2,Checks if PowerShell V2 is enabled
-PSLMRemoting,PowerShell Remoting,Checks if PowerShell remoting is enabled
-PSLMCL,PowerShell common language mode,Checks if PowerShell Common Language Mode is enabled
-PSLMPolicy,PowerShell policy,Checks and evaluates the PowerShell Execution Policy
-PSLMLogging,PowerShell logging,Checks if PowerShell Logging is enabled
-FWState,Firewall status,Checks if the firewall is enabled.
-FWPorts,Open firewall ports,Checks if there are open firewall ports and returns the list of open ports.
-LUUIsAdmin,Local user is admin,Checks if the local user is a member of the local Administrators group.
-LUUWinBio,Local user Windows Hello / biometrics,Checks if Windows Hello is enabled and if the local user has enrolled factors.
-LUMUac,User account control,Checks if the User Account Control is enabled.
-LUMLaps,Local administrator password solution,Checks if the Local Administrator Password Solution is enabled.
-LUMWinBio,Windows Hello / biometrics,Checks if Windows Hello is enabled and what factors are available.
 AVState,Antivirus status,Checks if the antivirus is enabled and up to date.
