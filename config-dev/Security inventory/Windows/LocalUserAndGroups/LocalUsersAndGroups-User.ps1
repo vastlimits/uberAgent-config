@@ -271,4 +271,4 @@ function Get-vlLocalUsersAndGroupsCheck {
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # Entrypoint of the script call the check function and convert the result to JSON
-Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json )# -Compress)
+Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
