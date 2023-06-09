@@ -20,30 +20,24 @@ function Get-vlNetworkConfigurationSMBv1 {
 
    try {
 
-      $SMBv1 = $false
+      $SMBv1 = (Get-CimInstance -query "select * from  Win32_OptionalFeature where name = 'SMB1Protocol'").InstallState
 
-      if (Test-Path HKLM:\SYSTEM\CurrentControlSet\services\mrxsmb10) {
-         $mrxsmb10 = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\services\mrxsmb10" -Value "Start"
-         $LanmanWorkstation = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\LanmanWorkstation" -Value "DependOnService"
-
-         if ($mrxsmb10 -ne 4 -and $LanmanWorkstation -icontains "mrxsmb10") {
-            $SMBv1 = $true
-         }
-      }
-
-      if ($SMBv1 -eq $false) {
+      if ($SMBv1 -eq 2) {
          $result = [PSCustomObject]@{
             Enabled = $false
          }
          # SMBv1 is disabled
          return New-vlResultObject -result $result -score 10
       }
-      else {
+      elseif ($SMBv1 -eq 1) {
          $result = [PSCustomObject]@{
             Enabled = $true
          }
          # SMBv1 is enabled
          return New-vlResultObject -result $result -score 2
+      }
+      else {
+         return New-vlErrorObject("SMBv1 install state must be 1 or 2 but is $SMBv1")
       }
    }
    catch {
