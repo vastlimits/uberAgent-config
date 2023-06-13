@@ -565,7 +565,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMAuCerUp"
          DisplayName  = "Auto certificate update"
-         Description  = "Checks if the auto certificate update is enabled."
+         Description  = "Checks if automatic certificate updating is enabled."
          Score        = $autoCertUpdateCheck.Score
          ResultData   = $autoCertUpdateCheck.Result
          RiskScore    = 80
@@ -578,7 +578,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"
-         Description  = "Checks when the certificates were last synced."
+         Description  = "Checks when the certificates were last synchronized."
          Score        = $lastSync.Score
          ResultData   = $lastSync.Result
          RiskScore    = 50
