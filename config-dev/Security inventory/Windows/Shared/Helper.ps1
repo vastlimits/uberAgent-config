@@ -282,10 +282,27 @@ function Get-vlRegSubkeys {
       try {
          $registryItems = @()
 
+         #check if $Path starts with \ then remove it
+         if ($Path.StartsWith("\")) {
+            $Path = $Path.Substring(1)
+         }
+
          $path = $Hive + ":\" + $Path
          if (Test-Path -Path $path) {
             $keys = Get-ChildItem -Path $path
-            $registryItems = $keys | Foreach-Object { Get-ItemProperty $_.PsPath }
+            $registryItems = $keys | Foreach-Object {
+               try {
+                  #if Property length is > 0 then Get-ItemProperty else add the key to the array
+                  if ($_.Property -ne $null) {
+                     Get-ItemProperty $_.PsPath
+                  }
+                  else {
+                     $_
+                  }
+               } catch {
+                   $_
+               }
+           }
          }
          return $registryItems
       }
