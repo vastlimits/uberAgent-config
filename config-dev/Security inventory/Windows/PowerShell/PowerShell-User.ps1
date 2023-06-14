@@ -1,4 +1,3 @@
-#Requires -RunAsAdministrator
 #Requires -Version 3.0
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
@@ -22,7 +21,7 @@ function Get-vlPowerShellExecutionPolicy {
       try {
          $active_policy = Get-ExecutionPolicy
          $result = [PSCustomObject]@{
-            ExecutionPolicy = $active_policy
+            ExecutionPolicy = $active_policy.ToString()
          }
 
          $CUrisk = 80
