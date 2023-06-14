@@ -22,6 +22,7 @@ function Get-vlServiceLocations {
 
    process {
       try {
+         $result = @()
          Get-vlRegSubkeys -Hive HKLM -Path 'SYSTEM\CurrentControlSet\Services' | Where-Object { $_.ImagePath } | ForEach-Object -process {
             $ImagePath = $PSItem.ImagePath
             $ServiceName = $PSItem.PSChildName
@@ -36,7 +37,6 @@ function Get-vlServiceLocations {
 
          if (-not $result) {
             # No services outside common locations found
-            $result = ""
             return New-vlResultObject -result $result -score 10
          }
          else {
@@ -78,6 +78,7 @@ function Get-vlServiceDLLLocations {
 
    process {
       try {
+         $result = @()
          Get-ItemProperty hklm:\SYSTEM\CurrentControlSet\Services\*\Parameters | Where-Object { $_.servicedll } | ForEach-Object -process {
 
             $ServiceDLL = $PSItem.ServiceDLL
@@ -93,7 +94,6 @@ function Get-vlServiceDLLLocations {
          }
 
          if (-not $result) {
-            $result = ""
             # No service.dll file outside common locations found
             return New-vlResultObject -result $result -score 10
          }
