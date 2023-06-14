@@ -1,5 +1,13 @@
 SecurityInventoryName,SecurityInventoryDisplayName,SecurityInventoryNameDescription
-AVState,Antivirus status,Checks if the antivirus is enabled and up to date.
+FWState,Firewall status,Checks if the firewall is enabled.
+FWPorts,Open firewall ports,Checks if there are open firewall ports and returns the list of open ports.
+Locations,Uncommon locations,Checks whether services are running in uncommon locations
+Service.dll,Uncommon locations of service.dll,Checks whether services use service.dll in uncommon locations
+LUUIsAdmin,Local user is admin,Checks if the local user is a member of the local Administrators group.
+LUUWinBio,Local user Windows Hello / biometrics,Checks if Windows Hello is enabled and if the local user has enrolled factors.
+LUMUac,User account control,Checks if the User Account Control is enabled.
+LUMLaps,Local administrator password solution,Checks if the Local Administrator Password Solution is enabled.
+LUMWinBio,Windows Hello / biometrics,Checks if Windows Hello is enabled and what factors are available.
 CMProtRoot,Protected root certificates,Checks if root certificates can be installed by users.
 CMExpCerts,Expired certificates,Checks if there are expired certificates installed.
 CMAuCerUp,Auto certificate update,Checks if automatic certificate updating is enabled.
@@ -13,23 +21,15 @@ PSLMCL,PowerShell common language mode,Checks if PowerShell Common Language Mode
 PSLMPolicy,PowerShell policy,Checks and evaluates the PowerShell Execution Policy
 PSLMLogging,PowerShell logging,Checks if PowerShell Logging is enabled
 PSCUPolicy,PowerShell policy,Checks and evaluates the PowerShell Execution Policy
+MSOCUVBA,MS Office VBA disabled,Checks if VBA is disabled in MS Office.
+WCBitlocker,WindowsConfiguration Bitlocker,Checks if Bitlocker is enabled on the system.
+WCComHijacking,WindowsConfiguration COM hijacking,Checks if COM is hijacked.
+WCTimeProvHijacking,WindowsConfiguration time provider hijacking,Checks if the time provider is hijacked.
+WCHta,WindowsConfiguration HTA,Checks if HTA execution is enabled for the current user.
+UNCSSLTLS,Network configuration SSL/TLS - User,Checks whether only secure protocols are used
 NCSMBv1,Network Configuration SMBv1,Checks whether SMBv1 is enabled.
 NCSMBSign,Network Configuration SMB Signing,Checks whether SMB signing is enabled.
 NCNetBIOS,Network configuration NetBIOS,Checks whether NetBIOS is enabled.
 NCWINS,Network configuration WINS,Checks whether WINS is enabled.
 MNCSSLTLS,Network configuration SSL/TLS - Machine,Checks whether only secure protocols are used
-UNCSSLTLS,Network configuration SSL/TLS - User,Checks whether only secure protocols are used
-WCBitlocker,WindowsConfiguration Bitlocker,Checks if Bitlocker is enabled on the system.
-WCComHijacking,WindowsConfiguration COM hijacking,Checks if COM is hijacked.
-WCTimeProvHijacking,WindowsConfiguration time provider hijacking,Checks if the time provider is hijacked.
-WCHta,WindowsConfiguration HTA,Checks if HTA execution is enabled for the current user.
-FWState,Firewall status,Checks if the firewall is enabled.
-FWPorts,Open firewall ports,Checks if there are open firewall ports and returns the list of open ports.
-MSOCUVBA,MS Office VBA disabled,Checks if VBA is disabled in MS Office.
-LUUIsAdmin,Local user is admin,Checks if the local user is a member of the local Administrators group.
-LUUWinBio,Local user Windows Hello / biometrics,Checks if Windows Hello is enabled and if the local user has enrolled factors.
-LUMUac,User account control,Checks if the User Account Control is enabled.
-LUMLaps,Local administrator password solution,Checks if the Local Administrator Password Solution is enabled.
-LUMWinBio,Windows Hello / biometrics,Checks if Windows Hello is enabled and what factors are available.
-Locations,Uncommon locations,Checks whether services are running in uncommon locations
-Service.dll,Uncommon locations of service.dll,Checks whether services use service.dll in uncommon locations
+AVState,Antivirus status,Checks if the antivirus is enabled and up to date.
