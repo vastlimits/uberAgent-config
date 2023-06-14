@@ -1,5 +1,6 @@
 
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
+. $PSScriptRoot\..\Shared\AppLinkHelper.ps1 -Force
 
 
 function Test-vlBlockedProgram {
