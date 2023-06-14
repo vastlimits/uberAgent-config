@@ -1,5 +1,10 @@
 #Requires -Version 3.0
 
+<#
+This PowerShell code loads a C# class called AppLinkHelper into the PowerShell environment that is used to determine file and log associations in Windows.
+The class contains methods and enumerations that use the AssocQueryString function from Shlwapi.dll.
+#>
+
 
 $getLinkedAppCSharp = @"
 using System;
@@ -90,6 +95,9 @@ public static class AppLinkHelper
     }
 }
 "@
+
+
+# Check if the AppLinkHelper class is already loaded and if not, load it.
 
 if ("AppLinkHelper" -as [type]) {
    Write-Verbose "AppLinkHelper already loaded";
