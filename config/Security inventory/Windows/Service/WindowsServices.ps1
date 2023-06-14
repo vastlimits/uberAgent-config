@@ -22,26 +22,24 @@ function Get-vlServiceLocations {
 
    process {
       try {
-         $ServiceArray = @()
          Get-vlRegSubkeys -Hive HKLM -Path 'SYSTEM\CurrentControlSet\Services' | Where-Object { $_.ImagePath } | ForEach-Object -process {
             $ImagePath = $PSItem.ImagePath
+            $ServiceName = $PSItem.PSChildName
             if ($ImagePath -inotmatch '^(\\\?\?\\)?\\?SystemRoot.*$|^(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\WINDOWS\\(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\Program Files( \(x86\))?\\.*$|^(\\\?\?\\)?"?C:\\WINDOWS\\Microsoft\.NET\\.*$|^(\\\?\?\\)?"?C:\\ProgramData\\Microsoft\\Windows Defender\\.*$') {
-               $ServiceArray += $ImagePath
+               $result += [PSCustomObject]@{
+                  Service  = $ServiceName
+                  ImagePath     = $ImagePath
+               }
             }
 
          }
 
-         if ($ServiceArray.Count -eq 0) {
-            $result = [PSCustomObject]@{
-               Services = ""
-            }
+         if (-not $result) {
             # No services outside common locations found
+            $result = ""
             return New-vlResultObject -result $result -score 10
          }
          else {
-            $result = [PSCustomObject]@{
-               Services = $ServiceArray
-            }
             # Services outside common location found
             return New-vlResultObject -result $result -score 1
          }
@@ -80,33 +78,26 @@ function Get-vlServiceDLLLocations {
 
    process {
       try {
-         $ServiceArray = @()
-         $ServiceDLLArray = @()
          Get-ItemProperty hklm:\SYSTEM\CurrentControlSet\Services\*\Parameters | Where-Object { $_.servicedll } | ForEach-Object -process {
 
             $ServiceDLL = $PSItem.ServiceDLL
             $ServiceName = ($PSItem.PSParentPath).split('\\')[-1]
             if ($ServiceDLL -inotmatch '^C:\\WINDOWS\\system32.*$') {
 
-               $ServiceArray += $ServiceName
-               $ServiceDLLArray += $ServiceDLL
+               $result += [PSCustomObject]@{
+                  Service  = $ServiceName
+                  ServiceDLL     = $ServiceDLL
+               }
             }
 
          }
 
-         if ($ServiceArray.Count -eq 0) {
-            $result = [PSCustomObject]@{
-               Services    = ""
-               ServiceDLLs = ""
-            }
+         if (-not $result) {
+            $result = ""
             # No service.dll file outside common locations found
             return New-vlResultObject -result $result -score 10
          }
          else {
-            $result = [PSCustomObject]@{
-               Services    = $ServiceArray
-               ServiceDLLs = $ServiceDLLArray
-            }
             # Service.dll file outside common location found
             return New-vlResultObject -result $result -score 1
          }
