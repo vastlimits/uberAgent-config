@@ -129,7 +129,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCHta"
          DisplayName  = "WindowsConfiguration HTA"
-         Description  = "Checks if HTA execution is enabled for the current user."
+         Description  = "Checks if the execution of HTML Application (HTA) is possible for the current user."
          Score        = $checkHtaEnabled.Score
          ResultData   = $checkHtaEnabled.Result
          RiskScore    = 80
