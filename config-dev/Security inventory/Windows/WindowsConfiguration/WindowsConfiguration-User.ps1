@@ -87,10 +87,9 @@ function Get-CheckHTAEnabled {
          $startProc = $null
       }
 
-      # check if $status starts with "${env:SystemRoot}" and contains "mshta.exe"
-      $winDir = ("${env:SystemRoot}").ToLower()
+      # check if $status contains "mshta.exe"
 
-      if ($startCmd.StartsWith($winDir) -and $startCmd.Contains("mshta.exe")) {
+      if ($startCmd.Contains("mshta.exe")) {
          $defaultLink = $true
       }
       else {

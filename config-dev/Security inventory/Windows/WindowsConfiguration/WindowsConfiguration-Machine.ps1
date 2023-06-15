@@ -61,33 +61,38 @@ function Get-BitlockerEnabled {
         Get-BitlockerEnabled
     #>
 
-   try {
+    try {
       $score = 10
 
-      #check if bitlocker is enabled using Get-BitLockerVolume
+      # check if bitlocker is enabled using Get-BitLockerVolume
       $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage
 
       if ($bitlockerEnabled) {
-         $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
+          $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
       }
 
       if ($bitlockerEnabled.ProtectionStatus -ne "On") {
-         $score = 0
+          $score = 0
       }
       else {
-         if ($bitlockerEnabled.EncryptionPercentage -eq 100) {
-            $score = 10
-         }
-         else {
-            $score = 5
-         }
+          if ($bitlockerEnabled.EncryptionPercentage -eq 100) {
+              $score = 10
+          }
+          else {
+              $score = 5
+          }
       }
 
       return New-vlResultObject -result $bitlockerEnabled -score $score
-   }
-   catch {
-      return New-vlErrorObject -context $_
-   }
+  }
+  catch {
+      if ($_.Exception -is [System.Management.Automation.CommandNotFoundException]) {
+         return New-vlErrorObject -message "Status could not be determined because Bitlocker was not set up for this system." -errorCode 1 -context $_
+      } else {
+         return New-vlErrorObject -context $_
+      }
+  }
+
 }
 
 function Get-COMHijacking {
