@@ -143,15 +143,15 @@ function Get-vlExpiredCertificateCheck {
          $_
       }
 
-      if( $willExpire60.Length -gt 0 ){
+      if ( $willExpire60.Length -gt 0 ) {
          $score = 7
       }
 
-      if( $willExpire30.Length -gt 0 ){
+      if ( $willExpire30.Length -gt 0 ) {
          $score = 4
       }
 
-      if( $expCets.Length -gt 0 ){
+      if ( $expCets.Length -gt 0 ) {
          $score = 0
       }
 
@@ -439,7 +439,7 @@ function Get-vlGetCTLCheck {
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
       #get all certificates from the local machine
-      $localMachineCerts = (Get-ChildItem cert:\LocalMachine\Root | Where-Object { $_.NotAfter -ge (Get-Date) }) | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
+      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
 
       # convert NotAfter and NotBefore to string iso format
       $localMachineCerts = $localMachineCerts | ForEach-Object {
@@ -456,7 +456,7 @@ function Get-vlGetCTLCheck {
          Unknown = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts
       }
 
-      if($result.Unknown.Count -gt 0) {
+      if ($result.Unknown.Count -gt 0) {
          $score -= 5
       }
 
