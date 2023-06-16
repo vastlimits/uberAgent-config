@@ -135,13 +135,14 @@ function Get-vlAntivirusStatus {
             elseif($defenderStatus) {
                $result += [PSCustomObject]@{
                   Enabled  = $false
+                  Name     = "Windows Defender"
                   UpToDate = if ($score -eq 10) { $true } else { $false }
                   Defender = $defenderStatus
                }
             }
             else
             {
-               return New-vlErrorObject -message "Windows Defender not found" -context $_
+               return New-vlErrorObject -message "Status could not be determined because SecurityCenter2 is not available on Windows Server." -errorCode 1 -context $_
             }
          }
 
