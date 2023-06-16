@@ -46,15 +46,15 @@ function Get-vlExpiredCertificateCheck {
          $_
       }
 
-      if( $willExpire60.Length -gt 0 ){
+      if ( $willExpire60.Length -gt 0 ) {
          $score = 7
       }
 
-      if( $willExpire30.Length -gt 0 ){
+      if ( $willExpire30.Length -gt 0 ) {
          $score = 4
       }
 
-      if( $expCets.Length -gt 0 ){
+      if ( $expCets.Length -gt 0 ) {
          $score = 0
       }
 
@@ -169,9 +169,14 @@ function Get-vlGetCTLCheck {
       #Load Stl
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
-      #add all certificates that are not expired from the current user
-      $currentUserCerts = (Get-ChildItem cert:\CurrentUser\Root | Where-Object { $_.NotAfter -ge (Get-Date) }) | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
+      # Get all certificates from the local machine
+      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root
 
+      #add all certificates that are not expired from the current user
+      $currentUserCerts = Get-ChildItem cert:\CurrentUser\Root | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
+
+      # filter out certificates from $currentUserCerts that are contained in $localMachineCerts
+      $currentUserCerts = $currentUserCerts | Where-Object { $_.Thumbprint -notin $localMachineCerts.Thumbprint }
 
       # convert NotAfter and NotBefore to string iso format
       $currentUserCerts = $currentUserCerts | ForEach-Object {
@@ -185,11 +190,11 @@ function Get-vlGetCTLCheck {
 
       # Create the result object
       $result = [PSCustomObject]@{
-         Unknown  = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
+         Unknown     = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
          CurrentUser = $currentUser.Name
       }
 
-      if($result.Unknown.Count -gt 0) {
+      if ($result.Unknown.Count -gt 0) {
          $score -= 5
       }
 
