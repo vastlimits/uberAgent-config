@@ -127,14 +127,22 @@ function New-vlErrorObject {
    param (
       [Parameter(Mandatory = $true)]
       $context,
-      $score = 0
+      $score = 0,
+      $message = $null,
+      $errorCode = $null
    )
+
+   $finalCode = if ($context.Exception.HResult) { $context.Exception.HResult } else { 1 }
+
+   if ( $null -ne $errorCode) {
+      $finalCode = $errorCode
+   }
 
    return [PSCustomObject]@{
       Result       = ""
-      ErrorCode    = $context.Exception.MessageId
-      ErrorMessage = $context.Exception.Message
-      Score        = $score
+      ErrorCode    = $finalCode
+      ErrorMessage = if ( $null -ne $message) { $message } else { $context.Exception.Message }
+      Score        = 0
    }
 }
 
@@ -415,7 +423,6 @@ function Get-vlTimeString {
    [CmdletBinding()]
    [OutputType([string])]
    param (
-      [Parameter(Mandatory = $true)]
       $time
    )
 
