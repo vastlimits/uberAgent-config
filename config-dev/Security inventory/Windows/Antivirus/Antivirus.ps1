@@ -44,6 +44,9 @@ function Get-vlAntivirusStatus {
 
    process {
       try {
+         $result = @()
+         $score = 0
+
          $instances = Get-MpComputerStatus
 
          $defenderStatus = [PSCustomObject]@{
@@ -58,32 +61,45 @@ function Get-vlAntivirusStatus {
             QuickScanSignatureVersion       = if ($instances.QuickScanSignatureVersion) { $instances.QuickScanSignatureVersion } else { "" }
          }
 
-         $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
-         $score = 0
-         $result = @()
-         $avEnabledFound = $false
+         $isWindowsServer = Get-vlIsWindowsServer
 
-         foreach ($instance in $instances) {
-            $avEnabled = $([ProductState]::On.value__ -eq $($instance.productState -band [ProductFlags]::ProductState) )
-            $avUp2Date = $([SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [ProductFlags]::SignatureStatus) )
+         if ($isWindowsServer -eq $false) {
+            $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
+            $avEnabledFound = $false
 
-            if ($avEnabled) {
-               $avEnabledFound = $true
-               if ($avUp2Date) {
-                  $score = 10
+            foreach ($instance in $instances) {
+               $avEnabled = $([ProductState]::On.value__ -eq $($instance.productState -band [ProductFlags]::ProductState) )
+               $avUp2Date = $([SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [ProductFlags]::SignatureStatus) )
+
+               if ($avEnabled) {
+                  $avEnabledFound = $true
+                  if ($avUp2Date) {
+                     $score = 10
+                  }
+                  else {
+                     $score = 5
+                  }
                }
-               else {
-                  $score = 5
-               }
-            }
 
-            if ($instance.displayName -eq "Windows Defender" -or "{D68DDC3A-831F-4fae-9E44-DA132C1ACF46}" -eq $instance.instanceGuid) {
+               if ($instance.displayName -eq "Windows Defender" -or "{D68DDC3A-831F-4fae-9E44-DA132C1ACF46}" -eq $instance.instanceGuid) {
 
-               if ($avEnabled -eq $false) {
-                  $result += [PSCustomObject]@{
-                     Enabled  = $avEnabled
-                     Name     = $instance.displayName
-                     UpToDate = $avUp2Date
+                  if ($avEnabled -eq $false) {
+                     $result += [PSCustomObject]@{
+                        Enabled  = $avEnabled
+                        Name     = $instance.displayName
+                        UpToDate = $avUp2Date
+                     }
+                  }
+                  else {
+                     $result += [PSCustomObject]@{
+                        Enabled  = $avEnabled
+                        Name     = $instance.displayName
+                        UpToDate = $avUp2Date
+                        Defender = $defenderStatus
+                     }
+
+                     $score -= Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
+                     $score -= Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
                   }
                }
                else {
@@ -91,24 +107,42 @@ function Get-vlAntivirusStatus {
                      Enabled  = $avEnabled
                      Name     = $instance.displayName
                      UpToDate = $avUp2Date
-                     Defender    = $defenderStatus
                   }
-
-                  $score -= Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
-                  $score -= Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
                }
             }
-            else {
-               $result += [PSCustomObject]@{
-                  Enabled  = $avEnabled
-                  Name     = $instance.displayName
-                  UpToDate = $avUp2Date
-               }
+
+            if (-not $avEnabledFound) {
+               $score = 0
             }
          }
-
-         if (-not $avEnabledFound) {
+         else {
+            $result = @()
             $score = 0
+
+            if ($defenderStatus -and $defenderStatus.AMServiceEnabled -and $defenderStatus.AntispywareEnabled -and $defenderStatus.AntivirusEnabled) {
+               $score = 10
+
+               $score -= Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
+               $score -= Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
+
+               $result += [PSCustomObject]@{
+                  Enabled  = $true
+                  Name     = "Windows Defender"
+                  UpToDate = if ($score -eq 10) { $true } else { $false }
+                  Defender = $defenderStatus
+               }
+            }
+            elseif($defenderStatus) {
+               $result += [PSCustomObject]@{
+                  Enabled  = $false
+                  UpToDate = if ($score -eq 10) { $true } else { $false }
+                  Defender = $defenderStatus
+               }
+            }
+            else
+            {
+               return New-vlErrorObject -message "Windows Defender not found" -context $_
+            }
          }
 
          return New-vlResultObject -result $result -score $score
