@@ -43,6 +43,33 @@ function Get-vlIsWindows7 {
    }
 }
 
+function  Get-vlIsWindowsServer {
+   <#
+    .SYNOPSIS
+        Check if the OS is a Windows Server
+    .DESCRIPTION
+        Check if the OS is a Windows Server
+    .OUTPUTS
+        A boolean indicating if the OS is a Windows Server
+    .EXAMPLE
+        return Get-vlIsWindowsServer
+    #>
+
+   try {
+      $os = Get-CimInstance -ClassName Win32_OperatingSystem
+      if ($os.Caption -like "*Server*") {
+         return $true
+      }
+      else {
+         return $false
+      }
+   }
+   catch {
+      Write-Output $_.Exception.Message
+      return $null
+   }
+}
+
 function Convert-vlEnumToString ($object) {
    <#
     .SYNOPSIS
@@ -345,6 +372,11 @@ function Get-vlTimeScore($time) {
 
    if ($null -eq $time) {
       return -3
+   }
+
+   #check if time has type DateTime if not then convert it
+   if ($time.GetType().Name -ne "DateTime") {
+      $time = [DateTime]$time
    }
 
    #check if time is less than 14 days
