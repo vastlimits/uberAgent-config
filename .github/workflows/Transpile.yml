@@ -76,8 +76,8 @@ jobs:
         env:
           GITHUB_REF: ${{ github.ref }}
 
-      - name: Commit everything
-        if: success()
+      - name: Commit everything - release branch
+        if: success() && (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/'))
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Updated transpiled output
@@ -85,7 +85,7 @@ jobs:
           commit_user_email: devops@vastlimits.com
 
       - name: Commit only README.md
-        if: failure()
+        if: failure() ||(success() && !(startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/')))
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Updated status in README.md
