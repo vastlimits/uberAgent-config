@@ -75,7 +75,7 @@ function Get-vlIsVBADisabled {
 
          if ($null -ne $latestVersion) {
             # office is installed
-            $vbaState = Get-vlRegValue -Hive "HKCU" -Path "\Software\Microsoft\Office\$latestVersion\Common" -Value "vbaoff" -IncludePolicies $true
+            $vbaState = Get----vlRegValue -Hive "HKCU" -Path "\Software\Microsoft\Office\$latestVersion\Common" -Value "vbaoff" -IncludePolicies $true
 
             if ($vbaState -eq 1) {
                $result = [PSCustomObject]@{
