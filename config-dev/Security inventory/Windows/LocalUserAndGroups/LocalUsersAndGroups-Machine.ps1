@@ -354,7 +354,8 @@ function Get-vlLocalUsersAndGroupsCheck {
 
    if ($params.Contains("all") -or $params.Contains("LUMUac")) {
       $uac = Get-vlUACState
-      $Output += [PSCustomObject]@{
+      $Output += [PSCustom
+      Object]@{
          Name         = "LUMUac"
          DisplayName  = "User account control"
          Description  = "Checks if the User Account Control is enabled."
