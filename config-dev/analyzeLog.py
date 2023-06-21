@@ -112,8 +112,8 @@ try:
 
         for run in sarif_data['runs']:
             for result in run['results']:
-                level = result['level'] if 'level' in result else ''
-                message = result['message']['text'] if 'level' in result and 'text' in result['message'] else ''
+                level = result['level'] if 'level' in result else 'warning'
+                message = result['message']['text'] if 'text' in result['message'] else ''
 
                 try:
                     location = result['locations'][0]['physicalLocation']['artifactLocation']['uri']
