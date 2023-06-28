@@ -48,23 +48,25 @@ function Get-vlIsFirewallEnabled {
         Get-vlIsFirewallEnabled
     #>
 
+   $riskScore = 100
+
    try {
-      $privateNetwork = Get-NetConnectionProfile | Where-Object {$_.NetworkCategory -eq "Private"}
-      $publicNetwork = Get-NetConnectionProfile | Where-Object {$_.NetworkCategory -eq "Public"}
-      $domainAuthenticatedNetwork = Get-NetConnectionProfile | Where-Object {$_.NetworkCategory -eq "DomainAuthenticated"}
+      $privateNetwork = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "Private" }
+      $publicNetwork = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "Public" }
+      $domainAuthenticatedNetwork = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "DomainAuthenticated" }
 
       $firewall = Get-NetFirewallProfile -All
       $result = [PSCustomObject]@{
          Domain  = [PSCustomObject]@{
-            Enabled = [bool]($firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled)
+            Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled)
             Connected = if ($domainAuthenticatedNetwork) { $true } else { $false }
          }
          Private = [PSCustomObject]@{
-            Enabled = [bool]($firewall | where-object { $_.Profile -eq "Private" } | select-object -ExpandProperty Enabled)
+            Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Private" } | select-object -ExpandProperty Enabled)
             Connected = if ($privateNetwork) { $true } else { $false }
          }
          Public  = [PSCustomObject]@{
-            Enabled = [bool]($firewall | where-object { $_.Profile -eq "Public" } | select-object -ExpandProperty Enabled)
+            Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Public" } | select-object -ExpandProperty Enabled)
             Connected = if ($publicNetwork) { $true } else { $false }
          }
       }
@@ -79,7 +81,7 @@ function Get-vlIsFirewallEnabled {
          $score = 0
       }
 
-      return New-vlResultObject -result $result -score $score
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject($_)
@@ -108,7 +110,9 @@ function Get-vlOpenFirewallPorts {
         Get-vlOpenFirewallPorts
     #>
 
-    try {
+   $riskScore = 70
+
+   try {
       $rulesEx = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore ActiveStore
       $rulesSystemDefaults = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore SystemDefaults
       $rulesStaticServiceStore = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore StaticServiceStore
@@ -120,25 +124,25 @@ function Get-vlOpenFirewallPorts {
       $rulesEx = $rulesEx | Where-Object { $_.Group -eq "" -or $_.Group -eq $null }
 
       $rulesEx = $rulesEx | ForEach-Object {
-          $rule = $_
-          $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule
-          $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule
+         $rule = $_
+         $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule
+         $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule
 
-          [PSCustomObject]@{
-              Name = $rule.Name
-              DisplayName = $rule.DisplayName
-              ApplicationName = $appFilter.Program
-              LocalPorts = $portFilter.LocalPort
-              RemotePorts = $portFilter.RemotePort
-              Protocol = $portFilter.Protocol
-              Group = $rule.Group
-              Profile = $rule.Profile
-              PolicyStoreSourceType = $rule.PolicyStoreSourceType
-          }
+         [PSCustomObject]@{
+            Name                  = $rule.Name
+            DisplayName           = $rule.DisplayName
+            ApplicationName       = $appFilter.Program
+            LocalPorts            = $portFilter.LocalPort
+            RemotePorts           = $portFilter.RemotePort
+            Protocol              = $portFilter.Protocol
+            Group                 = $rule.Group
+            Profile               = $rule.Profile
+            PolicyStoreSourceType = $rule.PolicyStoreSourceType
+         }
       }
 
-      return New-vlResultObject -result $rulesEx -score 10
-  }
+      return New-vlResultObject -result $rulesEx -score 10 -riskScore $riskScore
+   }
    catch [Microsoft.Management.Infrastructure.CimException] {
       return "[Get-vlOpenFirewallPorts] You need elevated privileges"
    }
@@ -177,7 +181,7 @@ function Get-vlFirewallCheck {
          Description  = "Checks if the firewall is enabled."
          Score        = $firewallEnabled.Score
          ResultData   = $firewallEnabled.Result
-         RiskScore    = 100
+         RiskScore    = $firewallEnabled.RiskScore
          ErrorCode    = $firewallEnabled.ErrorCode
          ErrorMessage = $firewallEnabled.ErrorMessage
       }
@@ -191,7 +195,7 @@ function Get-vlFirewallCheck {
          Description  = "Checks if there are open firewall ports and returns the list of open ports."
          Score        = $openPorts.Score
          ResultData   = $openPorts.Result
-         RiskScore    = 70
+         RiskScore    = $openPorts.RiskScore
          ErrorCode    = $openPorts.ErrorCode
          ErrorMessage = $openPorts.ErrorMessage
       }

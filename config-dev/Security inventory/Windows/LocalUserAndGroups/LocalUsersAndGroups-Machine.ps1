@@ -17,6 +17,8 @@ function Get-vlUACState {
         Get-vlUACState
     #>
 
+   $riskScore = 60
+
    try {
       $uac = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Value "EnableLUA"
       if ($uac -eq 1) {
@@ -24,52 +26,14 @@ function Get-vlUACState {
             UACEnabled = $true
          }
 
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             UACEnabled = $false
          }
 
-         return New-vlResultObject -result $result -score 4
-      }
-   }
-   catch {
-      return New-vlErrorObject($_)
-   }
-}
-
-function Get-vlLAPSState {
-   <#
-    .SYNOPSIS
-        Function that checks if the UAC is enabled.
-    .DESCRIPTION
-        Function that checks if the UAC is enabled.
-        This check is using the registry key HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        If the UAC is enabled, the script will return a vlResultObject with the UACEnabled property set to true.
-        If the UAC is disabled, the script will return a vlResultObject with the UACEnabled property set to false.
-    .EXAMPLE
-        Get-vlLAPSState
-    #>
-
-   try {
-      $laps = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft Services\AdmPwd" -Value "AdmPwdEnabled"
-      if ($laps.AdmPwdEnabled -eq 1) {
-         $result = [PSCustomObject]@{
-            LAPSEnabled = $true
-         }
-
-         return New-vlResultObject -result $result -score 10
-      }
-      else {
-         $result = [PSCustomObject]@{
-            LAPSEnabled = $false
-         }
-
-         return New-vlResultObject -result $result -score 6
+         return New-vlResultObject -result $result -score 4 -riskScore $riskScore
       }
    }
    catch {
@@ -115,9 +79,9 @@ function Get-vlLAPSEventLog {
       Get-WinEvent -LogName $logName | Where-Object { $_.Level -eq 2 -or $_.Level -eq 3 -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
          # only keep: TimeCreated, Id, Message
          $winEvent = [PSCustomObject]@{
-            TimeCreated      = Get-vlTimeString -time $_.TimeCreated
-            Id               = $_.Id
-            Message          = $_.Message
+            TimeCreated = Get-vlTimeString -time $_.TimeCreated
+            Id          = $_.Id
+            Message     = $_.Message
          }
 
          # add the event to the errors array if the event id is 2 (error)
@@ -173,6 +137,8 @@ function Get-vlLAPSSettings {
         Get-vlLAPSSettings
     #>
 
+   $riskScore = 40
+
    try {
       $hkey = "Software\Policies\Microsoft Services\AdmPwd"
       $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey -Value "AdmPwdEnabled"
@@ -196,20 +162,20 @@ function Get-vlLAPSSettings {
          }
 
          if ($eventLog.Errors.Count -gt 0) {
-            return New-vlResultObject -result $lapsSettings -score 8
+            return New-vlResultObject -result $lapsSettings -score 8 -riskScore $riskScore
          }
          elseif ($eventLog.Warnings.Count -gt 0) {
-            return New-vlResultObject -result $lapsSettings -score 9
+            return New-vlResultObject -result $lapsSettings -score 9 -riskScore $riskScore
          }
 
-         return New-vlResultObject -result $lapsSettings -score 10
+         return New-vlResultObject -result $lapsSettings -score 10 -riskScore $riskScore
       }
       else {
          $lapsSettings =
          [PSCustomObject]@{
             LAPSEnabled = $false
          }
-         return New-vlResultObject -result $lapsSettings -score 6
+         return New-vlResultObject -result $lapsSettings -score 6 -riskScore $riskScore
       }
 
    }
@@ -314,14 +280,16 @@ function Get-vlWindowsHelloStatusLocalMachine () {
         Get-vlWindowsHelloStatusLocalMachine
     #>
 
+   $riskScore = 40
+
    try {
       $factors = Get-vlMachineAvailableFactors
 
       if ($factors.WinBioAvailable -and $factors.WinBioUsed) {
-         return New-vlResultObject -result $factors -score 10
+         return New-vlResultObject -result $factors -score 10 -riskScore $riskScore
       }
       else {
-         return New-vlResultObject -result $factors -score 7
+         return New-vlResultObject -result $factors -score 7 -riskScore $riskScore
       }
    }
    catch {
@@ -360,7 +328,7 @@ function Get-vlLocalUsersAndGroupsCheck {
          Description  = "Checks if the User Account Control is enabled."
          Score        = $uac.Score
          ResultData   = $uac.Result
-         RiskScore    = 60
+         RiskScore    = $uac.RiskScore
          ErrorCode    = $uac.ErrorCode
          ErrorMessage = $uac.ErrorMessage
       }
@@ -373,7 +341,7 @@ function Get-vlLocalUsersAndGroupsCheck {
          Description  = "Checks if the Local Administrator Password Solution is enabled."
          Score        = $laps.Score
          ResultData   = $laps.Result
-         RiskScore    = 40
+         RiskScore    = $laps.RiskScore
          ErrorCode    = $laps.ErrorCode
          ErrorMessage = $laps.ErrorMessage
       }
@@ -386,7 +354,7 @@ function Get-vlLocalUsersAndGroupsCheck {
          Description  = "Checks if Windows Hello is enabled and what factors are available."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
-         RiskScore    = 40
+         RiskScore    = $windowsHelloStatus.RiskScore
          ErrorCode    = $windowsHelloStatus.ErrorCode
          ErrorMessage = $windowsHelloStatus.ErrorMessage
       }

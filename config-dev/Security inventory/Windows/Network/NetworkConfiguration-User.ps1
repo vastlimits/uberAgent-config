@@ -19,6 +19,7 @@ function Get-vlNetworkConfigurationSSLTLSUser {
    #>
 
    try {
+      $riskScore = 40
 
       # 10240 = TLS 1.2 & TLS 1.3
       # 8192  = TLS 1.3
@@ -32,14 +33,14 @@ function Get-vlNetworkConfigurationSSLTLSUser {
             SecureProtocolsOnly = $true
          }
 
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             SecureProtocolsOnly = $false
          }
 
-         return New-vlResultObject -result $result -score 4
+         return New-vlResultObject -result $result -score 4 -riskScore $riskScore
       }
    }
    catch {
@@ -77,7 +78,7 @@ function Get-vlNetworkConfigurationCheck {
          Description  = "Checks whether only secure protocols are used"
          Score        = $SSLTLS.Score
          ResultData   = $SSLTLS.Result
-         RiskScore    = 40
+         RiskScore    = $SSLTLS.RiskScore
          ErrorCode    = $SSLTLS.ErrorCode
          ErrorMessage = $SSLTLS.ErrorMessage
       }
