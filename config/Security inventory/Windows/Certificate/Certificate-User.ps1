@@ -19,6 +19,7 @@ function Get-vlExpiredCertificateCheck {
 
    try {
       $score = 10
+      $riskScore = 20
 
       # get certs for user store
       $certs = Get-ChildItem -Path Cert:\CurrentUser -Recurse
@@ -64,7 +65,7 @@ function Get-vlExpiredCertificateCheck {
          willExpire60 = $willExpire60
       }
       # Updates are enabled
-      return New-vlResultObject -result $result -score $score
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject($_)
@@ -163,6 +164,7 @@ function Get-vlGetCTLCheck {
    #last time the AuthRoot.stl file was synced
    try {
       $score = 10
+      $riskScore = 70
 
       $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
 
@@ -198,7 +200,7 @@ function Get-vlGetCTLCheck {
          $score -= 5
       }
 
-      return New-vlResultObject -result $result -score $score
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject -context $_
@@ -236,7 +238,7 @@ function Get-vlCertificateCheck {
          Description  = "Checks if there are expired certificates installed within the CurrentUser store."
          Score        = $protectedRoots.Score
          ResultData   = $protectedRoots.Result
-         RiskScore    = 20
+         RiskScore    = $protectedRoots.RiskScore
          ErrorCode    = $protectedRoots.ErrorCode
          ErrorMessage = $protectedRoots.ErrorMessage
       }
@@ -250,7 +252,7 @@ function Get-vlCertificateCheck {
          Description  = "Checks if there are unknown certificates installed within the CurrentUser store."
          Score        = $ctlCheck.Score
          ResultData   = $ctlCheck.Result
-         RiskScore    = 70
+         RiskScore    = $ctlCheck.RiskScore
          ErrorCode    = $ctlCheck.ErrorCode
          ErrorMessage = $ctlCheck.ErrorMessage
       }
@@ -265,8 +267,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDvS/n/bKBOCZsm
-# uwCAZMLtd1RLYfJmVQz/3ifUlKsR6aCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBF0gOmfOIXaqWh
+# lfQ92JM/caeOpJ49Lz3cGO96HGo1o6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -343,17 +345,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgtwu9j4jhWEBB
-# vwB6qynBR37sXJD8J5YcJQbjD/UCyhUwDQYJKoZIhvcNAQEBBQAEggIARvMKS4g3
-# oE5mICHVqU3/to5wtYIgG+783CkARAeJhppld8Uh5zBuGznnKMaBqF/J2VdtuJ6K
-# 3DmI1R8WXZrPs60+SfaGv4JHafpNRtprpYL19hEkKTapry4nd77OOFajTtvDZT74
-# EqAVbsh2jxurMCmD6hzR8kObl7OACD0ZEcbXlvSRWHzOu/zBd7dcRttzGFEX/IqR
-# qtrbaBUnNMxFtUMNySezkjOs6WCT59MLxOj7dhb/hWQWlhQu7UjRUSDwMBjCw/vP
-# /sHs4hkPTYiSK96KG71ko1TiCgiRRDhoHBkuIGAVkNandrLS/emlIFIK5RgbXguq
-# SO14GHq6j5y4Zd3LfvYcrveHSjOC+DRXF45Ory9ViiQRmcz7PT357xtwJ7+Zbzdl
-# y4DqJXZrq00yRlIiS10c9iyQegtV3UbWOQVZwSMZdDJVylS4Y8v+vVIvithp9whO
-# Aoezfcxh2M0WkhhNbFBT2rNyG5BU8vzKzQQBklE6wHHZsITvdKxYlj1YX65xjIY4
-# Mrpn5E4YG/IC64GVV6FCbw8cnEz2ImvBW/vNDd4N4kB/kdksp4VH2tL0h1XHKCm5
-# /cTohSBF7QOGw/lm16F38wW1+rRLr5EIoKUXyjqEGwA7GUCZUiSYsk5+3aDirpXS
-# yx3ltbuK7hJfV6wk+4MkuAlshBcoQ65KeGA=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgeCoJAi9d7vnr
+# XwRLHqJM2gTSEWx6lKmefB9tlHwYP9cwDQYJKoZIhvcNAQEBBQAEggIACX6sqvn1
+# CA4pav9Dh9JJHlMyGqOtyt7vH91KXGbNZ2qAE3wG188ADBoGIgEIwc07qXCPavQ9
+# byxDjtgTQVbSeKGxlkPyeUdnykYQ3FNxnguhxa/YcwyGc+c6WmlWvEQ/FLeyG65z
+# te2hN1kEIhHZuH9tA72f8IIJk4IUX/e2L2MWvL4V+H0LmHFPuF/yEn3dDRoiX8yB
+# lSciOZqVU5vmSgMk6jxtlF+VSl4hLVKO+Ndhux7piW9NA4sCNcjgZ1/JXOXfkDro
+# GL87tmSFdg/nVcKVmEsyGvyEybXaPJm6sQUWVZP0diPT4FUCN1n8WvnTiQBsnCOK
+# qMu7C1d99YF8j4hhNfZ+1IU2EekWBwXVa8Rl+DtU5ugyN3CPxhnQsQb7cvlgq5Ji
+# bWvmwLhxaXE2x3dfCR/+UsDVTlIs5MI9TxBTHX/a8qcKFQcM3nS0AGbFntwv87O+
+# w9FwLQ7RVCYZkGc5rAxm+VY7H1ylK2HcEK3L0TD6aNBfdH6MLVq6j/huXvk1kG1r
+# +aQ0eqP3zv2ND/yZ4B8KcNyXrVA1xcSSTwDLf9yyC3G7Jx+9BJWBCdTjMG0CA3ZI
+# I7zOP+dbVxRu5HZKc/EWPf+fpKAzCpFNEIN4y8RgfdvgdaJ6OYX3iQ5bgDObZ2V/
+# tconJHW36eZyEFdPSGhxOZ0t9xI1x8Pt0dw=
 # SIG # End signature block

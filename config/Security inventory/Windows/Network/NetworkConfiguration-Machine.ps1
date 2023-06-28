@@ -19,6 +19,7 @@ function Get-vlNetworkConfigurationSMBv1 {
    #>
 
    try {
+      $riskScore = 100
 
       $SMBv1 = (Get-CimInstance -query "select * from  Win32_OptionalFeature where name = 'SMB1Protocol'").InstallState
 
@@ -27,14 +28,14 @@ function Get-vlNetworkConfigurationSMBv1 {
             Enabled = $false
          }
          # SMBv1 is disabled
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       elseif ($SMBv1 -eq 1) {
          $result = [PSCustomObject]@{
             Enabled = $true
          }
          # SMBv1 is enabled
-         return New-vlResultObject -result $result -score 2
+         return New-vlResultObject -result $result -score 2 -riskScore $riskScore
       }
       else {
          return New-vlErrorObject("SMBv1 install state must be 1 or 2 but is $SMBv1")
@@ -62,6 +63,8 @@ function Get-vlNetworkConfigurationSMBSigning {
        Get-vlNetworkConfigurationSMBSigning
    #>
 
+   $riskScore = 40
+
    try {
       $SMBv1 = Get-vlNetworkConfigurationSMBv1
 
@@ -74,21 +77,21 @@ function Get-vlNetworkConfigurationSMBSigning {
                state = "Required"
             }
             # SMB signing is required
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
          elseif ($SMBSigningRequired -eq 0 -and $SMBSigningEnabled -eq 1) {
             $result = [PSCustomObject]@{
                state = "Enabled"
             }
             # SMB signing is enabled but not required
-            return New-vlResultObject -result $result -score 2
+            return New-vlResultObject -result $result -score 2 -riskScore $riskScore
          }
          else {
             $result = [PSCustomObject]@{
                state = "NotRequired"
             }
             # SMB signing is not required
-            return New-vlResultObject -result $result -score 2
+            return New-vlResultObject -result $result -score 2 -riskScore $riskScore
          }
       }
       elseif ($SMBv1.Result -like '*false*') {
@@ -99,14 +102,14 @@ function Get-vlNetworkConfigurationSMBSigning {
                state = "Required"
             }
             # SMB signing is required
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
          else {
             $result = [PSCustomObject]@{
                state = "NotRequired"
             }
             # SMB signing is not required
-            return New-vlResultObject -result $result -score 2
+            return New-vlResultObject -result $result -score 2 -riskScore $riskScore
          }
 
       }
@@ -138,19 +141,21 @@ function Get-vlNetworkConfigurationNetBIOS {
    #>
 
    try {
+      $riskScore = 20
+
       if ((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' | Where-Object -Property 'TcpipNetbiosOptions' -eq 1).Count -eq 0) {
          $result = [PSCustomObject]@{
             Enabled = $false
          }
          # NetBIOS is disabled
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             Enabled = $true
          }
          # NetBIOS is enabled
-         return New-vlResultObject -result $result -score 3
+         return New-vlResultObject -result $result -score 3 -riskScore $riskScore
       }
    }
    catch {
@@ -176,19 +181,21 @@ function Get-vlNetworkConfigurationWINS {
    #>
 
    try {
+      $riskScore = 20
+
       if (((Get-CimInstance -ClassName 'Win32_NetworkAdapterConfiguration' -Filter IPEnabled=TRUE | Where-Object -Property 'WINSPrimaryServer' -ne $null).ServiceName).Count -eq 0) {
          $result = [PSCustomObject]@{
             Enabled = $false
          }
          # WINS is not in usage
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             Enabled = $true
          }
          # WINS is in usage
-         return New-vlResultObject -result $result -score 3
+         return New-vlResultObject -result $result -score 3 -riskScore $riskScore
       }
    }
    catch {
@@ -213,13 +220,15 @@ function Get-vlNetworkConfigurationSSLTLSLocalMachine {
        Get-vlNetworkConfigurationSSLTLSLocalMachine
    #>
 
+   $riskScore = 40
+
    try {
 
       try {
          # 10240 = TLS 1.2 & TLS 1.3
          # 8192  = TLS 1.3
          # 2048  = TLS 1.2
-         $DesiredValues = @(10240,8192,2048)
+         $DesiredValues = @(10240, 8192, 2048)
 
          $SecureProtocols = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings" -Value SecureProtocols -IncludePolicies $true
 
@@ -228,14 +237,14 @@ function Get-vlNetworkConfigurationSSLTLSLocalMachine {
                SecureProtocolsOnly = $true
             }
 
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
          else {
             $result = [PSCustomObject]@{
                SecureProtocolsOnly = $false
             }
 
-            return New-vlResultObject -result $result -score 4
+            return New-vlResultObject -result $result -score 4 -riskScore $riskScore
          }
       }
       catch {
@@ -277,7 +286,7 @@ function Get-vlNetworkConfigurationCheck {
          Description  = "Checks whether SMBv1 is enabled."
          Score        = $SMBv1.Score
          ResultData   = $SMBv1.Result
-         RiskScore    = 100
+         RiskScore    = $SMBv1.RiskScore
          ErrorCode    = $SMBv1.ErrorCode
          ErrorMessage = $SMBv1.ErrorMessage
       }
@@ -291,7 +300,7 @@ function Get-vlNetworkConfigurationCheck {
          Description  = "Checks whether SMB signing is enabled."
          Score        = $SMBSigning.Score
          ResultData   = $SMBSigning.Result
-         RiskScore    = 40
+         RiskScore    = $SMBSigning.RiskScore
          ErrorCode    = $SMBSigning.ErrorCode
          ErrorMessage = $SMBSigning.ErrorMessage
       }
@@ -305,7 +314,7 @@ function Get-vlNetworkConfigurationCheck {
          Description  = "Checks whether NetBIOS is enabled."
          Score        = $NetBIOS.Score
          ResultData   = $NetBIOS.Result
-         RiskScore    = 20
+         RiskScore    = $NetBIOS.RiskScore
          ErrorCode    = $NetBIOS.ErrorCode
          ErrorMessage = $NetBIOS.ErrorMessage
       }
@@ -319,7 +328,7 @@ function Get-vlNetworkConfigurationCheck {
          Description  = "Checks whether WINS is enabled."
          Score        = $WINS.Score
          ResultData   = $WINS.Result
-         RiskScore    = 20
+         RiskScore    = $WINS.RiskScore
          ErrorCode    = $WINS.ErrorCode
          ErrorMessage = $WINS.ErrorMessage
       }
@@ -333,12 +342,11 @@ function Get-vlNetworkConfigurationCheck {
          Description  = "Checks whether only secure protocols are used"
          Score        = $SSLTLS.Score
          ResultData   = $SSLTLS.Result
-         RiskScore    = 40
+         RiskScore    = $SSLTLS.RiskScore
          ErrorCode    = $SSLTLS.ErrorCode
          ErrorMessage = $SSLTLS.ErrorMessage
       }
    }
-
 
    return $output
 }
@@ -350,8 +358,8 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDxLEGhCBtjIvIW
-# Ze4rZ+EHm/CJsZ+jV5HkxKR79uLgXqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD7rX2aOll34ZYI
+# q1Fbcvv3+TNCh1N+/WD7XdIKb0F7vqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -428,17 +436,17 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgnIx1mXruLx+y
-# gbqVb+0AdxXn0bIr+shRVf3RITQX1w0wDQYJKoZIhvcNAQEBBQAEggIAc0IopvSF
-# /thjCOZ5PooUsizZA0be/xZlmU6OMzhEBDn6v+lefsu0WTJsoMf8Io+ZQd0LqYNJ
-# yYaop7UzkCTQ73YuQ6+dvPo1/vIrx8FYgGrLUHE7rjca6MeLhhgP8tHu6/p/lbaf
-# cqZlB/y3UalW2+sngYDI4ViH9Rtx3O3bUJiCdYjaNDLG9O/IK82k0mzfaoDZKRob
-# qvjMxnmr+rSFgnbLG1D1CyEEg6dPWpwkm9rsfgI3g9x0KB91ZSfsFzrLKb5oh5YI
-# dWUsZc0KCHvXpJr9P78qLZaJ5bDLZcx+VjlfxqWSDEUfDCzBuDUXk68F+Pumi40Y
-# ERwRLAFaLy2HQsgW2y4GtN+0ANOmarQVFoCcUJSxbHM19NQuV7B7iqx2lx7Z+Bqh
-# POFHJwJhvt1tQ1m12SP3KyYhothS1pHa5cDG3m2gYrFGFQFuvXS44CeGNGK5P3eb
-# WQCqIj7Jeya/WsrfXPk4etQrdJl1lxxAaMrgW37Q8to6eNxT14ywIfNZ0dDPV9F+
-# wzAkzTvuoG0gn/vaN5gQSdYQM1Zu1F8HvseJVtCDqRFgvrL6KgMHqYHlLMFxOiLL
-# 2WNpiCC6EtKJB5VmigGC1Sr9Z2CDXawhVXjUu/k0PG5r7EQdWS1cRCIgv/ustqW7
-# gwesitHxMpA4pCa3aSPJdgEcuUr8AXJ7M0I=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgARznNlHNuDWY
+# W1VX5CiTwwAoagtsOnYDwj+RiLUPFa0wDQYJKoZIhvcNAQEBBQAEggIApTgjANvZ
+# f4H03MCLV+H/R6qfMPaQdCZ4OmquK4LUvlJUwCg9iwKCLzk1alfT1uh16jYJN7Dg
+# /65HKZkzgfh1y8R8HC2nDnjBj/rfwVwjBvB6z3LkgjwCeHAjFGJQQBSXbTPRx922
+# LEpEPnauqZqfqpsaHlv5CPqB6X3urVoxs2cXjjLTh/UvC3tL5/uRcI7NOHrgMxPA
+# cIj/4V6292sujqlzH/awwHITOkqozvEhyQ1ZloGDtcOtjxDHEz2lAYA9bb2X1WP9
+# NcXkiPZNFoHUGyVzxK6ii8cy17NevKcH0iyfHm53RblQuGQewQ5c5PT2uIJgn6/Y
+# U12L+5zixpxPWs0AAsQfrtJN1YlKART1HFN5EsV2kUsP6uSiQ740HG8iAsAjGIKx
+# dOPaeB7qD3xOIjDJnyNM/lN3TP5MMRNmj8mNM2XJYMNVVPGq7o1/YkHtMjFjygU9
+# JkzZhaQ4iJNowZ8UqSisgR0QX3IN+nfFbqVAyowca21eIJAdsM/QFycBXKYW8NCi
+# QkoyaQRtJvYr17Bk5Lhfs8pcs5OYRHry+hP4rtaBhTyRcZC19RfjCwMESoOGkf64
+# WCVs/XnpIq6I8JwUFAJVcUoaVHFgSyh+/WqOjnr/r8/7auX4zEubxGEcdgq6/Wo/
+# Qx2aQWtPsdd1M6TbjAlATRpJeaiVeerjbgc=
 # SIG # End signature block

@@ -48,23 +48,25 @@ function Get-vlIsFirewallEnabled {
         Get-vlIsFirewallEnabled
     #>
 
+   $riskScore = 100
+
    try {
-      $privateNetwork = Get-NetConnectionProfile | Where-Object {$_.NetworkCategory -eq "Private"}
-      $publicNetwork = Get-NetConnectionProfile | Where-Object {$_.NetworkCategory -eq "Public"}
-      $domainAuthenticatedNetwork = Get-NetConnectionProfile | Where-Object {$_.NetworkCategory -eq "DomainAuthenticated"}
+      $privateNetwork = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "Private" }
+      $publicNetwork = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "Public" }
+      $domainAuthenticatedNetwork = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "DomainAuthenticated" }
 
       $firewall = Get-NetFirewallProfile -All
       $result = [PSCustomObject]@{
          Domain  = [PSCustomObject]@{
-            Enabled = [bool]($firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled)
+            Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled)
             Connected = if ($domainAuthenticatedNetwork) { $true } else { $false }
          }
          Private = [PSCustomObject]@{
-            Enabled = [bool]($firewall | where-object { $_.Profile -eq "Private" } | select-object -ExpandProperty Enabled)
+            Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Private" } | select-object -ExpandProperty Enabled)
             Connected = if ($privateNetwork) { $true } else { $false }
          }
          Public  = [PSCustomObject]@{
-            Enabled = [bool]($firewall | where-object { $_.Profile -eq "Public" } | select-object -ExpandProperty Enabled)
+            Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Public" } | select-object -ExpandProperty Enabled)
             Connected = if ($publicNetwork) { $true } else { $false }
          }
       }
@@ -79,7 +81,7 @@ function Get-vlIsFirewallEnabled {
          $score = 0
       }
 
-      return New-vlResultObject -result $result -score $score
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject($_)
@@ -108,7 +110,9 @@ function Get-vlOpenFirewallPorts {
         Get-vlOpenFirewallPorts
     #>
 
-    try {
+   $riskScore = 70
+
+   try {
       $rulesEx = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore ActiveStore
       $rulesSystemDefaults = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore SystemDefaults
       $rulesStaticServiceStore = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore StaticServiceStore
@@ -120,25 +124,25 @@ function Get-vlOpenFirewallPorts {
       $rulesEx = $rulesEx | Where-Object { $_.Group -eq "" -or $_.Group -eq $null }
 
       $rulesEx = $rulesEx | ForEach-Object {
-          $rule = $_
-          $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule
-          $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule
+         $rule = $_
+         $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule
+         $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule
 
-          [PSCustomObject]@{
-              Name = $rule.Name
-              DisplayName = $rule.DisplayName
-              ApplicationName = $appFilter.Program
-              LocalPorts = $portFilter.LocalPort
-              RemotePorts = $portFilter.RemotePort
-              Protocol = $portFilter.Protocol
-              Group = $rule.Group
-              Profile = $rule.Profile
-              PolicyStoreSourceType = $rule.PolicyStoreSourceType
-          }
+         [PSCustomObject]@{
+            Name                  = $rule.Name
+            DisplayName           = $rule.DisplayName
+            ApplicationName       = $appFilter.Program
+            LocalPorts            = $portFilter.LocalPort
+            RemotePorts           = $portFilter.RemotePort
+            Protocol              = $portFilter.Protocol
+            Group                 = $rule.Group
+            Profile               = $rule.Profile
+            PolicyStoreSourceType = $rule.PolicyStoreSourceType
+         }
       }
 
-      return New-vlResultObject -result $rulesEx -score 10
-  }
+      return New-vlResultObject -result $rulesEx -score 10 -riskScore $riskScore
+   }
    catch [Microsoft.Management.Infrastructure.CimException] {
       return "[Get-vlOpenFirewallPorts] You need elevated privileges"
    }
@@ -177,7 +181,7 @@ function Get-vlFirewallCheck {
          Description  = "Checks if the firewall is enabled."
          Score        = $firewallEnabled.Score
          ResultData   = $firewallEnabled.Result
-         RiskScore    = 100
+         RiskScore    = $firewallEnabled.RiskScore
          ErrorCode    = $firewallEnabled.ErrorCode
          ErrorMessage = $firewallEnabled.ErrorMessage
       }
@@ -191,7 +195,7 @@ function Get-vlFirewallCheck {
          Description  = "Checks if there are open firewall ports and returns the list of open ports."
          Score        = $openPorts.Score
          ResultData   = $openPorts.Result
-         RiskScore    = 70
+         RiskScore    = $openPorts.RiskScore
          ErrorCode    = $openPorts.ErrorCode
          ErrorMessage = $openPorts.ErrorMessage
       }
@@ -207,8 +211,8 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBklL3+Vr87WzCh
-# kLKLGm/eMTdotoMSGBUFNJcxvr2fCaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCzbQ8/LQO5BwB/
+# n7UJwVoLkHmeCCbsVGJOnEeKyzykVqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -285,17 +289,17 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgapuCivrWKtyW
-# pHNIayvu79YFBnVLmpbRlYWAAl46Sl4wDQYJKoZIhvcNAQEBBQAEggIAvB39j1wc
-# GX4JcHImt9m9ZDeQpRuxHd+ezv4mUA0PupyBt0IZYIS6tAVILVk1OCwcD3Fj6b9O
-# cqvJ1vd/TGAYs80VbUui5x5NrPQ39OC4tRB7XYXMu4SFyUKjnVhrHUISmolwZnIn
-# Ru28eCducnMD42jzK9F5sZ5BUSAwJ93Vu+RbuKwBYF7VVW77aQzVkgzT9S5Rq0VT
-# hdG8glgKhp/O62FiWIa6ACE8jPZiQarIwuvQ+eMtVgBStns0vPjHOrdZgmjN3q7s
-# yKSfQeQKVs3mIEBrvsZOCWkKePojbUuqr6RrFsslP6/VW/BL/aiBUxOQHOL+L1ZM
-# lg7RoAvtr+R54ePVWiXhH/mBRexd0DjvnQxYI26hLW3J4Ki2vV25m8orW7diRkeT
-# P1R40JGumzJTAgicWJIaWxoUulSQhfSuw7fkux3dMjY+ss46wtzgD1EoFRu7YhGZ
-# xLX17bxKFtliWgZ7jacYyUyEdcKM2VtIBafe/HBWY6Nkp4IRGmVCg7IWR8tPQ/hp
-# d/4DsNPHlkYz9wbLUTE/Wd0oX19KKpmlnJ9FV6peaVhhb4IX9WFn/ZE3pXSAOIeh
-# f3HB1wuHsW5D60qevbn/3FJkZ0fOzoJA61bFNjtUFymm2fQzy1C6d8sWc1AqgQhD
-# 919hjcZOxpz3so7/XB6dAAsGt+GmB+RhCjw=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgzzsqZE1Dpr/6
+# WW/QPpDOU/r4qT7QzlD3ItLWresCk+gwDQYJKoZIhvcNAQEBBQAEggIAVciKYTxo
+# AzwzAmi5tJ1UGdk0Vz8N8dqE9Qr89BMVYIiHQDyYGBTKu68XAXcV7sfwQ9x13oZW
+# eRkp31ET4LkxZei1i70FCt++Didp1UIb5ptlu4eUergS5f8DR/DSHt18sVUM4GhS
+# HgkaYfmJnPCsJBNKM5bM041JdRNV1CGLbHXZWYb0BTK2QDE6iT9bUUzvNDA54qR5
+# HsKTkVWlNCSfrdcwGrpAJGnZ76PQM4DEiQvCKjlIoFPRQBNdMslflQCXQPh4QE+P
+# M47ZaZRgBKKgm1TdkusM3uWM5FUgBM+rxVvQAmDuCQl+4116ZpdtlUdBrRjllXhW
+# 2Z08yNCWp98RZ1JLj6cgd+nMgzs6FZwK4hhX26tcKmzVrgJOz3AMDDG3X7wtY4Ve
+# ZqWKP2pJ2yidRQSvjmdMFyAb0mvB8lDKXcL+ETbySL3vMOrFH5wcFHlGCiBOfGFz
+# Ax+J1ken10k1Ft+nyrtJRZigzLv4cADQ+opsqFcX1WHU5MdO+bbdTBMz9Sb3CJwo
+# 0SMJKDBBCZJ5Fm2UIo1cDbPeuBtC/zPL6h+oYkkCPCxiq5iH3iy9GTq3UzWzwAuw
+# f6fHtP/UUQN2eskGPVlQlFHMFA6W8K1iIY0U1DXVD39Aq/LvhjsO9xhWmC58oXOV
+# PUnwFA21aeZ62xAiD/XpEA/ADqgEIZuTqHQ=
 # SIG # End signature block

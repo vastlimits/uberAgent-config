@@ -61,46 +61,48 @@ function Get-BitlockerEnabled {
         Get-BitlockerEnabled
     #>
 
-    try {
+   try {
       $score = 10
+      $riskScore = 80
 
       # check if bitlocker is enabled using Get-BitLockerVolume
       $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage
 
       if ($bitlockerEnabled) {
-          $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
+         $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
       }
 
       if ($bitlockerEnabled.ProtectionStatus -ne "On") {
-          $score = 0
+         $score = 0
       }
       else {
-          if ($bitlockerEnabled.EncryptionPercentage -eq 100) {
-              $score = 10
-          }
-          else {
-              $score = 5
-          }
+         if ($bitlockerEnabled.EncryptionPercentage -eq 100) {
+            $score = 10
+         }
+         else {
+            $score = 5
+         }
       }
 
-      return New-vlResultObject -result $bitlockerEnabled -score $score
-  }
-  catch {
+      return New-vlResultObject -result $bitlockerEnabled -score $score -riskScore $riskScore
+   }
+   catch {
       if ($_.Exception -is [System.Management.Automation.CommandNotFoundException]) {
          return New-vlErrorObject -message "Status could not be determined because Bitlocker was not set up for this system." -errorCode 1 -context $_
-      } else {
+      }
+      else {
          return New-vlErrorObject -context $_
       }
-  }
+   }
 
 }
 
 function Get-COMHijacking {
    <#
     .SYNOPSIS
-        Checks if mmc.exe is hijacked
+        Checks if mmc.exe is set as the default program for .msc files
     .DESCRIPTION
-        Checks if mmc.exe is hijacked
+        Checks if mmc.exe is set as the default program for .msc files
     .OUTPUTS
         PSCustomObject
         detected: true if detected, false if not
@@ -109,6 +111,7 @@ function Get-COMHijacking {
     #>
    try {
 
+      $riskScore = 80
       $expectedValue = "$($env:SystemRoot)\system32\mmc.exe ""%1"" %*"
 
       $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Classes\mscfile\shell\open\command"
@@ -118,13 +121,13 @@ function Get-COMHijacking {
             Detected = $false
          }
 
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             Detected = $true
          }
-         return New-vlResultObject -result $result -score 0
+         return New-vlResultObject -result $result -score 0 -riskScore $riskScore
       }
    }
    catch {
@@ -135,9 +138,9 @@ function Get-COMHijacking {
 function Get-vlTimeProviderHijacking {
    <#
     .SYNOPSIS
-        Checks if w32time.dll is hijacked
+        Checks if w32time.dll is set as the defalut time provider
     .DESCRIPTION
-        Checks if w32time.dll is hijacked
+        Checks if w32time.dll is set as the defalut time provider
     .OUTPUTS
         PSCustomObject
         detected: true if detected, false if not
@@ -146,6 +149,7 @@ function Get-vlTimeProviderHijacking {
     #>
 
    try {
+      $riskScore = 80
       $expectedValue = "$($env:SystemRoot)\system32\w32time.dll"
 
       $value = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer" -Value "DllName"
@@ -155,13 +159,13 @@ function Get-vlTimeProviderHijacking {
             Detected = $false
          }
 
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             Detected = $true
          }
-         return New-vlResultObject -result $result -score 0
+         return New-vlResultObject -result $result -score 0 -riskScore $riskScore
       }
    }
    catch {
@@ -183,6 +187,7 @@ function Get-vlWindowsPersistanceCheck {
     #>
 
    try {
+      $riskScore = 80
       $log_file = "$($env:SystemRoot)\Logs\CBS\CBS.log"
 
       #run sfc /verifyonly and wait for it to finish run it hidden
@@ -225,13 +230,13 @@ function Get-vlWindowsPersistanceCheck {
          $result = [PSCustomObject]@{
             Detected = $true
          }
-         return New-vlResultObject -result $result -score 0
+         return New-vlResultObject -result $result -score 0 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             Detected = $false
          }
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
    }
    catch {
@@ -254,7 +259,7 @@ function Get-WindowsConfigurationCheck {
          Description  = "Checks if Bitlocker is enabled on the system."
          Score        = $checkBitlockerEnabled.Score
          ResultData   = $checkBitlockerEnabled.Result
-         RiskScore    = 80
+         RiskScore    = $checkBitlockerEnabled.RiskScore
          ErrorCode    = $checkBitlockerEnabled.ErrorCode
          ErrorMessage = $checkBitlockerEnabled.ErrorMessage
       }
@@ -265,10 +270,10 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCComHijacking"
          DisplayName  = "WindowsConfiguration COM hijacking"
-         Description  = "Checks if COM is hijacked."
+         Description  = "Checks if mmc.exe is set as the default program for .msc files"
          Score        = $COMHijacking.Score
          ResultData   = $COMHijacking.Result
-         RiskScore    = 80
+         RiskScore    = $COMHijacking.RiskScore
          ErrorCode    = $COMHijacking.ErrorCode
          ErrorMessage = $COMHijacking.ErrorMessage
       }
@@ -279,10 +284,10 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCTimeProvHijacking"
          DisplayName  = "WindowsConfiguration time provider hijacking"
-         Description  = "Checks if the time provider is hijacked."
+         Description  = "Checks if w32time.dll is set as the defalut time provider"
          Score        = $timeProviderHijacking.Score
          ResultData   = $timeProviderHijacking.Result
-         RiskScore    = 80
+         RiskScore    = $timeProviderHijacking.RiskScore
          ErrorCode    = $timeProviderHijacking.ErrorCode
          ErrorMessage = $timeProviderHijacking.ErrorMessage
       }
@@ -296,7 +301,7 @@ function Get-WindowsConfigurationCheck {
             Name         = "WindowsConfiguration - persistancecheck"
             Score        = $persistancecheck.Score
             ResultData   = $persistancecheck.Result
-            RiskScore    = 80
+            RiskScore    = $persistancecheck.RiskScore
             ErrorCode    = $persistancecheck.ErrorCode
             ErrorMessage = $persistancecheck.ErrorMessage
         }
@@ -313,8 +318,8 @@ Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDAigra/5HADiXg
-# rvBm6cEDqBPfb3a+mKOFHcXkzjPieqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB27p+RIs2+0vml
+# MEgW5svJ2aQlSEieNCw+vPWx9udQEqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -391,17 +396,17 @@ Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg1aIlyWhmZrBB
-# ixHGBe44Orq3Yng5KApvEC911Cz01+8wDQYJKoZIhvcNAQEBBQAEggIAwPcLQjhd
-# 6utFjAL7tX/8RoUnrRVxQ94pdAzaEt+SC5Keiy5i8mzPLTQwNkjKgKA/2/UztriO
-# wNzguKMTHCcJLZDyRXxxZHJIWy6PbIZ+XR1nxXxmBCb4AY1gTy2hpSKyM2go9gyE
-# dQo+KZjydVf4driX5Z61Cj8dMhKzFOneKNW/12xOvCGuyNCs71KxTR7OsuZgDMch
-# r3Oy1BO4VaAEdzOH3x2aSmPCDL1biWOCIBMNStmmtm3xSjvkiLzno95WSMlbOn3N
-# iP5iuXWzAVbZNoAGXCvxqOejfz97dy8r+Tg1QBFRnH/UZZGmtLWAUFhx71M2s4Xe
-# 4np0PCeHp5yiIbB+4AO6dfEs8VFl0fWW05g1bTN8Jq2QqN6nDzRVFPpWba0HhQpn
-# b+bqMpqsWpcKHd9gMxaj+YZJHxNgxIX/342BZv9hhevLvR7bPG4muNZxgcsB+VzG
-# R1cx1zaNM8D0Ctqhx0FCyD4Joc3SQDObhOPGVlXg65RFFLjIOAnOgJbuB5SNKtMH
-# WXrM7VzaV9/z3uoJLVPbjgNTvULwMAiX2fmr4ZCEwvZL5pQTqbwfz8cmG/7ixToi
-# NW9jWEvD9qh4F6nGZDZryJ77vGWcDjOpMjRa/oU1sUKkOmHa+2VhkcquUq5WjpgG
-# mrs805/kwbxlG1ViNRB5Emyyj71vvBjfk2I=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgq4CdwfD+X4zc
+# J39/2X6E+KxSpwiUUP0qBm+OnSio/wMwDQYJKoZIhvcNAQEBBQAEggIAN+YZy4wJ
+# hxnqGUgHQ2IHsg5IsxTcU/FY52a9akg5e/kwltUvo9yD+eHkLiedIiTglEWOIcp1
+# Fy4ThdinOzAnyE3fn0DGEYkeXBd7NsGI9Nh5IyvGxb+ZoK6rzIfaD/9NGWq4cEZm
+# nLiDypXrdJTfT2nk6iG7rdFkYWYTB64F09L+EggjHIE8TM5v3XY6R1MytRToHNzz
+# j0b1dtlrh9z6gExTjTr38ec28du4019SBI+IXO+A4o3kNEKx/EbWx/Q+45zrVN78
+# Ybe9uo6K1z2074+HHavOiJNeXU6JPyeVYuaZxF8U9ceuJ1iypNnhSt6zjcHb0k87
+# Git1zqREL6C7eDuYvObPseFgyff5ob5CS4aknd+DMe3o3L8pNrWMjlqLfxq2ocey
+# xvLjQWaY/Mor9zuYmODmU+T92Gqxvy/0dJSctEjcDb/3S8DCKT5aIJ8kID+7/vx0
+# 7o2OUTEMcMVdv3egfGF/fPKtUKvBOEAKp0yNlOe6B1HpMBsu1Si9kFAKay3OY6Ld
+# tcYcF8HOJk7o9AOMfXyPVFHFiTnq0QKUWJjmAKRdIjErsua9sSaKq99V+L14Y5ga
+# oHJbN8FFYpQdce43t7qIaWFHE29vhbEY1a58U861H9aTx/syXtiUFjLECwtOTWM5
+# u5Kn7bIzzhkQLNRy82CIvSiwdrTzFXqqc1A=
 # SIG # End signature block

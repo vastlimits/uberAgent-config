@@ -17,6 +17,8 @@ function Get-vlUACState {
         Get-vlUACState
     #>
 
+   $riskScore = 60
+
    try {
       $uac = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Value "EnableLUA"
       if ($uac -eq 1) {
@@ -24,52 +26,14 @@ function Get-vlUACState {
             UACEnabled = $true
          }
 
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             UACEnabled = $false
          }
 
-         return New-vlResultObject -result $result -score 4
-      }
-   }
-   catch {
-      return New-vlErrorObject($_)
-   }
-}
-
-function Get-vlLAPSState {
-   <#
-    .SYNOPSIS
-        Function that checks if the UAC is enabled.
-    .DESCRIPTION
-        Function that checks if the UAC is enabled.
-        This check is using the registry key HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        If the UAC is enabled, the script will return a vlResultObject with the UACEnabled property set to true.
-        If the UAC is disabled, the script will return a vlResultObject with the UACEnabled property set to false.
-    .EXAMPLE
-        Get-vlLAPSState
-    #>
-
-   try {
-      $laps = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft Services\AdmPwd" -Value "AdmPwdEnabled"
-      if ($laps.AdmPwdEnabled -eq 1) {
-         $result = [PSCustomObject]@{
-            LAPSEnabled = $true
-         }
-
-         return New-vlResultObject -result $result -score 10
-      }
-      else {
-         $result = [PSCustomObject]@{
-            LAPSEnabled = $false
-         }
-
-         return New-vlResultObject -result $result -score 6
+         return New-vlResultObject -result $result -score 4 -riskScore $riskScore
       }
    }
    catch {
@@ -115,9 +79,9 @@ function Get-vlLAPSEventLog {
       Get-WinEvent -LogName $logName | Where-Object { $_.Level -eq 2 -or $_.Level -eq 3 -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
          # only keep: TimeCreated, Id, Message
          $winEvent = [PSCustomObject]@{
-            TimeCreated      = Get-vlTimeString -time $_.TimeCreated
-            Id               = $_.Id
-            Message          = $_.Message
+            TimeCreated = Get-vlTimeString -time $_.TimeCreated
+            Id          = $_.Id
+            Message     = $_.Message
          }
 
          # add the event to the errors array if the event id is 2 (error)
@@ -173,6 +137,8 @@ function Get-vlLAPSSettings {
         Get-vlLAPSSettings
     #>
 
+   $riskScore = 40
+
    try {
       $hkey = "Software\Policies\Microsoft Services\AdmPwd"
       $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey -Value "AdmPwdEnabled"
@@ -196,20 +162,20 @@ function Get-vlLAPSSettings {
          }
 
          if ($eventLog.Errors.Count -gt 0) {
-            return New-vlResultObject -result $lapsSettings -score 8
+            return New-vlResultObject -result $lapsSettings -score 8 -riskScore $riskScore
          }
          elseif ($eventLog.Warnings.Count -gt 0) {
-            return New-vlResultObject -result $lapsSettings -score 9
+            return New-vlResultObject -result $lapsSettings -score 9 -riskScore $riskScore
          }
 
-         return New-vlResultObject -result $lapsSettings -score 10
+         return New-vlResultObject -result $lapsSettings -score 10 -riskScore $riskScore
       }
       else {
          $lapsSettings =
          [PSCustomObject]@{
             LAPSEnabled = $false
          }
-         return New-vlResultObject -result $lapsSettings -score 6
+         return New-vlResultObject -result $lapsSettings -score 6 -riskScore $riskScore
       }
 
    }
@@ -314,14 +280,16 @@ function Get-vlWindowsHelloStatusLocalMachine () {
         Get-vlWindowsHelloStatusLocalMachine
     #>
 
+   $riskScore = 40
+
    try {
       $factors = Get-vlMachineAvailableFactors
 
       if ($factors.WinBioAvailable -and $factors.WinBioUsed) {
-         return New-vlResultObject -result $factors -score 10
+         return New-vlResultObject -result $factors -score 10 -riskScore $riskScore
       }
       else {
-         return New-vlResultObject -result $factors -score 7
+         return New-vlResultObject -result $factors -score 7 -riskScore $riskScore
       }
    }
    catch {
@@ -360,7 +328,7 @@ function Get-vlLocalUsersAndGroupsCheck {
          Description  = "Checks if the User Account Control is enabled."
          Score        = $uac.Score
          ResultData   = $uac.Result
-         RiskScore    = 60
+         RiskScore    = $uac.RiskScore
          ErrorCode    = $uac.ErrorCode
          ErrorMessage = $uac.ErrorMessage
       }
@@ -373,7 +341,7 @@ function Get-vlLocalUsersAndGroupsCheck {
          Description  = "Checks if the Local Administrator Password Solution is enabled."
          Score        = $laps.Score
          ResultData   = $laps.Result
-         RiskScore    = 40
+         RiskScore    = $laps.RiskScore
          ErrorCode    = $laps.ErrorCode
          ErrorMessage = $laps.ErrorMessage
       }
@@ -386,7 +354,7 @@ function Get-vlLocalUsersAndGroupsCheck {
          Description  = "Checks if Windows Hello is enabled and what factors are available."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
-         RiskScore    = 40
+         RiskScore    = $windowsHelloStatus.RiskScore
          ErrorCode    = $windowsHelloStatus.ErrorCode
          ErrorMessage = $windowsHelloStatus.ErrorMessage
       }
@@ -402,8 +370,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCbSTXhRvum2N18
-# Yw8lqsbNqtEZ78c5BZ3H7MQb4zkqT6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBUNAccItjcjAMk
+# Qqi5OH4bUvPVb1M5wo1NK+OZ+7T546CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -480,17 +448,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgyZblnPc7ojer
-# VeMqfdZcQJGA7RG4/fTrCV39xexaJCkwDQYJKoZIhvcNAQEBBQAEggIAHQRegrDk
-# TPK28VDKHwJZzlxBbAPNuscc7XJlznSE3FJ3j8gwLXJJnq2aguS9zbwZb5gdhw9b
-# Yri8HPY118qTmcW+c8lVbcUqAZBBqh/sGzpE8jiElO0AKDb58yqq4StLISPkZL9k
-# ycmmbHvpTeqKUYf/O0uXO89OSsEw/VUsiITXhE/DNHurv9gG6tqOPwzPhSEi5ufW
-# rwjul7zLxG8CP4Ovbs1RC6zfMYMbkZ5iCpv+3BT9MTnJcRRDloVsy0YfPgDpEBuA
-# x+Z6MBPYDOcGsqum4Qscltttc4qBrROXd2xfcqcwIzolmF2EYf4ZjFcCCa2P0SMI
-# Emjknhn2O+KSmlvU90crVGHoN/6JBZnOGsA2wE6xw/c2e6JSEdJNbFsGSRkzkSNg
-# CHvqFbayquzpMJG+UlZuwpnwOSGmbZ0u+uwt533pPCk/m049lTVW8pxdaTKb0B5y
-# MuO+585RxbbIZw0ezwZRVcDZ6TqclMsuOMCYgwTqWvd8gpxA34inghztQKOAlZVE
-# qbLzgGfgOjwgJIK3cfvprkUlPgiOq4gOfX8BL4cGwXoyTzGNUfex5YMDGa1TmINP
-# kMojromPN1W1y+dNzXpRlAXf5wD883SiUo2VrBKU7wjqzQWw8eZhhZeZYFzl60Cq
-# 6kRi5yogWC68m8ostRxyYvpdrAkMK9wD1xM=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgT9smI4ZL46rH
+# 8TS0qONwhdnNV268az7JPGUIqpuIdxUwDQYJKoZIhvcNAQEBBQAEggIAbqUW80TI
+# 40x3wUs9IERrLixI5TDHvxiQnyPh2SX500IEJD1js4Itr39VjreCt6/rBqPdS/44
+# aJfltjjKgaxWVfC3j91DvdIAlM8NrZDJsrhTYuIjnyhLDF9R6HVjtT5ha7cdlaEE
+# R9L7YLLRmAIgGNLOsnwUIe2gjvcPM4Smmam3svF9j7Sgoq0wvjn/mJJ0VpSxsKS1
+# qDy18zamfvDGteiXeP16GCM0WmjdA5otuF227ZMEHVYxHR0QpuStUTdxp8HT6Tjz
+# Egb9Ycjd35nfTQXCrnf7FfZQeBJb7cJWxwBE2FYujclJTpBCB4tMO1NczkJyGwDs
+# xS6cERmwkLHm0kuNmIEBEW2Mv8y+4pok+ww93ckgLfdKiLir21QI/zy8lQ2ba7tV
+# LdfW4Lvz0qKEcirBuw1KFBF8Ao09X3sv9zHBXRKT6N+yj6bPtnMXy1wr1B3GKan5
+# 3eFxuj8AjYigkenaz7ZfqRBbR0IpX7ebHYMfyRERU6Jr2ZhLyzoaid8f+Xyl0g/T
+# WbNmuNEuAGAPA0fut77KjYxZyrefVZRYO4bjuJadjnXH9StFwmNFwM4+egkqvDcp
+# mAdXWAdyp8ZLuJpaKZeWq47CyeF7je1eMDxq2TM0+sqOcRE3+PCda+3FNHUKJWcb
+# bWs2Tgf2kvEHexoyxVcdr9n0fNC3T2KxE2Y=
 # SIG # End signature block

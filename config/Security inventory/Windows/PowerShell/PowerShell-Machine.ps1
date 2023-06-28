@@ -20,6 +20,8 @@ function Get-vlPowerShellV2Status {
     #>
 
    process {
+      $riskScore = 60
+
       try {
          $currentPowerShellVersion = $PSVersionTable.PSVersion.ToString()
 
@@ -32,10 +34,10 @@ function Get-vlPowerShellV2Status {
          }
 
          if ($result.PowerShellV2Enabled) {
-            return New-vlResultObject -result $result -score 4
+            return New-vlResultObject -result $result -score 4 -riskScore $riskScore
          }
          else {
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
       }
       catch {
@@ -64,11 +66,14 @@ function Get-vlPowerShellCL {
 
    process {
       try {
+         $score = 7
+         $riskScore = 30
+
          $result = [PSCustomObject]@{
             LanguageMode = $ExecutionContext.SessionState.LanguageMode.ToString()
          }
 
-         return New-vlResultObject -result $result
+         return New-vlResultObject -result $result -score $score -riskScore $riskScore
       }
       catch {
 
@@ -377,6 +382,8 @@ function Get-vlPowerShellLogging {
    param ()
 
    process {
+      $riskScore = 20
+
       try {
          $transcriptionStatus = Get-vlPowerShellLoggingTranscriptionStatus
          $scriptBlockStatus = Get-vlPowerShellLoggingScriptBlockStatus
@@ -399,7 +406,7 @@ function Get-vlPowerShellLogging {
             $score = 9
          }
 
-         return New-vlResultObject -result $result -score $score
+         return New-vlResultObject -result $result -score $score -riskScore $riskScore
       }
       catch {
 
@@ -482,7 +489,7 @@ function Get-vlPowerShellCheck {
          Description  = "Checks if PowerShell V2 is enabled"
          Score        = $powerShellV2.Score
          ResultData   = $powerShellV2.Result
-         RiskScore    = 60
+         RiskScore    = $powerShellV2.RiskScore
          ErrorCode    = $powerShellV2.ErrorCode
          ErrorMessage = $powerShellV2.ErrorMessage
       }
@@ -502,19 +509,21 @@ function Get-vlPowerShellCheck {
       }
    }
 
+   <# this test will always return true, because the script won't work in other modes
    if ($params.Contains("all") -or $params.Contains("PSLMCL")) {
       $powerShellMode = Get-vlPowerShellCL
       $Output += [PSCustomObject]@{
          Name         = "PSLMCL"
          DisplayName  = "PowerShell common language mode"
          Description  = "Checks if PowerShell Common Language Mode is enabled"
-         Score        = 7
+         Score        = $powerShellMode.Score
          ResultData   = $powerShellMode.Result
-         RiskScore    = 30
+         RiskScore    = $powerShellMode.RiskScore
          ErrorCode    = $powerShellMode.ErrorCode
          ErrorMessage = $powerShellMode.ErrorMessage
       }
    }
+   #>
 
    if ($params.Contains("all") -or $params.Contains("PSLMPolicy")) {
       $powerShellExecutionPolicy = Get-vlPowerShellExecutionPolicy
@@ -538,7 +547,7 @@ function Get-vlPowerShellCheck {
          Description  = "Checks if PowerShell Logging is enabled"
          Score        = $powerShellLogging.Score
          ResultData   = $powerShellLogging.Result
-         RiskScore    = 20
+         RiskScore    = $powerShellLogging.RiskScore
          ErrorCode    = $powerShellLogging.ErrorCode
          ErrorMessage = $powerShellLogging.ErrorMessage
       }
@@ -555,8 +564,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB7fJFYKn1hUp/L
-# ddVA9/aft6ogq0KTMIfCbQC4KQK9zqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBXhzw5qzapkAQQ
+# LFDqD2RdQVdH286ai+fBVX8OjbG6ZqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -633,17 +642,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg2rpz9sWVCOxC
-# +SjOEE9p0lDHDzE0TdhZEcGtDwyJx2swDQYJKoZIhvcNAQEBBQAEggIAqkdsLyQS
-# Gipuy9kJndPvpG68KGyIPf1fae1GQIIvSAg6dhs4h7GKaRu0/jCkfLK9FbLqJ/Cd
-# 8wj/ObDfjNexzfn04cB9FZRbTCueejI/Oac1BqJQ3kC/On14RUztQqrC/1qa3Swu
-# 4T1AM8H+2W5Cv1yketpPvFt67ITjReE3PaACUCC8Logn+szASi6p8QMuuqVXoDvE
-# 0xDXFayNB0snE+jRetI/kV70gJoxjHnD0bfay9O+ZYX0QUZyaTsZXUgW9XZjmkVm
-# hrYCx69A5FWtzIjwyc98m3eBEFYaXsCUe9TjSGw0+UzcGGExuZEMTqYd8XRiEO5i
-# YznJ7DIKhhXWakjZ4yev7UjlYkJ7cJxN6mtCoPHKet1NUe5ezkHJDbRCJOpSM5pH
-# reJj0VIbd9dsEhg1uAPIBb3DWMByArQFX1dKq03ZvXtlR0sKnB+/OEFLfiC/kNFe
-# 0UC8w53tJ1HjycpeHJw/5tBRl2MY2/LyP78swkkcMAWtOY6YGphMVVnfFbJ/UU3B
-# uIM+4ZKllKJ03/EaaotkVO1w3znElafxjwZ4V4q4WW3MNRR6JKf8PW06e95iT4G4
-# GUKsDBV1ZmsYQsX6gYZkZn8y9cQ092v5chvmNc12pxBB9nQOlJ+jwIv8ASuwggQB
-# aAi5YuKlHXRScqvh5ZmxJaq9EAahNevaZTE=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgSIOGnwNz/FnB
+# +c1eFy5ZvlDXYhcsygkIJ1o0Sg/3hVMwDQYJKoZIhvcNAQEBBQAEggIAGn0im9qr
+# oeYMyC/jbM8ca/rYqC66fAG+towyPW6rxxAMR1Zf/wOQlHjzVKTTeKbBoo8YqBgZ
+# DP+cQNMLCKTKPc1RIsxwPmnM/lWplfWHmKcxemKGlK+k3yoZZivSPSt0KYf1H5Ka
+# VdsW377aK05v4jyf5i4vezFljWRIirdFFGepZ9I93EkdEgaRtfdKIdWSzQXE6uFS
+# acx5Tb2ViJBs00SKDsj6AX63nkX8nUsElEid0aPu4QS9cNTgqbw/+TlZd85iZQ0h
+# eMUJS0G09fDX/exA6WGPLfLGMMZyxpIZoXFNcSwm32DBmH2LzDY01vrFn1IXXMo1
+# 18Jdya9VxTg68XGvNifrMimJwc+t54fm+JDEBfJSzCh4Vj7nR5Zr5IkmoZUVc6ez
+# bH46Vm9d/w1oT+m/ecHzKIlT1euEdK7Ib1UylgQ74AvPomN+mRT5slJw6DoYo2Wf
+# hgtnqvKBiPMsnSGXtu4ZgpyGHXrUhxZ4LluiUzZVhmFgZLtLoUtU0RDDJqqmgWsq
+# y+z2+tg82l6HFI446ScD7DWZPeZmS1rGnyiukNE9UQGipxzmo/UWUukp7q6Uhg1/
+# P30iBwvkvD93jqwNVDV7B76A0O5GeZM+Tjcnq3Lpjv34fTqg5km4Zh5NT42hqYtg
+# zzba3ue9HdGqY4x0reWO1CUbA/K4DkkErxc=
 # SIG # End signature block

@@ -34,6 +34,9 @@ function Get-vlRootCertificateInstallationCheck {
         // when the "Root" store is initially protected.
         #define CERT_PROT_ROOT_INHIBIT_ADD_AT_INIT_FLAG     0x2
         #>
+
+      $riskScore = 80
+
       # check if HKLM\SOFTWARE\Policies\Microsoft\SystemCertificates\Root\ProtectedRoots - Flags (REG_DWORD) - 1
       $protectedRoots = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft\SystemCertificates\Root\ProtectedRoots" -Value "Flags"
 
@@ -42,14 +45,14 @@ function Get-vlRootCertificateInstallationCheck {
             Enabled = $false
          }
          # Root certificate installation is disabled
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             Enabled = $true
          }
          # Root certificate installation is enabled
-         return New-vlResultObject -result $result -score 2
+         return New-vlResultObject -result $result -score 2 -riskScore $riskScore
       }
    }
    catch {
@@ -75,6 +78,8 @@ function Get-vlAutoCertificateUpdateCheck {
     #>
 
    try {
+      $riskScore = 80
+
       #EnableDisallowedCertAutoUpdate
       #RootDirUrl
       # check if 'HKLM:\Software\Policies\Microsoft\SystemCertificates\AuthRoot' -Name DisableRootAutoUpdate is set to 1
@@ -85,14 +90,14 @@ function Get-vlAutoCertificateUpdateCheck {
             Enabled = $false
          }
          # Updates are disabled
-         return New-vlResultObject -result $result  -score 2
+         return New-vlResultObject -result $result  -score 2 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             Enabled = $true
          }
          # Updates are enabled
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
    }
    catch {
@@ -117,6 +122,7 @@ function Get-vlExpiredCertificateCheck {
 
    try {
       $score = 10
+      $riskScore = 20
 
       $certs = Get-ChildItem -Path Cert:\LocalMachine -Recurse
       $expCets = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and $_.NotAfter -lt (Get-Date) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
@@ -161,7 +167,7 @@ function Get-vlExpiredCertificateCheck {
          willExpire60 = $willExpire60
       }
       # Updates are enabled
-      return New-vlResultObject -result $result -score $score
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject($_)
@@ -434,6 +440,7 @@ function Get-vlGetCTLCheck {
 
    try {
       $score = 10
+      $riskScore = 70
 
       #Load Stl
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
@@ -460,7 +467,7 @@ function Get-vlGetCTLCheck {
          $score -= 5
       }
 
-      return New-vlResultObject -result $result -score $score
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject -context $_
@@ -481,6 +488,7 @@ function Get-vlCheckSyncTimes {
     #>
 
    $score = 10
+   $riskScore = 50
 
    try {
       $lastCTLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "LastSyncTime" # Gets the last time the AuthRoot.stl file was synced
@@ -504,7 +512,7 @@ function Get-vlCheckSyncTimes {
          PRL = Get-vlTimeString -time $lastPRLSyncTime
       }
 
-      return New-vlResultObject -result $result -score $score
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject -context $_
@@ -540,7 +548,7 @@ function Get-vlCertificateCheck {
          Description  = "Checks if root certificates can be installed by users."
          Score        = $protectedRoots.Score
          ResultData   = $protectedRoots.Result
-         RiskScore    = 80
+         RiskScore    = $protectedRoots.RiskScore
          ErrorCode    = $protectedRoots.ErrorCode
          ErrorMessage = $protectedRoots.ErrorMessage
       }
@@ -554,7 +562,7 @@ function Get-vlCertificateCheck {
          Description  = "Checks if there are expired certificates installed."
          Score        = $protectedRoots.Score
          ResultData   = $protectedRoots.Result
-         RiskScore    = 20
+         RiskScore    = $protectedRoots.RiskScore
          ErrorCode    = $protectedRoots.ErrorCode
          ErrorMessage = $protectedRoots.ErrorMessage
       }
@@ -568,7 +576,7 @@ function Get-vlCertificateCheck {
          Description  = "Checks if automatic certificate updating is enabled."
          Score        = $autoCertUpdateCheck.Score
          ResultData   = $autoCertUpdateCheck.Result
-         RiskScore    = 80
+         RiskScore    = $autoCertUpdateCheck.RiskScore
          ErrorCode    = $autoCertUpdateCheck.ErrorCode
          ErrorMessage = $autoCertUpdateCheck.ErrorMessage
       }
@@ -581,7 +589,7 @@ function Get-vlCertificateCheck {
          Description  = "Checks when the certificates were last synchronized."
          Score        = $lastSync.Score
          ResultData   = $lastSync.Result
-         RiskScore    = 50
+         RiskScore    = $lastSync.RiskScore
          ErrorCode    = $lastSync.ErrorCode
          ErrorMessage = $lastSync.ErrorMessage
       }
@@ -594,7 +602,7 @@ function Get-vlCertificateCheck {
          Description  = "Checks if there are unknown certificates installed within the trusted root certificate store."
          Score        = $ctlCheck.Score
          ResultData   = $ctlCheck.Result
-         RiskScore    = 70
+         RiskScore    = $ctlCheck.RiskScore
          ErrorCode    = $ctlCheck.ErrorCode
          ErrorMessage = $ctlCheck.ErrorMessage
       }
@@ -610,8 +618,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAxw4bbTlkiicdk
-# ZveB3TncwdS1REUfECtDbe3D6rRzVKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAJdX944Z4wGBHK
+# 6p/iravRtBU9Emcl4YjMWgASsEgUoaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -688,17 +696,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgJafZ1bqMOwzT
-# iI8fUwjdrT65u9BekiZGHuh8cV358QAwDQYJKoZIhvcNAQEBBQAEggIAuKIqvXG7
-# KIaV/VGa7WQBeEjVVAd+4OFl9iVOJqCDU0AnP66aJovxuglQnwPPB2jy0thCAVf7
-# v6Kv1OsNsn+FCfVMHffJlQJHGrgNxYe+nwMb94B0L7/2QtsfXn4Bso8qZK1hcQtn
-# vOy1Jtjy8sKfSdcCO+ff3r2mRUKKEZEWcVGaWtH4sAPYbeUbMb7KsY68jcKEsrbg
-# Uj7HOrkA+m8skQbjfOzXTQZhWzd4oXpQ8MZE90gURq/KvWRWaswPIQXJhTeUoFFF
-# 2b8jQ4MHqwWz/1dYpBV00Cv+PU5hIR/o55zf8UfIZ1Cf4jLuQV5coOysI6855SyD
-# 8T/qK9QNZP6L8ShGw25Iy6ikbVISLNdYNUDr+QgWvTY8exY3wxNdnLgdyc1stqb4
-# GVKqsYVfj4PoXZBzbRW1lEz84Z+9lDk5Pcgz1BH9+33q6bfkqTCWc19lYszKcQJE
-# f2PNxkdgFwCQMVTE8CR4y+ZnTt0gCWO/+eH/ID+mPmD3o//wgv2PWChDoDzYji91
-# 4k8iSemrxP5g+u/VVa+lsBNYRv5RU9VTh0AIY8GsKGNtJZs9kLmAHVVF7S89HiBp
-# jRVPQ3jUsWQUwZLWhLnsTBAsZITmccE453Ew/cuv3cs4kILGqari8+Wa+UHi7Z9c
-# 7EQxoHZSDVkpbn2D1/tjl3FN2cfFDlo1hs8=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgXU4vntP4X7z6
+# f80pVUyCjqDOxy4NukvCQCmuFFHz9VEwDQYJKoZIhvcNAQEBBQAEggIAMx40z8wS
+# 62Q1UYzgsODvtwJozLWcpQzLNvIXMC7kI9vMYj1vYEYf/EiH7wnbSP8SQ0KY/DXX
+# 3Ymm3tbynZNdtHZi3tCf1AL9OcDUzTaQ/8lskdV/oNQj//Qet4wxgA/9mmdUKe/i
+# VNnjAqJkhWtu6kvRCr8ieF0fYzxv7weWwLxTiWXBpXlluZUZ7IdQeJYKkI3VSEE8
+# jYwCr85opvqnj4FHGcSyMJ6rNyWsqEn6LWUl8YHRf8lZbmeHniwF3VCBP6ChLGVF
+# dYhsI36UdeMWbXNItRwoT2dB+5deJ5+1bLb+an2QhbLMPRnnSN2OzBegz45RakVd
+# 4LGNlzsGB12m/Pk+wIsBCJafSB6rNFwc9Ll85MmpqXycckporLjzijjvDiv1xGNx
+# AKP4O7QpvXyzliUzBExn8N8iF/Zp/urDAEENzlT/EDuGIFokvUEK5xdcwl3/Omyd
+# fK6w7NYc13krEmuYeHLqkizhFS89Ols8Zl4iq84hP7PpdzI9bJvpVxq9cRGSRKMP
+# rbJra8uAJPz7gTh1uC0hNHz8t4b12lPdnC3SOlgmT+XSAWRASCbFE9Rkjf/RdBqP
+# csQww2j7r26/Blet1Bd7CFN6DBCw3vlqj5x4dkLcheEJwT60wHpnVmU7EAz178dL
+# QV5fXhm9BH7b2KPNpHvuSWHznlpO9ZRoulA=
 # SIG # End signature block

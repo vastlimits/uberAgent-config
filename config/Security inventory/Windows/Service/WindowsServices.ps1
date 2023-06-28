@@ -21,6 +21,8 @@ function Get-vlServiceLocations {
    )
 
    process {
+      $riskScore = 100
+
       try {
          $result = @()
          Get-vlRegSubkeys -Hive HKLM -Path 'SYSTEM\CurrentControlSet\Services' | Where-Object { $_.ImagePath } | ForEach-Object -process {
@@ -37,11 +39,11 @@ function Get-vlServiceLocations {
 
          if (-not $result) {
             # No services outside common locations found
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
          else {
             # Services outside common location found
-            return New-vlResultObject -result $result -score 1
+            return New-vlResultObject -result $result -score 1 -riskScore $riskScore
          }
       }
       catch {
@@ -77,6 +79,8 @@ function Get-vlServiceDLLLocations {
    )
 
    process {
+      $riskScore = 90
+
       try {
          $result = @()
          Get-ItemProperty hklm:\SYSTEM\CurrentControlSet\Services\*\Parameters | Where-Object { $_.servicedll } | ForEach-Object -process {
@@ -95,11 +99,11 @@ function Get-vlServiceDLLLocations {
 
          if (-not $result) {
             # No service.dll file outside common locations found
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
          else {
             # Service.dll file outside common location found
-            return New-vlResultObject -result $result -score 1
+            return New-vlResultObject -result $result -score 1 -riskScore $riskScore
          }
       }
       catch {
@@ -144,7 +148,7 @@ function Get-vlWindowsServicesCheck {
          Description  = "Checks whether services are running in uncommon locations"
          Score        = $ServiceLocations.Score
          ResultData   = $ServiceLocations.Result
-         RiskScore    = 100
+         RiskScore    = $ServiceLocations.RiskScore
          ErrorCode    = $ServiceLocations.ErrorCode
          ErrorMessage = $ServiceLocations.ErrorMessage
       }
@@ -158,7 +162,7 @@ function Get-vlWindowsServicesCheck {
          Description  = "Checks whether services use service.dll in uncommon locations"
          Score        = $ServiceDLLLocations.Score
          ResultData   = $ServiceDLLLocations.Result
-         RiskScore    = 90
+         RiskScore    = $ServiceDLLLocations.RiskScore
          ErrorCode    = $ServiceDLLLocations.ErrorCode
          ErrorMessage = $ServiceDLLLocations.ErrorMessage
       }
@@ -174,8 +178,8 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCMX9/olAicdavJ
-# vEATKfUsVfevMZX5ygCkRTLq8aqyaKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDbhwZbFvdCTHz1
+# +fdSIBT5jEw50y4HzMct9A6oh/1YkqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -252,17 +256,17 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgCum20FAdJYy0
-# ON7tGYAGeJp7k6SjWixWStuFjiggf4gwDQYJKoZIhvcNAQEBBQAEggIA2+lJDA35
-# 0BY7Cb0orXzzSedqStjWoYN/amBkXj8KUVWiSKOjRQtgihHyUfrKAz3HZ90G2YKD
-# HNeGuM650FO2R8z7DFngCz9lw5PyaZcjWAjabWsVRWpqdAWHQQDayGJs87dTGysD
-# dy1v6YyW4pmJUVwj+adhtJ1OmOV9e8c/BJqhRrJqkOTWB7O9N+O8dsNIrzSOT/Tp
-# DIM8ctmougSa76M6muIkLSZWl2QlcGrk12Osezq38+ziwH2J6hZAIARC3zHLOwYo
-# rZ87el8jSPqUQSN6Fo53BltsQ0VsQ/hWzG8CWihIW0Z3KhbI74yFWZDyW7W/ZzqW
-# B6o61Fpb7o73Rfxm/QQBvQZqGtVld8hnlS4GXJjuHfShrQtJpNNbhQwAJDP/c/mH
-# 9KvCc5BOOwe37t2ksQBhQpdAYo90HSbU0qrwMEl15AQeyD6zCh5GpF+j8+q78P15
-# lFMWgqqwsM4daMdrcykUQMLEpVcS4lDy1rTjf59MiRa717deN09Z4KnLyO66CP3z
-# K9Eb+b84KTNMqSb8OAP9yAJjfZqMR6nTmzyKL+Drz1lbXBn7cS6j7TW7z5ni09u4
-# Wg2YTVXOQozc/MHlDC3rECsiRk6uzwEZvJTHsKtEGzIEBSRwC4ZlGZoEkouaavYo
-# 24dwbDvjVWGB3lBjtRYnOwFKqfvuq8LUOZk=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQggeBW2VLm3Gim
+# Fp+z4tjVhxMzvZbUxse5lyXMT/Dcn/AwDQYJKoZIhvcNAQEBBQAEggIA5rE1RYcy
+# 7cXp59epMkal5/oPIzCTCJHaYlt1kfDdulaft/OG+FVPTW3pa7gc0nNHGUQdN0iK
+# 0ph5AkRjWiU49bQx/aFOFzzoENq29MuTeclXFRlQRghDrEMzw3JWQosZ7ZU7EwKD
+# CZ7oQX86Kqtjnh9vM7Eac2+N2SQtNlEcyZfeUU5aHmSDOeiNN5EumfYtYNycD8EY
+# FXuE+FRcD2egE6q6CnpTG3VcBV2WSeXQ7KpiZebpl9npY7jyTlQpMs6Y07ar9tb4
+# kBthz+8X57b3yJIyHnDpxf4dWh81l0/9mk/gXgixslNcR/ri9EJ7y201tsmf7Go9
+# 9rwSa2LRBjuGCn3fBjB7yO8clfNlIl6A52A+9v9Kmdlhwe8g5wy5Efstd7G6D0Qz
+# oNe6XJns1ptIxETFIvFLX3CAJklpgnOOtJoXtBLQiPt+EW2mrG2Eqbg/P4aMIofh
+# OHzwzwEI5emtuMJQ/0CErbO4+/kyfFqWTRIHOQSd+SmPWoo+BQDktKTaRFNmEHqU
+# QBQL7PyVwEAYYsCq0OJ2A170IUiiDXl5x6nl8w+LnxloIA01j/u9h0cCXR9sRKxR
+# gdAy9YdHMwbgbleEAKO7ITcZ0W7y01bqFnZh9gudVNdHoCFsy5/PvsikMrrsbJuL
+# mTfnekyfHhlNDdxst+46jYJIewRfM4dz0Xk=
 # SIG # End signature block

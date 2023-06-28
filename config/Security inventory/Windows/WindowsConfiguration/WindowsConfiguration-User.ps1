@@ -68,6 +68,7 @@ function Get-CheckHTAEnabled {
    try {
       $startProc = ""
       $score = 10
+      $riskScore = 80
 
       #$htaExecuteStatus = Run-vlHtaCode $htacode
       $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "mshta.exe"
@@ -132,7 +133,7 @@ function Get-WindowsConfigurationCheck {
          Description  = "Checks if HTA execution is enabled for the current user."
          Score        = $checkHtaEnabled.Score
          ResultData   = $checkHtaEnabled.Result
-         RiskScore    = 80
+         RiskScore    = $checkHtaEnabled.RiskScore
          ErrorCode    = $checkHtaEnabled.ErrorCode
          ErrorMessage = $checkHtaEnabled.ErrorMessage
       }
@@ -148,8 +149,8 @@ Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA+U2ZKV649N37c
-# NuHf2FGJSlu35qksRF6O+e2cM+tIzqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAHfTnUZuWtxmL9
+# 9kwvY162+L8aerHaL47C90hLqp/G26CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -226,17 +227,17 @@ Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgeSwqeTN0j1gQ
-# ihgMaoeRpoG4vtRo0p2YXQ2WdGl/XycwDQYJKoZIhvcNAQEBBQAEggIASdRGhQKx
-# 2B4LdMA/QA8ec7ySG9t6XuEi4xd+5ynNGLZD8UGCsoaYRGLr514mniptQn/rPEXI
-# b/Bh3CneCnmw2KgDZ6JRynnH5Ilafb8XcCDjwBeUJOImYVvIqD8Ku7DpN+1viq7+
-# IelL3b4FPpU/V+Rbt+xGRNqEvDWKVM4h/6qQywUNjrWSjHCmQU793bQSTe5e59kX
-# lKd9sV16YpRH7Lw4bViEobleipks4drlYTVe3lT2rUow/rNMe/LeijALRcSZOfL1
-# oywkjvMmh4YDX1AwLRYivIcJ8JGBgi58Rduy/K4hXHHKxQ7rOq+0xKDmI5C3bezL
-# 5Lr6z3wCyx8OAvWb4badpFY4J3KI4To/hp8oFcshfqTjGXPzZ1qhWrUjkQiqB4Ja
-# 4aYJSebsNDBGqsApe+3MRdWyEY3XfLhXvU+a4Wuyyjt7KjIBCzxVyh8m92mrey21
-# tfh24Pv7mY8YeTcn/9r4lnIHAG3/e3Sg+p1L7viTv4PGUC8YjTtHvml0O2QTXVB8
-# NAiHD3utfhXYD+x5FK+kUIAESZdiwm/9SjDysgJLefj/KPTbgm0IygxHO0kck31C
-# RvvF3KXJPbKyJ/rOfMsQj9d7CynO4yc9Bq09OFHi2dCK2BeK8D8vc0il3un2Z/Eh
-# ZATH857/zbx5cVYQT0/uW2gv9dU4OHEebvo=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQglWk9THhj9S5Y
+# qN/x1icu0PNcsMIZzTXMD9Q4aCBy5ycwDQYJKoZIhvcNAQEBBQAEggIAOiSyxcRi
+# P7pM7SwLTMOUFg05u/BaJEiytPQ9HeAy29uXXBNj/MEL9oeWGIIzSiznKLiDAZFV
+# EPdBOYHuuzKKrnkkUzdhBNTpi+lcfOztWDPxUvXHvH032aaE+eBBkajXCXwHJdGK
+# Z9J6bHY7UDYcLRAXgK6zXmNuK+7QyZjqc0rtaIeialg7mall/5+wNyaagp2XW61T
+# dPdJtJjMxTspl9sVB6qXV7MOyLxz87EdhbeWkGFuisdpPWvojVw+nl0jmZ1W/1Lv
+# eRO50si7AHrnh5joCi+02Dm5iGSywOu3AgxCuhp2ewvD3c5/WwSzmUKwvcm1gdy5
+# SmNILn1Da73dq+c/5JJAv8c7HQEcis+MNupxm38+9hq8aOnOy44LW8ZpOUbmz+Vp
+# 5QDT6VG2PvHbd7dHHXMgb4iHKgh8TkTRrtPiL9Ld5VyDdemA1RbsJkyOZWBTPWJv
+# StmQPzQHQ+VKDwPTiWoGR99UJ2Pf1564BKDlPQ1lyVD8Ro8rMak6jhNtscBLW9sf
+# k4ylScrX7Y0oXqBpmXW69RY60ThdZqFzGRaliQ3rwIUkO6Vtxt0oW8530PVJY0hk
+# F8mS3KrdiqyP+1ctbD/eCmz01KsUeTT7QYr+w17r8dOGpCanndzPjQmmeD5TPCaW
+# 92lYrYzUZCenbIOsjhBDkquyKk4VQSIZECY=
 # SIG # End signature block

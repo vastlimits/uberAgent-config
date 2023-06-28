@@ -36,6 +36,17 @@ function Get-vlGetLatestOfficeVersion {
 }
 
 function Get-vlMacroConfig {
+   <#
+    .SYNOPSIS
+         Gets the macro configuration for the installed MS Office products
+    .DESCRIPTION
+         Gets the macro configuration for the installed MS Office productse
+    .OUTPUTS
+         A [psobject] containing the macro configuration for the installed MS Office products
+    .EXAMPLE
+        Get-vlMacroConfig
+    #>
+
    $results = @{}
    $version = Get-vlGetLatestOfficeVersion
    $OfficeApplications = "Word", "Excel", "PowerPoint", "Outlook", "MS Project", "Visio", "Access", "Publisher"
@@ -68,7 +79,20 @@ function Get-vlMacroConfig {
 }
 
 function Get-vlIsVBADisabled {
+   <#
+    .SYNOPSIS
+         Check if VBA is disabled for the installed MS Office products
+    .DESCRIPTION
+         Check if VBA is disabled for the installed MS Office products
+    .OUTPUTS
+         A [psobject] Disabled = true if VBA is disabled
+    .EXAMPLE
+        Get-vlIsVBADisabled
+    #>
+
    process {
+      $riskScore = 70
+
       try {
          $latestVersion = Get-vlGetLatestOfficeVersion
          $macroConfig = Get-vlMacroConfig
@@ -82,14 +106,14 @@ function Get-vlIsVBADisabled {
                   Disabled = $true
                }
 
-               return New-vlResultObject -Score 10 -Result $result
+               return New-vlResultObject -Score 10 -Result $result -riskScore $riskScore
             }
             else {
                $result = [PSCustomObject]@{
                   Disabled = $false
                }
 
-               return New-vlResultObject -Score 3 -Result $result
+               return New-vlResultObject -Score 3 -Result $result -riskScore $riskScore
             }
          }
       }
@@ -131,7 +155,7 @@ function Get-vlMSOfficeCheck {
          Description  = "Checks if VBA is disabled in MS Office."
          Score        = $vbaDisabled.Score
          ResultData   = $vbaDisabled.Result
-         RiskScore    = 70
+         RiskScore    = $vbaDisabled.RiskScore
          ErrorCode    = $vbaDisabled.ErrorCode
          ErrorMessage = $vbaDisabled.ErrorMessage
       }
@@ -148,8 +172,8 @@ Write-Output (Get-vlMSOfficeCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC+nDG6RliNrW8X
-# 2saW6YBxFTvQKQMj+JRwI4LfRBAUjKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA6H5svt0aXAhSz
+# O/nXr/Bdu2ysv0O0WuVivM7CjuvKUaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -226,17 +250,17 @@ Write-Output (Get-vlMSOfficeCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgh/tFFeP5Mj0V
-# 2SPm28tQ9OEhttkP48ojQTmyRZULqmEwDQYJKoZIhvcNAQEBBQAEggIA4kmkPkzw
-# j1guWv+ZsoiVR1Fj7glnmq0u1KIIMR2qewDz2zQbg16/m/CLdxY4Klz2bN8C0OyS
-# yZcsPyfnEoyUopGvodeutwC65lZ3bJEiGi+4t+XmenmFfK+C5ioBb4m6715vFn/w
-# UOQRCGfUxUDEJz2JTfAtGeZHItO1g17+ln+v9qsGEF2g7jSqFsbiBbavf4ZgrwiO
-# 0j1DfCNpC1jGRbzEXUnNTwVWNgGy9u88/swuxY4FnbFYM+SaFCCV65MLiJAC/xD5
-# yVSNgZl5+p8BXY8XudTynOAO+QaxEwWOBlwpkHsnYmsVINF/J9uJoQ1yhtQbtsU9
-# oARkDu/AL+2etTZMQcr4GcJHU2IFt0z1NcEr6hW4KJMCzM91biwGb6LUlkOm6Xw8
-# I9ribCZuQvo83RZ67yAmewGU7W3BRw3Vl6HU22xVwhTIcI1H+sIlUPoXfJI4oav7
-# 55MSfJQUxnntrOsXIT0AyD7wdTykIIJ8oaNem6SZwa6Q6etfikwEtNPZ9hnRMOwc
-# OT32J0MZF+3QXTtB8TOfPm6iH82UvecytUhdVKrxwvOXxqzIS8+DsWQKMmSRIatw
-# nu3nxH5ctKJbx9HLqBwkne6H7vVFRlm9EakxDRRr2InTTZ4vbyevrMG4ZFf3Rnfb
-# 3MLJ65I3nyKxprWK6LUKfontJle/PDhpsfk=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgv8j5YGLvqHwH
+# E+VsHNN0yc0e1Gl8kMo5DJvi3Mk5IYUwDQYJKoZIhvcNAQEBBQAEggIAMXaYUox5
+# Al9vfx8oX4KG7Lp7prVVjWn3jqd6UJ/2aMRV9BICJcyFOo/cV80SyRDK2jO3g6WL
+# wPxxYz2nsdNMECG48d0tEV7HDUW1uWAUoaq/LUA8x2eERhgGKnguTRk65uxdmGK1
+# MN1M+fp2oyRxA6c4BS+HL2k5J8cBi11LDAbDCg7zF3IUxFKKyR6uwxSK4D+XmgDq
+# UIr+B6x0kT2Bc4R90yy3z38km+UkaUWPYye9dtOkdWG3GfhhIPlVL/ZDN0hkFDpp
+# Iu4AX7ezS2ZLPCH+WE18sRrsyMMhsinTc8YRxBBRo2ZyFLZzZk9Z4x93KG9y4el1
+# IzC8pW3THQLx9xHQrDXQNjaRnu18EAVY9UXd72Z+a0dgx6aHOsVzkt1VuMhefZiI
+# StD59W4lIzBu3L6xPD/MOiqBBe3BcxN1hmm/h6/V314pT4W3EvZtV9R7FxK3IDdJ
+# Ms763FYZlBGBusQEEsN42bg2Hg6unrk0hkwxQxWFFEsFPM9VXVvBu2ZsjOnpOluG
+# eozUBrS/HFl26W9v7UnoiaDntOwXXwTlRmWHvX/5ZWgIghx1/11/BT/SQf1Y+GCz
+# InGfGBY/2nMChFtXpEFshJ2G4sXNo2W/NrhG/FpwMOCcoLrDppG0pIvYmisgzljc
+# DwoN2Coo8B8PsYqiyZv9i7TqxO6W5DkTsYQ=
 # SIG # End signature block

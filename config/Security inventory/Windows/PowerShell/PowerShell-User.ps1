@@ -91,183 +91,6 @@ function Get-vlPowerShellExecutionPolicy {
 
 }
 
-Function Get-vlPowerShellLoggingTranscriptionStatus {
-   <#
-    .SYNOPSIS
-        Checks the current transcription logging status
-    .DESCRIPTION
-        Checks the current transcription logging status by checking the registry and group policy
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A [psobject] containing the current transcription logging status
-    .EXAMPLE
-        Get-vlPowerShellLoggingTranscriptionStatus
-    #>
-
-   $result = $false
-
-   try {
-      $transcription = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\PowerShell\Transcription" -Value "EnableTranscripting" -IncludePolicies $true
-      if ( $transcription -eq 1) {
-         $result = $true
-      }
-   }
-   catch {
-
-   }
-
-   return $result
-}
-
-Function Get-vlPowerShellLoggingScriptBlockStatus {
-   <#
-    .SYNOPSIS
-        Checks the current script block logging status
-    .DESCRIPTION
-        Checks the current script block logging status by checking the registry and group policy
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A [psobject] containing the current script block logging status
-    .EXAMPLE
-        Get-vlPowerShellLoggingScriptBlockStatus
-    #>
-
-
-   $result = $false
-
-   try {
-      $scriptBlockLogging = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Value "EnableScriptBlockLogging" -IncludePolicies $true
-      if ($scriptBlockLogging -eq 1) {
-         $result = $true
-      }
-   }
-   catch {
-
-   }
-
-   return $result
-}
-
-Function Get-vlPowerShellLoggingModuleLogging {
-   <#
-    .SYNOPSIS
-        Checks the current script module logging status
-    .DESCRIPTION
-        Checks the current script module logging status by checking the registry and group policy
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A [psobject] containing the current script block logging status
-    .EXAMPLE
-        Get-vlPowerShellLoggingModuleLogging
-    #>
-
-   $result = $false
-
-   try {
-      $enableModuleLogging = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\PowerShell\ModuleLogging" -Value "EnableModuleLogging" -IncludePolicies $true
-      if ($enableModuleLogging -eq 1) {
-         $result = $true
-      }
-   }
-   catch {
-
-   }
-
-   return $result
-}
-
-function Get-vlPowerShellLogging {
-   <#
-    .SYNOPSIS
-        Checks the current PowerShell logging settings
-    .DESCRIPTION
-        Checks the current PowerShell logging settings by reading the registry
-    .LINK
-        https://adamtheautomator.com/powershell-logging-2/
-        https://www.splunk.com/en_us/blog/security/hunting-for-malicious-powershell-using-script-block-logging.html
-    .OUTPUTS
-        A [psobject] containing the current PowerShell logging settings
-    .EXAMPLE
-        Get-vlPowerShellLogging
-    #>
-
-   param ()
-
-   process {
-      try {
-         $transcriptionStatus = Get-vlPowerShellLoggingTranscriptionStatus
-         $scriptBlockStatus = Get-vlPowerShellLoggingScriptBlockStatus
-         $moduleLoggingStatus = Get-vlPowerShellLoggingModuleLogging
-
-         $score = 10
-         $result = [PSCustomObject]@{
-            Transcription = $transcriptionStatus
-            ScriptBlock   = $scriptBlockStatus
-            ModuleLogging = $moduleLoggingStatus
-         }
-
-         if (($transcriptionStatus -eq $false) -and ($scriptBlockStatus -eq $false) -and ($moduleLoggingStatus -eq $false)) {
-            $score = 8
-         }
-         elseif (($transcriptionStatus -eq $true ) -and ($scriptBlockStatus -eq $true ) -and ($moduleLoggingStatus -eq $true )) {
-            $score = 10
-         }
-         else {
-            $score = 9
-         }
-
-         return New-vlResultObject -result $result -score $score
-      }
-      catch {
-
-         return New-vlErrorObject($_)
-      }
-      finally {
-
-      }
-   }
-
-}
-
-Function Get-vlJEACheck {
-   <#
-    .SYNOPSIS
-        Checks if Just Enough Administration (JEA) is enabled
-    .DESCRIPTION
-        Checks if Just Enough Administration (JEA) is enabled
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        Returns true if JEA is enabled, false otherwise
-    .EXAMPLE
-        Get-vlJEACheck
-    #>
-
-   param ()
-
-   process {
-      # check if WinRM service is running
-      $winrm = Get-Service -Name WinRM
-
-      if ($winrm.Status -ne "Running") {
-         return $false
-      }
-
-      # check if there are any JEA sessions
-      $jeaSessions = Get-PSSessionConfiguration | Where-Object { $_.RunAsVirtualAccount -eq $true }
-      if ($jeaSessions.Count -eq 0) {
-         return $false
-      }
-      else {
-         return $true
-      }
-   }
-}
-
-
 function Get-vlPowerShellCheck {
    #Start-Sleep -Seconds 15
    <#
@@ -318,8 +141,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC+KeTCWiVBWnUk
-# PgAjmoEP9BmsitCzx0VLRUZi9OlJMqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDPU0LEcn14eKFX
+# QKjpX3tQiPghF3cBOVN17141QJb2W6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -396,17 +219,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgJCKiUt/fFrCP
-# rxT0EyK63Pdcsxu3snC1ebLT8Emqi9EwDQYJKoZIhvcNAQEBBQAEggIA157Kh98R
-# Jub597muxvrx3Xwe38lYZKrh1epTvLlzkIAo6yIsz0X7pr1kzWJ5dzDagzHW9Vmo
-# NgG9aTzpZGtw5ba5wRLGfcngDkpJek4WuF0Ppf4b0ruqw5OvXVj9fwLCiLF6XbgM
-# jxR1RJEiauEww7OCm3m+xa1KygXUxKo4UH+7tsHJSXTyGkJZEH8fXMCvONmc5p9R
-# pUT/JdLtoaOkQACrP/Iq67hbKCoMMEyVGOQqFmA9ogdbEtnTRJ90c2GPig3WT9Pm
-# tSOmtNVYi3YYk9slyilZuHnH0SV/3LjnkJPlTDxJG/o3Y97xyP1d2qh/3V1Janxp
-# ddoDDENqgVnJ2K5ULM0uMreX9S+3X//bQkmdaBPeumnor2D9JElNY6g/NAjpXnsm
-# vQfRxsMufA9UWN0YUB9Ai9YM8ulM2nottkExA0v9Tsq+RIfv86f/3kpsYsHu7WsP
-# kfAxVSHanprtqWG2xYw4hJd4Wi94kckrObNI3d0wNDP42E9nHknfov+pZpVCeEzy
-# QqDVqPSB/ghueUXVc+zNmjhfrjpAdX1lQB2awGtiOAoelwBJBp6HA4R1n/nmgMw7
-# FurHIT2bGIfnUV0739Sm9jI/a5wjKFDAbF1BlDAPFF6c85IUvJENtsZRCPxD7LDV
-# Z+8JvFSRAy3zztcZ9Bv/Os6WIkBD7aVk0Ao=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg/oTdCPG+RSqc
+# ztmFJBeKXQoW5OA5dm+RSzuEseBd0RkwDQYJKoZIhvcNAQEBBQAEggIAuh/sxvXY
+# 0RzmdTgzQh1BX5PBQVeBi+Q+IfDgZC6Ugd3ygWJevPfBphxWgepLirMEQwFajlW2
+# p+vj8xOnW/TPMG7l0Ck3UG7gty0SGeKhzkNGotXR1blIgyXtjuN/4pSP7tdazREj
+# 644DydJmb2hYkuFufThbrllOPNAZxO2ZiezZYeY64ZvauF6gWE/6kxxseJtitcTQ
+# Ap4goNYT0YUl0Zx3R/88xD1e/4dEWS+RdfmvN+e/Yz+JEjANFwSkjM8xZsO3cI1B
+# LbUMO8BJ2W+8NSKIk2W3aV+OoZx7k7VrUp2hIwgfHlGPtmTdkjkYHketU4+Dwwbi
+# G2WZBUxmzVWOO5wpe2fe558Sb8zuNUuhRukiQcPIiXUZomfcg0NjIbwub9MPXbwj
+# YEsj268DcGsBDFwEWyxXrihWDgCw8auGK8PiG58YznoktsOAfoZKRvyN9uuPnAoP
+# vQW32SxRhrZaNFZj7XUJox7GUMzg2u/2DzAADaO0N4SFvBgp8hGEw7lYbWFjOL71
+# mrHfVLob13M1cKyldyQDfSPJAKsoJii3nQlZtbE+vCrUVKHwsx4RAzQxnB+H1oqx
+# hDQDO041UqLFkPNLR1p3Jd6w+jMOmEuE6DUA/XKEsCcfQhOhxSZbcXwH3CUhH/z/
+# YuURzCMCvZYvJx7Qlkc+kwQraik4gEUWgLs=
 # SIG # End signature block

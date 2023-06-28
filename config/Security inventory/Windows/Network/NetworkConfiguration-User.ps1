@@ -19,6 +19,7 @@ function Get-vlNetworkConfigurationSSLTLSUser {
    #>
 
    try {
+      $riskScore = 40
 
       # 10240 = TLS 1.2 & TLS 1.3
       # 8192  = TLS 1.3
@@ -32,14 +33,14 @@ function Get-vlNetworkConfigurationSSLTLSUser {
             SecureProtocolsOnly = $true
          }
 
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             SecureProtocolsOnly = $false
          }
 
-         return New-vlResultObject -result $result -score 4
+         return New-vlResultObject -result $result -score 4 -riskScore $riskScore
       }
    }
    catch {
@@ -77,7 +78,7 @@ function Get-vlNetworkConfigurationCheck {
          Description  = "Checks whether only secure protocols are used"
          Score        = $SSLTLS.Score
          ResultData   = $SSLTLS.Result
-         RiskScore    = 40
+         RiskScore    = $SSLTLS.RiskScore
          ErrorCode    = $SSLTLS.ErrorCode
          ErrorMessage = $SSLTLS.ErrorMessage
       }
@@ -94,8 +95,8 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCtN+7y60BjfJcY
-# cwoKyk7jkHi87KclEM9M7mfMU+uqAKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDyLk5QDDFov6Q+
+# MXCvhAcJeBnIRKr/9Qeq6TktM7A45KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -172,17 +173,17 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgTcehgQdd9KsR
-# 1QfzTL09QSqr9glCkXHp9w6YUsaH1tkwDQYJKoZIhvcNAQEBBQAEggIAC+9uCl5/
-# 4DyP+LtFd2Xg+bieZviV5kEtuEuVmizo/TUFV3HbSsiz+KSOyA4CwDGxY4Hcrz2B
-# pddqzcfN2LRppqTb/WtdXAe0sXu2xtdBuG4Ha/mEarG7xi+EsqzaHlBbXq9zAtc2
-# +F/uM0yUOR/oILLKwCaUVdBQTd/YsKwbzZsYDbM0WjpfAr3l6+Me1mtq7qaRgIco
-# 6xQsPJLmDr7KrwDq319mWBHXSVqzZyiL1MvpdY1htE838cZ1kx1iIIPYqU3jG+iZ
-# m0f4cz1yl10neiKc/2O3nGuSk0YdoQQv5IR7vPeJI4HeLLdOUV8eb55vbBeus7+h
-# NWrWW0d3RyDCmK3oso73dcQiB46yXfvy9BrwNiqV79DXIVGv8AWQiGfTrbcmE7SH
-# zA/NjS9KNQ9EgJYrfaQqaN0IkZawr5wPKm4oobG6+n658VMmOSQ2oUQvfIwQgxen
-# 6/ZN66HQE7SIQJW2SottFIcaHjo4ewfjwvxcJzc3462oNuXptXzr30W6wQhLe4KQ
-# fFcvHFoIxQoFXwmWATS1lr91hTaQr3LFl0oub5wRPjPLAdp27lm6AfL5W+oT+xs3
-# BgmMsVbu5298gpNL4Vf0hwZ3Jxo1AxsAkqnOg/ZFkrR7U2/VnKwHu5CUa9CRB1Y/
-# dp9aUR941JWyQ6CIlEfR4oZiRPw/4pOUpZI=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgO2Tp4qY1M0Rs
+# fv8XYdh1JJEGgcLdMnQJninnHr+dji4wDQYJKoZIhvcNAQEBBQAEggIAFska+c/7
+# 3dShVTg+4dr8FSE+5OO6QuvdLmW0+t83chH76lfuONvk3LEHDGoM3HhDaCeI6O7s
+# pUKpqw/6qpwtwTUATvF+NQQ7INsVQQryvqsek1dkk+USO+RHRncWuBcztNsN3YsC
+# q6XLjm4KhGnNZD5RzuIZDh4xX/jJwQTokcJ8TDe/WG/W7X+2mfNv9vupBxHyOl1x
+# oLbAX1YcVdiOTCP45W2MQyTPS9Bw5gRZyZ3oWeUyrVLnQDz9B9f+XHyVgKtUO+5l
+# Rb2gR6JD+1Uw0Prh9+n87EVUmVlm0VTe9DM51fRi5odh7SAAUnUfEiaieWr6Ctro
+# npywN4Medg80jMtXTw5Ho62GiV13OeWQIMBpX8et43SZKVVb2LMkKxbZPu4HxZYf
+# VS6hXeQM6z+KlQwj5HvN56uhuQAmxOUraWon/5OX6yyPbaTUTKOJxuq5pQ57afY1
+# Y+QTO2vu2nCxj61iE1/9nsj7lA+WVPmz3gpPAIv+BNgQxcksDgLFZ+0k6AoXfa4b
+# rwffXNoM2LDYo3ig/GTsTFUJ3UEX6qXzB7dLDZqNLSGTQaBeDIoEk3ciXBxIYDO2
+# m9fvgV6lcNg4tqKdc/3hTUiO7cUC6dyZeIsD+IQgLHYqAnqMoOuDQCmzxcaIdj+W
+# iTqcF7FZZsbX9fNwmDgGjiF0a2coixF2Klg=
 # SIG # End signature block

@@ -30,6 +30,6 @@ PSCUPolicy,PowerShell policy,Checks and evaluates the PowerShell Execution Polic
 Locations,Uncommon locations,Checks whether services are running in uncommon locations
 Service.dll,Uncommon locations of service.dll,Checks whether services use service.dll in uncommon locations
 WCBitlocker,WindowsConfiguration Bitlocker,Checks if Bitlocker is enabled on the system.
-WCComHijacking,WindowsConfiguration COM hijacking,Checks if COM is hijacked.
-WCTimeProvHijacking,WindowsConfiguration time provider hijacking,Checks if the time provider is hijacked.
+WCComHijacking,WindowsConfiguration COM hijacking,Checks if mmc.exe is set as the default program for .msc files
+WCTimeProvHijacking,WindowsConfiguration time provider hijacking,Checks if w32time.dll is set as the defalut time provider
 WCHta,WindowsConfiguration HTA,Checks if HTA execution is enabled for the current user.

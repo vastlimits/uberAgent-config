@@ -46,6 +46,7 @@ function Get-vlAntivirusStatus {
       try {
          $result = @()
          $score = 0
+         $riskScore = 100
 
          $instances = Get-MpComputerStatus
 
@@ -132,7 +133,7 @@ function Get-vlAntivirusStatus {
                   Defender = $defenderStatus
                }
             }
-            elseif($defenderStatus) {
+            elseif ($defenderStatus) {
                $result += [PSCustomObject]@{
                   Enabled  = $false
                   Name     = "Windows Defender"
@@ -140,13 +141,12 @@ function Get-vlAntivirusStatus {
                   Defender = $defenderStatus
                }
             }
-            else
-            {
+            else {
                return New-vlErrorObject -message "Status could not be determined because SecurityCenter2 is not available on Windows Server." -errorCode 1 -context $_
             }
          }
-
-         return New-vlResultObject -result $result -score $score
+         
+         return New-vlResultObject -result $result -score $score -riskScore $riskScore
       }
       catch {
          return New-vlErrorObject($_)
@@ -186,7 +186,7 @@ function Get-vlAntivirusCheck {
          Description  = "Checks if the antivirus is enabled and up to date."
          Score        = $avStatus.Score
          ResultData   = $avStatus.Result
-         RiskScore    = 100
+         RiskScore    = $avStatus.RiskScore
          ErrorCode    = $avStatus.ErrorCode
          ErrorMessage = $avStatus.ErrorMessage
       }
@@ -203,8 +203,8 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD4pp18+uipaQ5a
-# oLYB6t6jhz9r15GJqn9wiy+x9+Bz8KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDxPjrFsLVraFnH
+# agkq6C+zBB9jytOQ+O3mg1xlfGbTXKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -281,17 +281,17 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgc6B0eHaXw1Se
-# KeEEsXtpak0hcyv84tth59Ml8ostr2IwDQYJKoZIhvcNAQEBBQAEggIApflagxNg
-# rt6Yyedjz8vVID264QjWU2goCMRNWpAepcTmJDh7Jd2Xx52ccwJGatXUjM/5DTUH
-# +pAtugr3y5gWy/P/ZJzk4/wmqFiKn3Fl65LZhe0wRQ0ZvgGBmorm6T4uNn/rth+y
-# 5FFz3/eYcj1O1yJ6KS8gMncezkLrHeR7Iuf8rzCqwBULxaWZIGldEsXEaorYOzXr
-# 2XjqaIhaKuuedQKA90zbg41JX63nZ3K4qIz5kQ3CQx8cyLEzmXmdnOh/h8vCprox
-# RISgWXQRDvwhPVjcfwgFUcN35iAXuFtOYP0YMQAKDYCWnWLCv5uzFOd/QBM5Eh7+
-# aEDDqEM6TGfdJ4SLuz6ikTtT6ogipNw25xhPvhpsxRSOm7c58aAoo0wZrEbG1RAt
-# uFELneaXzCzRNG4pX7ycxYcjZvWkALcmjuEz3VVYwLjoMwvDAcagedh8xwxYne/9
-# BE6WUCgl9bqW9LsgWHbZI24aK+bi2+u/faOcYwyh9oH75umAUO8uRkoSMMW+9WDk
-# Tj7Gg9acP+LB7mEE6atD2cjvuftb5Zha40IZiHmmNPYOxHgdStKljVKOwZG5XFdq
-# uy5AZXinUXsdB4UnL31UfMbukD0muAYJ+Sc/QRwX2FVL/3GmUX7rxMzhCmAhIKDZ
-# RE3Jpu5Z7U0hfZl89+Ci+RObU3sKx9nq744=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgoO7m+DSNXoav
+# xmMeP8LjTRLW20MK5XLEv3B56WfbJh8wDQYJKoZIhvcNAQEBBQAEggIAraJ35lt7
+# BMyv+wz9b0bjyB6qNlwQ6UVeeFUVa+PFzIsAMl14Ehi4D5K+DAUXZtL339w7U0YT
+# MDu0MqdJxES11JakfbZHgN488Wikf58MyZ5hXZ/ycCtuqU6u83vehV67ytEZNkrj
+# 9atmOg5trT1k8DE0wSY6Sam69jVmlOEAwtdr9jS8tqgc5Et+64akfVQwfytE9wjx
+# 1zNcbTE3+wP5c4RgrOIe9doA/rhPjG2yWlxsvJPwWUrMNYV4YFODrahXp17cZG0y
+# uC914nP2EX9W65DetUd9VnFuWiCJUhI6UMNMc2Vc/N/GJkf8BnlyiEEsfbhXrW/U
+# peqvEOT6QO2NLJlmCc3K5zaASqJT6gz4MSDY74FwXG3IV4KEyp5ZdZ+Bo5HR/EFG
+# bF2oCuQ5pSR2ylVTUQICRHt2JCPOMbZ8WfypAnkIFxljRUvDjfKCe1eURR7g2tRd
+# lSLvkVct3e4xvY4yIr+EijOxskOD0k44+XuR+0rGMIdwuBkUNPG0S1qBolatIxyN
+# fKp/V4nJatGWv9889WpuhcYbbugXUYJXdSjB8Ib2yRWOKDmxmyKaGQ0PNGNKe68H
+# Grlos/tQQ27LVKhi20EfHmJfyTPZEaoT3Zzw1zifaZk7r/SOUtBaVkFJ6V5pVp16
+# eAGK4I0K53mQ/COSlwdm4g9JNe4fjYl4Mn0=
 # SIG # End signature block

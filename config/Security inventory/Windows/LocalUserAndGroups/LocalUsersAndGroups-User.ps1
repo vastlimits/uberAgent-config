@@ -43,6 +43,8 @@ function Get-vlIsLocalAdmin {
         Get-vlIsLocalAdmin
     #>
 
+   $riskScore = 70
+
    try {
       $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
 
@@ -51,17 +53,17 @@ function Get-vlIsLocalAdmin {
       if ($isLocalAdmin) {
          $result = [PSCustomObject]@{
             IsLocalAdmin = $true
-            CurrentUser = $currentUser.Name
+            CurrentUser  = $currentUser.Name
          }
 
-         return New-vlResultObject -result $result -score 3
+         return New-vlResultObject -result $result -score 3 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             IsLocalAdmin = $false
-            CurrentUser = $currentUser.Name
+            CurrentUser  = $currentUser.Name
          }
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
    }
    catch {
@@ -147,6 +149,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
         Get-vlWindowsHelloStatusLocalUser
     #>
 
+   $riskScore = 30
 
    # Get currently logged on user's SID
    $currentUserSID = (New-Object System.Security.Principal.NTAccount($env:USERNAME)).Translate([System.Security.Principal.SecurityIdentifier]).value
@@ -158,7 +161,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
          WindowsHelloEnabled = $false
       }
 
-      return New-vlResultObject -result $result -score 7
+      return New-vlResultObject -result $result -score 7 -riskScore $riskScore
    }
    if (-NOT[string]::IsNullOrEmpty($currentUserSID)) {
 
@@ -180,7 +183,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
                EnrolledFactors     = ($enroledFactors + "PIN")
             }
 
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
          else {
             $result = [PSCustomObject]@{
@@ -188,7 +191,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
                EnrolledFactors     = $enroledFactors
             }
 
-            return New-vlResultObject -result $result -score 7
+            return New-vlResultObject -result $result -score 7 -riskScore $riskScore
          }
       }
       else {
@@ -198,7 +201,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
                EnrolledFactors     = ($enroledFactors + "PIN")
             }
 
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
          else {
             $result = [PSCustomObject]@{
@@ -206,7 +209,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
                EnrolledFactors     = $enroledFactors
             }
 
-            return New-vlResultObject -result $result -score 7
+            return New-vlResultObject -result $result -score 7 -riskScore $riskScore
          }
       }
    }
@@ -247,7 +250,7 @@ function Get-vlLocalUsersAndGroupsCheck {
          Description  = "Checks if the local user is a member of the local Administrators group."
          Score        = $isLocalAdmin.Score
          ResultData   = $isLocalAdmin.Result
-         RiskScore    = 70
+         RiskScore    = $isLocalAdmin.RiskScore
          ErrorCode    = $isLocalAdmin.ErrorCode
          ErrorMessage = $isLocalAdmin.ErrorMessage
       }
@@ -260,7 +263,7 @@ function Get-vlLocalUsersAndGroupsCheck {
          Description  = "Checks if Windows Hello is enabled and if the local user has enrolled factors."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
-         RiskScore    = 30
+         RiskScore    = $windowsHelloStatus.RiskScore
          ErrorCode    = $windowsHelloStatus.ErrorCode
          ErrorMessage = $windowsHelloStatus.ErrorMessage
       }
@@ -276,8 +279,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBGMJnktCJLbSbV
-# ETWw3oTd5JXg0DhZwbBTiRT+EHRMRaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAazZqd+jAlJBq3
+# sn62VQ0p1OcYW6wIKlTeT+bxmFG0M6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -354,17 +357,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgyDQA/DeZ4TjY
-# bomUQFMC51DXgXMN2dCw7djrffrYpmAwDQYJKoZIhvcNAQEBBQAEggIAW5Su4wIa
-# nqd3lyf/7xobM14vh7P9IgO2IwqgHiT1aIRJm/gPJj5oLSuWRoxnB7CM66/JEpKp
-# NitgR8ug+4AmCVvm59tGB8haWrfc873CnRDoFE1j6XhYXnwKkCXKGauqFWx1MqIs
-# bOTnS1X0EYhYXsHSIGcRFGb7U19EC4DTpAz9/PGc2Iw3ZSgLJJMOdFuLJ1zMZ4Hl
-# Aus+jqhax36WS8v6LkEsDdMCn0KEjInEkBKJ0BX7Y0/s0ojZVPGO+1Z0kzOoASw+
-# 7fkxNwQN365rfI4XKljUiDhTD1x8s4eLjTAyO/h6I2Sj04WWkJ+sUm/T4Zs0xA1Y
-# s6XqwWisJgRJyMAoV31pyVTMnjr/h6eEYAz3zRcTxcFiEgGrJAlc4lp5O8TcuhNm
-# Sq79fZY3jL+ezuJVypUO5dlVNTNgMGFljpRZRyUmSlULpy9gz9n9gUx16L+wUl9e
-# n+H7D3+VvzDJcb4YtedI0BW2v0wL8Q9MlhfytxFO7sQ2YKEGSE4+1d0jc1Up0kPA
-# 1MD6o5FahLN7brwV+sPCaYdNb4ZDUI/GMGtHQtJn9Xlx7x1DjxgReCTSeGE94r5L
-# ooLGhKIhlnliLdKi7GA5aIA1HuwkffsSnurQjIRwdP189FueUlPxrmMwyAp/QXB6
-# xhbM3TFSmyGBVbIgfseSS6Sn9vO4n5TWReA=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgdBgNWV8X3Ovb
+# U0DKKh/z/ktslHERIBCZR/B33cZbnswwDQYJKoZIhvcNAQEBBQAEggIAUj3F3mbY
+# 56xgClPJgwh1135yrZlDXIZxIavzm3gScZ1S7GLV44r+/b1vpQKPKcUkgg4Vdt18
+# E90uhwIElE+3reBtPhjQeWGnGXoLqtP081oh/cDZ6R+Wm7v33AIUXTGxfC9y0erc
+# jtpjYoGF73zSpWpu/HZ9U99jieHFoWIAK/ds8kpH/6WLu5oPDyCpwdQxLVbPdxFr
+# Azjsn7S4/7bD+5YRttUb83TmaufFJ3/i0Uu/Aqi0WSC/MpsJpZQkJ4v7/2vmA/wI
+# S2AbplQ6NQYe7ace/zywiYEjG14pNqwTnE0zBcEwFRGBxjeGbPO2CWGfRFH5cDJh
+# nCgKnMYZdrekM0CZI0pXb+T/bPRCfXkz6h0UWt/qxUddp16qP9hmXTMfloVSv6lM
+# qJPu79FaQ6oWw7UrDnZUEUdL3fCYctliOfykkekTBTov++B0wVI89Vq5vD6DEie0
+# 0iC8eqEmoQm78tkTshKPMi8eZ5Cpxt0LkfeyXbhb9RlwCSZeTaMcjdrXFGR76C8+
+# zcKjjPFcRPnIENS0MofSCzC5kxwV91R3mmKegFCOL8XVTHdxTwUn72EfG6Xrm92s
+# SDJI0xQhfpx7v6C0PfZSiXaX/TSXxkDaZabU1t6eOAbqMxU7ppPse4svyRSjJGLE
+# /8KQ/iie1B+Db+i5vtro1NSMIdRlNXXs86o=
 # SIG # End signature block
