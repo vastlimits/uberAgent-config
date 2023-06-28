@@ -20,6 +20,8 @@ function Get-vlPowerShellV2Status {
     #>
 
    process {
+      $riskScore = 60
+
       try {
          $currentPowerShellVersion = $PSVersionTable.PSVersion.ToString()
 
@@ -32,10 +34,10 @@ function Get-vlPowerShellV2Status {
          }
 
          if ($result.PowerShellV2Enabled) {
-            return New-vlResultObject -result $result -score 4
+            return New-vlResultObject -result $result -score 4 -riskScore $riskScore
          }
          else {
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
       }
       catch {
@@ -64,11 +66,14 @@ function Get-vlPowerShellCL {
 
    process {
       try {
+         $score = 7
+         $riskScore = 30
+
          $result = [PSCustomObject]@{
             LanguageMode = $ExecutionContext.SessionState.LanguageMode.ToString()
          }
 
-         return New-vlResultObject -result $result
+         return New-vlResultObject -result $result -score $score -riskScore $riskScore
       }
       catch {
 
@@ -377,6 +382,8 @@ function Get-vlPowerShellLogging {
    param ()
 
    process {
+      $riskScore = 20
+
       try {
          $transcriptionStatus = Get-vlPowerShellLoggingTranscriptionStatus
          $scriptBlockStatus = Get-vlPowerShellLoggingScriptBlockStatus
@@ -399,7 +406,7 @@ function Get-vlPowerShellLogging {
             $score = 9
          }
 
-         return New-vlResultObject -result $result -score $score
+         return New-vlResultObject -result $result -score $score -riskScore $riskScore
       }
       catch {
 
@@ -482,7 +489,7 @@ function Get-vlPowerShellCheck {
          Description  = "Checks if PowerShell V2 is enabled"
          Score        = $powerShellV2.Score
          ResultData   = $powerShellV2.Result
-         RiskScore    = 60
+         RiskScore    = $powerShellV2.RiskScore
          ErrorCode    = $powerShellV2.ErrorCode
          ErrorMessage = $powerShellV2.ErrorMessage
       }
@@ -502,19 +509,21 @@ function Get-vlPowerShellCheck {
       }
    }
 
+   <# this test will always return true, because the script won't work in other modes
    if ($params.Contains("all") -or $params.Contains("PSLMCL")) {
       $powerShellMode = Get-vlPowerShellCL
       $Output += [PSCustomObject]@{
          Name         = "PSLMCL"
          DisplayName  = "PowerShell common language mode"
          Description  = "Checks if PowerShell Common Language Mode is enabled"
-         Score        = 7
+         Score        = $powerShellMode.Score
          ResultData   = $powerShellMode.Result
-         RiskScore    = 30
+         RiskScore    = $powerShellMode.RiskScore
          ErrorCode    = $powerShellMode.ErrorCode
          ErrorMessage = $powerShellMode.ErrorMessage
       }
    }
+   #>
 
    if ($params.Contains("all") -or $params.Contains("PSLMPolicy")) {
       $powerShellExecutionPolicy = Get-vlPowerShellExecutionPolicy
@@ -538,7 +547,7 @@ function Get-vlPowerShellCheck {
          Description  = "Checks if PowerShell Logging is enabled"
          Score        = $powerShellLogging.Score
          ResultData   = $powerShellLogging.Result
-         RiskScore    = 20
+         RiskScore    = $powerShellLogging.RiskScore
          ErrorCode    = $powerShellLogging.ErrorCode
          ErrorMessage = $powerShellLogging.ErrorMessage
       }

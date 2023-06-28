@@ -68,6 +68,7 @@ function Get-CheckHTAEnabled {
    try {
       $startProc = ""
       $score = 10
+      $riskScore = 80
 
       #$htaExecuteStatus = Run-vlHtaCode $htacode
       $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "mshta.exe"
@@ -132,7 +133,7 @@ function Get-WindowsConfigurationCheck {
          Description  = "Checks if HTA execution is enabled for the current user."
          Score        = $checkHtaEnabled.Score
          ResultData   = $checkHtaEnabled.Result
-         RiskScore    = 80
+         RiskScore    = $checkHtaEnabled.RiskScore
          ErrorCode    = $checkHtaEnabled.ErrorCode
          ErrorMessage = $checkHtaEnabled.ErrorMessage
       }

@@ -43,6 +43,8 @@ function Get-vlIsLocalAdmin {
         Get-vlIsLocalAdmin
     #>
 
+   $riskScore = 70
+
    try {
       $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
 
@@ -51,17 +53,17 @@ function Get-vlIsLocalAdmin {
       if ($isLocalAdmin) {
          $result = [PSCustomObject]@{
             IsLocalAdmin = $true
-            CurrentUser = $currentUser.Name
+            CurrentUser  = $currentUser.Name
          }
 
-         return New-vlResultObject -result $result -score 3
+         return New-vlResultObject -result $result -score 3 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             IsLocalAdmin = $false
-            CurrentUser = $currentUser.Name
+            CurrentUser  = $currentUser.Name
          }
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
    }
    catch {
@@ -147,6 +149,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
         Get-vlWindowsHelloStatusLocalUser
     #>
 
+   $riskScore = 30
 
    # Get currently logged on user's SID
    $currentUserSID = (New-Object System.Security.Principal.NTAccount($env:USERNAME)).Translate([System.Security.Principal.SecurityIdentifier]).value
@@ -158,7 +161,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
          WindowsHelloEnabled = $false
       }
 
-      return New-vlResultObject -result $result -score 7
+      return New-vlResultObject -result $result -score 7 -riskScore $riskScore
    }
    if (-NOT[string]::IsNullOrEmpty($currentUserSID)) {
 
@@ -180,7 +183,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
                EnrolledFactors     = ($enroledFactors + "PIN")
             }
 
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
          else {
             $result = [PSCustomObject]@{
@@ -188,7 +191,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
                EnrolledFactors     = $enroledFactors
             }
 
-            return New-vlResultObject -result $result -score 7
+            return New-vlResultObject -result $result -score 7 -riskScore $riskScore
          }
       }
       else {
@@ -198,7 +201,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
                EnrolledFactors     = ($enroledFactors + "PIN")
             }
 
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
          else {
             $result = [PSCustomObject]@{
@@ -206,7 +209,7 @@ function Get-vlWindowsHelloStatusLocalUser () {
                EnrolledFactors     = $enroledFactors
             }
 
-            return New-vlResultObject -result $result -score 7
+            return New-vlResultObject -result $result -score 7 -riskScore $riskScore
          }
       }
    }
@@ -247,7 +250,7 @@ function Get-vlLocalUsersAndGroupsCheck {
          Description  = "Checks if the local user is a member of the local Administrators group."
          Score        = $isLocalAdmin.Score
          ResultData   = $isLocalAdmin.Result
-         RiskScore    = 70
+         RiskScore    = $isLocalAdmin.RiskScore
          ErrorCode    = $isLocalAdmin.ErrorCode
          ErrorMessage = $isLocalAdmin.ErrorMessage
       }
@@ -260,7 +263,7 @@ function Get-vlLocalUsersAndGroupsCheck {
          Description  = "Checks if Windows Hello is enabled and if the local user has enrolled factors."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
-         RiskScore    = 30
+         RiskScore    = $windowsHelloStatus.RiskScore
          ErrorCode    = $windowsHelloStatus.ErrorCode
          ErrorMessage = $windowsHelloStatus.ErrorMessage
       }
