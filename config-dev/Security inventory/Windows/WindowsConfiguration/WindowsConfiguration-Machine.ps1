@@ -61,46 +61,48 @@ function Get-BitlockerEnabled {
         Get-BitlockerEnabled
     #>
 
-    try {
+   try {
       $score = 10
+      $riskScore = 80
 
       # check if bitlocker is enabled using Get-BitLockerVolume
       $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage
 
       if ($bitlockerEnabled) {
-          $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
+         $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
       }
 
       if ($bitlockerEnabled.ProtectionStatus -ne "On") {
-          $score = 0
+         $score = 0
       }
       else {
-          if ($bitlockerEnabled.EncryptionPercentage -eq 100) {
-              $score = 10
-          }
-          else {
-              $score = 5
-          }
+         if ($bitlockerEnabled.EncryptionPercentage -eq 100) {
+            $score = 10
+         }
+         else {
+            $score = 5
+         }
       }
 
-      return New-vlResultObject -result $bitlockerEnabled -score $score
-  }
-  catch {
+      return New-vlResultObject -result $bitlockerEnabled -score $score -riskScore $riskScore
+   }
+   catch {
       if ($_.Exception -is [System.Management.Automation.CommandNotFoundException]) {
          return New-vlErrorObject -message "Status could not be determined because Bitlocker was not set up for this system." -errorCode 1 -context $_
-      } else {
+      }
+      else {
          return New-vlErrorObject -context $_
       }
-  }
+   }
 
 }
 
 function Get-COMHijacking {
    <#
     .SYNOPSIS
-        Checks if mmc.exe is hijacked
+        Checks if mmc.exe is set as the default program for .msc files
     .DESCRIPTION
-        Checks if mmc.exe is hijacked
+        Checks if mmc.exe is set as the default program for .msc files
     .OUTPUTS
         PSCustomObject
         detected: true if detected, false if not
@@ -109,6 +111,7 @@ function Get-COMHijacking {
     #>
    try {
 
+      $riskScore = 80
       $expectedValue = "$($env:SystemRoot)\system32\mmc.exe ""%1"" %*"
 
       $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Classes\mscfile\shell\open\command"
@@ -118,13 +121,13 @@ function Get-COMHijacking {
             Detected = $false
          }
 
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             Detected = $true
          }
-         return New-vlResultObject -result $result -score 0
+         return New-vlResultObject -result $result -score 0 -riskScore $riskScore
       }
    }
    catch {
@@ -135,9 +138,9 @@ function Get-COMHijacking {
 function Get-vlTimeProviderHijacking {
    <#
     .SYNOPSIS
-        Checks if w32time.dll is hijacked
+        Checks if w32time.dll is set as the defalut time provider
     .DESCRIPTION
-        Checks if w32time.dll is hijacked
+        Checks if w32time.dll is set as the defalut time provider
     .OUTPUTS
         PSCustomObject
         detected: true if detected, false if not
@@ -146,6 +149,7 @@ function Get-vlTimeProviderHijacking {
     #>
 
    try {
+      $riskScore = 80
       $expectedValue = "$($env:SystemRoot)\system32\w32time.dll"
 
       $value = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer" -Value "DllName"
@@ -155,13 +159,13 @@ function Get-vlTimeProviderHijacking {
             Detected = $false
          }
 
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             Detected = $true
          }
-         return New-vlResultObject -result $result -score 0
+         return New-vlResultObject -result $result -score 0 -riskScore $riskScore
       }
    }
    catch {
@@ -183,6 +187,7 @@ function Get-vlWindowsPersistanceCheck {
     #>
 
    try {
+      $riskScore = 80
       $log_file = "$($env:SystemRoot)\Logs\CBS\CBS.log"
 
       #run sfc /verifyonly and wait for it to finish run it hidden
@@ -225,13 +230,13 @@ function Get-vlWindowsPersistanceCheck {
          $result = [PSCustomObject]@{
             Detected = $true
          }
-         return New-vlResultObject -result $result -score 0
+         return New-vlResultObject -result $result -score 0 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
             Detected = $false
          }
-         return New-vlResultObject -result $result -score 10
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
    }
    catch {
@@ -254,7 +259,7 @@ function Get-WindowsConfigurationCheck {
          Description  = "Checks if Bitlocker is enabled on the system."
          Score        = $checkBitlockerEnabled.Score
          ResultData   = $checkBitlockerEnabled.Result
-         RiskScore    = 80
+         RiskScore    = $checkBitlockerEnabled.RiskScore
          ErrorCode    = $checkBitlockerEnabled.ErrorCode
          ErrorMessage = $checkBitlockerEnabled.ErrorMessage
       }
@@ -265,10 +270,10 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCComHijacking"
          DisplayName  = "WindowsConfiguration COM hijacking"
-         Description  = "Checks if COM is hijacked."
+         Description  = "Checks if mmc.exe is set as the default program for .msc files"
          Score        = $COMHijacking.Score
          ResultData   = $COMHijacking.Result
-         RiskScore    = 80
+         RiskScore    = $COMHijacking.RiskScore
          ErrorCode    = $COMHijacking.ErrorCode
          ErrorMessage = $COMHijacking.ErrorMessage
       }
@@ -279,10 +284,10 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCTimeProvHijacking"
          DisplayName  = "WindowsConfiguration time provider hijacking"
-         Description  = "Checks if the time provider is hijacked."
+         Description  = "Checks if w32time.dll is set as the defalut time provider"
          Score        = $timeProviderHijacking.Score
          ResultData   = $timeProviderHijacking.Result
-         RiskScore    = 80
+         RiskScore    = $timeProviderHijacking.RiskScore
          ErrorCode    = $timeProviderHijacking.ErrorCode
          ErrorMessage = $timeProviderHijacking.ErrorMessage
       }
@@ -296,7 +301,7 @@ function Get-WindowsConfigurationCheck {
             Name         = "WindowsConfiguration - persistancecheck"
             Score        = $persistancecheck.Score
             ResultData   = $persistancecheck.Result
-            RiskScore    = 80
+            RiskScore    = $persistancecheck.RiskScore
             ErrorCode    = $persistancecheck.ErrorCode
             ErrorMessage = $persistancecheck.ErrorMessage
         }

@@ -21,6 +21,8 @@ function Get-vlServiceLocations {
    )
 
    process {
+      $riskScore = 100
+
       try {
          $result = @()
          Get-vlRegSubkeys -Hive HKLM -Path 'SYSTEM\CurrentControlSet\Services' | Where-Object { $_.ImagePath } | ForEach-Object -process {
@@ -37,11 +39,11 @@ function Get-vlServiceLocations {
 
          if (-not $result) {
             # No services outside common locations found
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
          else {
             # Services outside common location found
-            return New-vlResultObject -result $result -score 1
+            return New-vlResultObject -result $result -score 1 -riskScore $riskScore
          }
       }
       catch {
@@ -77,6 +79,8 @@ function Get-vlServiceDLLLocations {
    )
 
    process {
+      $riskScore = 90
+
       try {
          $result = @()
          Get-ItemProperty hklm:\SYSTEM\CurrentControlSet\Services\*\Parameters | Where-Object { $_.servicedll } | ForEach-Object -process {
@@ -95,11 +99,11 @@ function Get-vlServiceDLLLocations {
 
          if (-not $result) {
             # No service.dll file outside common locations found
-            return New-vlResultObject -result $result -score 10
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
          }
          else {
             # Service.dll file outside common location found
-            return New-vlResultObject -result $result -score 1
+            return New-vlResultObject -result $result -score 1 -riskScore $riskScore
          }
       }
       catch {
@@ -144,7 +148,7 @@ function Get-vlWindowsServicesCheck {
          Description  = "Checks whether services are running in uncommon locations"
          Score        = $ServiceLocations.Score
          ResultData   = $ServiceLocations.Result
-         RiskScore    = 100
+         RiskScore    = $ServiceLocations.RiskScore
          ErrorCode    = $ServiceLocations.ErrorCode
          ErrorMessage = $ServiceLocations.ErrorMessage
       }
@@ -158,7 +162,7 @@ function Get-vlWindowsServicesCheck {
          Description  = "Checks whether services use service.dll in uncommon locations"
          Score        = $ServiceDLLLocations.Score
          ResultData   = $ServiceDLLLocations.Result
-         RiskScore    = 90
+         RiskScore    = $ServiceDLLLocations.RiskScore
          ErrorCode    = $ServiceDLLLocations.ErrorCode
          ErrorMessage = $ServiceDLLLocations.ErrorMessage
       }

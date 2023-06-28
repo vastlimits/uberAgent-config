@@ -36,6 +36,17 @@ function Get-vlGetLatestOfficeVersion {
 }
 
 function Get-vlMacroConfig {
+   <#
+    .SYNOPSIS
+         Gets the macro configuration for the installed MS Office products
+    .DESCRIPTION
+         Gets the macro configuration for the installed MS Office productse
+    .OUTPUTS
+         A [psobject] containing the macro configuration for the installed MS Office products
+    .EXAMPLE
+        Get-vlMacroConfig
+    #>
+
    $results = @{}
    $version = Get-vlGetLatestOfficeVersion
    $OfficeApplications = "Word", "Excel", "PowerPoint", "Outlook", "MS Project", "Visio", "Access", "Publisher"
@@ -68,7 +79,20 @@ function Get-vlMacroConfig {
 }
 
 function Get-vlIsVBADisabled {
+   <#
+    .SYNOPSIS
+         Check if VBA is disabled for the installed MS Office products
+    .DESCRIPTION
+         Check if VBA is disabled for the installed MS Office products
+    .OUTPUTS
+         A [psobject] Disabled = true if VBA is disabled
+    .EXAMPLE
+        Get-vlIsVBADisabled
+    #>
+
    process {
+      $riskScore = 70
+
       try {
          $latestVersion = Get-vlGetLatestOfficeVersion
          $macroConfig = Get-vlMacroConfig
@@ -82,14 +106,14 @@ function Get-vlIsVBADisabled {
                   Disabled = $true
                }
 
-               return New-vlResultObject -Score 10 -Result $result
+               return New-vlResultObject -Score 10 -Result $result -riskScore $riskScore
             }
             else {
                $result = [PSCustomObject]@{
                   Disabled = $false
                }
 
-               return New-vlResultObject -Score 3 -Result $result
+               return New-vlResultObject -Score 3 -Result $result -riskScore $riskScore
             }
          }
       }
@@ -131,7 +155,7 @@ function Get-vlMSOfficeCheck {
          Description  = "Checks if VBA is disabled in MS Office."
          Score        = $vbaDisabled.Score
          ResultData   = $vbaDisabled.Result
-         RiskScore    = 70
+         RiskScore    = $vbaDisabled.RiskScore
          ErrorCode    = $vbaDisabled.ErrorCode
          ErrorMessage = $vbaDisabled.ErrorMessage
       }

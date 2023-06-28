@@ -19,6 +19,7 @@ function Get-vlExpiredCertificateCheck {
 
    try {
       $score = 10
+      $riskScore = 20
 
       # get certs for user store
       $certs = Get-ChildItem -Path Cert:\CurrentUser -Recurse
@@ -64,7 +65,7 @@ function Get-vlExpiredCertificateCheck {
          willExpire60 = $willExpire60
       }
       # Updates are enabled
-      return New-vlResultObject -result $result -score $score
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject($_)
@@ -163,6 +164,7 @@ function Get-vlGetCTLCheck {
    #last time the AuthRoot.stl file was synced
    try {
       $score = 10
+      $riskScore = 70
 
       $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
 
@@ -198,7 +200,7 @@ function Get-vlGetCTLCheck {
          $score -= 5
       }
 
-      return New-vlResultObject -result $result -score $score
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject -context $_
@@ -236,7 +238,7 @@ function Get-vlCertificateCheck {
          Description  = "Checks if there are expired certificates installed within the CurrentUser store."
          Score        = $protectedRoots.Score
          ResultData   = $protectedRoots.Result
-         RiskScore    = 20
+         RiskScore    = $protectedRoots.RiskScore
          ErrorCode    = $protectedRoots.ErrorCode
          ErrorMessage = $protectedRoots.ErrorMessage
       }
@@ -250,7 +252,7 @@ function Get-vlCertificateCheck {
          Description  = "Checks if there are unknown certificates installed within the CurrentUser store."
          Score        = $ctlCheck.Score
          ResultData   = $ctlCheck.Result
-         RiskScore    = 70
+         RiskScore    = $ctlCheck.RiskScore
          ErrorCode    = $ctlCheck.ErrorCode
          ErrorMessage = $ctlCheck.ErrorMessage
       }

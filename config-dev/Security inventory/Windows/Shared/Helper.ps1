@@ -139,10 +139,11 @@ function New-vlErrorObject {
    }
 
    return [PSCustomObject]@{
-      Result       = ""
+      Result       = $null
       ErrorCode    = $finalCode
       ErrorMessage = if ( $null -ne $message) { $message } else { $context.Exception.Message }
-      Score        = 0
+      Score        = $null
+      RiskScore    = $null
    }
 }
 

@@ -46,6 +46,7 @@ function Get-vlAntivirusStatus {
       try {
          $result = @()
          $score = 0
+         $riskScore = 100
 
          $instances = Get-MpComputerStatus
 
@@ -132,7 +133,7 @@ function Get-vlAntivirusStatus {
                   Defender = $defenderStatus
                }
             }
-            elseif($defenderStatus) {
+            elseif ($defenderStatus) {
                $result += [PSCustomObject]@{
                   Enabled  = $false
                   Name     = "Windows Defender"
@@ -140,13 +141,12 @@ function Get-vlAntivirusStatus {
                   Defender = $defenderStatus
                }
             }
-            else
-            {
+            else {
                return New-vlErrorObject -message "Status could not be determined because SecurityCenter2 is not available on Windows Server." -errorCode 1 -context $_
             }
          }
-
-         return New-vlResultObject -result $result -score $score
+         
+         return New-vlResultObject -result $result -score $score -riskScore $riskScore
       }
       catch {
          return New-vlErrorObject($_)
@@ -186,7 +186,7 @@ function Get-vlAntivirusCheck {
          Description  = "Checks if the antivirus is enabled and up to date."
          Score        = $avStatus.Score
          ResultData   = $avStatus.Result
-         RiskScore    = 100
+         RiskScore    = $avStatus.RiskScore
          ErrorCode    = $avStatus.ErrorCode
          ErrorMessage = $avStatus.ErrorMessage
       }
