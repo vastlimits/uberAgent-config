@@ -141,6 +141,11 @@ function Get-vlOpenFirewallPorts {
          }
       }
 
+      if($null -eq $rulesEx)
+      {
+         $rulesEx = @()
+      }
+
       return New-vlResultObject -result $rulesEx -score 10 -riskScore $riskScore
    }
    catch [Microsoft.Management.Infrastructure.CimException] {

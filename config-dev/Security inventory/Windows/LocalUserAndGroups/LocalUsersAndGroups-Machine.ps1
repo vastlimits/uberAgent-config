@@ -350,7 +350,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $windowsHelloStatus = Get-vlWindowsHelloStatusLocalMachine
       $Output += [PSCustomObject]@{
          Name         = "LUMWinBio"
-         DisplayName  = "Windows Hello / biometrics"
+         DisplayName  = "Windows Hello/biometrics"
          Description  = "Checks if Windows Hello is enabled and what factors are available."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
