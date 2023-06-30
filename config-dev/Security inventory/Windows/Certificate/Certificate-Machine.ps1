@@ -465,7 +465,6 @@ function Get-vlGetCTLCheck {
          "245C97DF7514E7CF2DF8BE72AE957B9E04741E85" # Copyright (c) 1997 Microsoft Corp.
          "7F88CD7223F3C813818C994614A89C99FA3B5247" # Microsoft Authenticode(tm) Root Authority
          "18F7C1FCC3090203FD5BAA2F861A754976C8DD25" # NO LIABILITY ACCEPTED, (c)97 VeriSign, Inc.
-         "BE36A4562FB2EE05DBB3D32323ADF445084ED656" # Thawte Timestamping CA
       )
       
       # filter out $whitelist from $localMachineCerts
