@@ -141,6 +141,11 @@ function Get-vlOpenFirewallPorts {
          }
       }
 
+      if($null -eq $rulesEx)
+      {
+         $rulesEx = @()
+      }
+
       return New-vlResultObject -result $rulesEx -score 10 -riskScore $riskScore
    }
    catch [Microsoft.Management.Infrastructure.CimException] {
@@ -192,7 +197,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWPorts"
          DisplayName  = "Open firewall ports"
-         Description  = "Checks if there are open firewall ports and returns the list of open ports."
+         Description  = "Checks if there are open firewall ports and returns the list of open ports. Note: If a rule has been added to a group, that rule will be filtered out."
          Score        = $openPorts.Score
          ResultData   = $openPorts.Result
          RiskScore    = $openPorts.RiskScore

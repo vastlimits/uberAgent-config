@@ -112,7 +112,7 @@ function New-vlErrorObject {
     .DESCRIPTION
         Generate an error object for the result of a function that can be returned to the caller
     .PARAMETER Context
-        The context of the error / exception
+        The context of the error/exception
     .LINK
         https://uberagent.com
     .OUTPUTS
