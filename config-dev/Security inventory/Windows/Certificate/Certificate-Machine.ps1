@@ -455,10 +455,10 @@ function Get-vlGetCTLCheck {
          return $_
       }
 
-      # define whitelist containing thumbprints of certificates that are allowed
+      # define allowList containing thumbprints of certificates that are allowed
       # https://learn.microsoft.com/en-US/troubleshoot/windows-server/identity/trusted-root-certificates-are-required
 
-      $whitelist = @(
+      $allowList = @(
          "A43489159A520F0D93D032CCAF37E7FE20A8B419" # Microsoft Root Authority
          "BE36A4562FB2EE05DBB3D32323ADF445084ED656" # Thawte Timestamping CA
          "CDD4EEAE6000AC7F40C3802C171E30148030C072" # Microsoft Root Certificate Authority
@@ -467,8 +467,8 @@ function Get-vlGetCTLCheck {
          "18F7C1FCC3090203FD5BAA2F861A754976C8DD25" # NO LIABILITY ACCEPTED, (c)97 VeriSign, Inc.
       )
       
-      # filter out $whitelist from $localMachineCerts
-      $localMachineCerts = $localMachineCerts | Where-Object { $_.Thumbprint -notin $whitelist }
+      # filter out $allowList from $localMachineCerts
+      $localMachineCerts = $localMachineCerts | Where-Object { $_.Thumbprint -notin $allowList }
 
       #extract CTL
       $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl
