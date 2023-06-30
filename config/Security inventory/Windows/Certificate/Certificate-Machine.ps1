@@ -455,6 +455,21 @@ function Get-vlGetCTLCheck {
          return $_
       }
 
+      # define allowList containing thumbprints of certificates that are allowed
+      # https://learn.microsoft.com/en-US/troubleshoot/windows-server/identity/trusted-root-certificates-are-required
+
+      $allowList = @(
+         "A43489159A520F0D93D032CCAF37E7FE20A8B419" # Microsoft Root Authority
+         "BE36A4562FB2EE05DBB3D32323ADF445084ED656" # Thawte Timestamping CA
+         "CDD4EEAE6000AC7F40C3802C171E30148030C072" # Microsoft Root Certificate Authority
+         "245C97DF7514E7CF2DF8BE72AE957B9E04741E85" # Copyright (c) 1997 Microsoft Corp.
+         "7F88CD7223F3C813818C994614A89C99FA3B5247" # Microsoft Authenticode(tm) Root Authority
+         "18F7C1FCC3090203FD5BAA2F861A754976C8DD25" # NO LIABILITY ACCEPTED, (c)97 VeriSign, Inc.
+      )
+      
+      # filter out $allowList from $localMachineCerts
+      $localMachineCerts = $localMachineCerts | Where-Object { $_.Thumbprint -notin $allowList }
+
       #extract CTL
       $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl
 
@@ -618,8 +633,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAJdX944Z4wGBHK
-# 6p/iravRtBU9Emcl4YjMWgASsEgUoaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBOh/PCaXiqw1gb
+# ZRG5raZjfDCdye4Y4OWMDiyRgsBvMaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -696,17 +711,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgXU4vntP4X7z6
-# f80pVUyCjqDOxy4NukvCQCmuFFHz9VEwDQYJKoZIhvcNAQEBBQAEggIAMx40z8wS
-# 62Q1UYzgsODvtwJozLWcpQzLNvIXMC7kI9vMYj1vYEYf/EiH7wnbSP8SQ0KY/DXX
-# 3Ymm3tbynZNdtHZi3tCf1AL9OcDUzTaQ/8lskdV/oNQj//Qet4wxgA/9mmdUKe/i
-# VNnjAqJkhWtu6kvRCr8ieF0fYzxv7weWwLxTiWXBpXlluZUZ7IdQeJYKkI3VSEE8
-# jYwCr85opvqnj4FHGcSyMJ6rNyWsqEn6LWUl8YHRf8lZbmeHniwF3VCBP6ChLGVF
-# dYhsI36UdeMWbXNItRwoT2dB+5deJ5+1bLb+an2QhbLMPRnnSN2OzBegz45RakVd
-# 4LGNlzsGB12m/Pk+wIsBCJafSB6rNFwc9Ll85MmpqXycckporLjzijjvDiv1xGNx
-# AKP4O7QpvXyzliUzBExn8N8iF/Zp/urDAEENzlT/EDuGIFokvUEK5xdcwl3/Omyd
-# fK6w7NYc13krEmuYeHLqkizhFS89Ols8Zl4iq84hP7PpdzI9bJvpVxq9cRGSRKMP
-# rbJra8uAJPz7gTh1uC0hNHz8t4b12lPdnC3SOlgmT+XSAWRASCbFE9Rkjf/RdBqP
-# csQww2j7r26/Blet1Bd7CFN6DBCw3vlqj5x4dkLcheEJwT60wHpnVmU7EAz178dL
-# QV5fXhm9BH7b2KPNpHvuSWHznlpO9ZRoulA=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgJP5pvTN+TGPW
+# T6S2nBcK0ayVlDymGhyFnZta5gkvbo4wDQYJKoZIhvcNAQEBBQAEggIAo44vFbod
+# pUptF9llvnxMVFqqi6ZOXYyr+l5PhvXMShB9oKmDcA16i3pqtqMmHLd/MHfOP4GD
+# IBKcZklUH1EDFzo/gi0fpxJ+DwucijEhT7ZHKSTv52zmvdaj6cejqeZOPs4EuauO
+# RSB4dx9ttXr+YYRMZLEVO2Kbx2PsUxfwPdi4mXr2lTzOVVt+euyKMyY7h5eBp8fY
+# MF5yuR2kprkRFfZy++g6GAFQZX7ZF+xixlWNdljC4XswCQZlsZwcYWU/CRDEe6Ov
+# +6fTj+ha3ulgqWxUZPD1hTgPW14Ve9oJIKc1f/cJdZUrY2/UEh2Hea7gao+CM3zg
+# 0oNSr6bfTdUAkvLtU24d36304JYaONgpPyQfdQh079QzoknWjBEXRcDOGRWKAyjJ
+# 7bhjXXMOF6p//CPoeHKgh9X0SvmlWRYyjgZETyULILDZTq06cBtGn1WFSZODtzbQ
+# oaN9yeB+BkRbBEuCoFbymBXB0fcptb0quAl9vVWkvAuAt6b8UZnPXYXnrT19DgsJ
+# ZwJP7OIhuYy1C3NhBrJttOM54sePPA+PDKXO6rDTQymcHMnm6gdouFTN70m7Fb2d
+# sHIV1JnCJ0vqUBhEav0zzP6HeWqkN/0WIpfWzKWTV6ZuzfM8ZjpBviMpFlhlZv9l
+# lFULQpaTXyjPs6m/i3mnJrSf+GmeuA7h0r8=
 # SIG # End signature block

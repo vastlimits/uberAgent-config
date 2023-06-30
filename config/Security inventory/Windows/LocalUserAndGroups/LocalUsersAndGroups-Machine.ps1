@@ -350,7 +350,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $windowsHelloStatus = Get-vlWindowsHelloStatusLocalMachine
       $Output += [PSCustomObject]@{
          Name         = "LUMWinBio"
-         DisplayName  = "Windows Hello / biometrics"
+         DisplayName  = "Windows Hello/biometrics"
          Description  = "Checks if Windows Hello is enabled and what factors are available."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
@@ -370,8 +370,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBUNAccItjcjAMk
-# Qqi5OH4bUvPVb1M5wo1NK+OZ+7T546CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDnKgNhqRg9H9UU
+# XvaV49Jd2EIztylXVIJchxrH26St2KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -448,17 +448,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgT9smI4ZL46rH
-# 8TS0qONwhdnNV268az7JPGUIqpuIdxUwDQYJKoZIhvcNAQEBBQAEggIAbqUW80TI
-# 40x3wUs9IERrLixI5TDHvxiQnyPh2SX500IEJD1js4Itr39VjreCt6/rBqPdS/44
-# aJfltjjKgaxWVfC3j91DvdIAlM8NrZDJsrhTYuIjnyhLDF9R6HVjtT5ha7cdlaEE
-# R9L7YLLRmAIgGNLOsnwUIe2gjvcPM4Smmam3svF9j7Sgoq0wvjn/mJJ0VpSxsKS1
-# qDy18zamfvDGteiXeP16GCM0WmjdA5otuF227ZMEHVYxHR0QpuStUTdxp8HT6Tjz
-# Egb9Ycjd35nfTQXCrnf7FfZQeBJb7cJWxwBE2FYujclJTpBCB4tMO1NczkJyGwDs
-# xS6cERmwkLHm0kuNmIEBEW2Mv8y+4pok+ww93ckgLfdKiLir21QI/zy8lQ2ba7tV
-# LdfW4Lvz0qKEcirBuw1KFBF8Ao09X3sv9zHBXRKT6N+yj6bPtnMXy1wr1B3GKan5
-# 3eFxuj8AjYigkenaz7ZfqRBbR0IpX7ebHYMfyRERU6Jr2ZhLyzoaid8f+Xyl0g/T
-# WbNmuNEuAGAPA0fut77KjYxZyrefVZRYO4bjuJadjnXH9StFwmNFwM4+egkqvDcp
-# mAdXWAdyp8ZLuJpaKZeWq47CyeF7je1eMDxq2TM0+sqOcRE3+PCda+3FNHUKJWcb
-# bWs2Tgf2kvEHexoyxVcdr9n0fNC3T2KxE2Y=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgrkQjY//75DhF
+# TrqlMq5b41ziVR80RIG24ddgQp78KaYwDQYJKoZIhvcNAQEBBQAEggIAZr7EbRHM
+# YOSL5lzerOlCQUlrH3+zUYvlMoTGbmYGJQwbUNyQJku830XizUoaLTHVhwXvFJig
+# JQdzq77IAAsp0LdMlYa0fRlp41JMU/8m2rW3w1ExlYWscU0zznhI9UQ7dbqAqVwX
+# 5Jzrrr/hzxGQBE5kQvxe31aPKQvJIU6UOCY28FbRf7o1ifr2js3VfbJ2F8AvLHsr
+# cQfa2PPDAPIESy1gLepSaYFyUUvXrt8BZAFcyZboQlUrVvKOp4vuRx1PLd09GgEt
+# gnRbmesURfhJv4qCNbUZ7zamJYRbAytppEgpehyil6UlgasHmTm8fp6XFz0EnFe3
+# 8r2J53qb3RZwJ6BWppF/Hx76Kgz2BEPYAXdYjBlqQtL0rjcwG/2RfaK2g8Ry6ri/
+# bQRvZ1u3loEJIbimte7S1pJkZwfqKmRxdAesY86dLMCd84LWl5FY46UIx5kn7pg/
+# rSSUUBfr0QSAnM/0q0zbNCzdcLpR2YNFJ14oOKZhKrkFBI1o1QMidq1z8QRvau5Y
+# G74LmTaUTZkwCktDEny4Hjox9HZccMgHIzbKgaPiYNtrOuOH5IRUjAgMhzeMg1cn
+# l0niRqOLvF4k8E3jvSQRQ2nu0QVJ/1i46++f3SVHlDryUQjunzofEimxhH6bgiQ3
+# l6x+MosjmPIKuekh31OLLqVSAjPvLxBy7zg=
 # SIG # End signature block

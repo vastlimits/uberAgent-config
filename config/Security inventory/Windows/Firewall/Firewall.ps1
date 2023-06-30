@@ -141,6 +141,11 @@ function Get-vlOpenFirewallPorts {
          }
       }
 
+      if($null -eq $rulesEx)
+      {
+         $rulesEx = @()
+      }
+
       return New-vlResultObject -result $rulesEx -score 10 -riskScore $riskScore
    }
    catch [Microsoft.Management.Infrastructure.CimException] {
@@ -192,7 +197,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWPorts"
          DisplayName  = "Open firewall ports"
-         Description  = "Checks if there are open firewall ports and returns the list of open ports."
+         Description  = "Checks if there are open firewall ports and returns the list of open ports. Note: If a rule has been added to a group, that rule will be filtered out."
          Score        = $openPorts.Score
          ResultData   = $openPorts.Result
          RiskScore    = $openPorts.RiskScore
@@ -211,8 +216,8 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCzbQ8/LQO5BwB/
-# n7UJwVoLkHmeCCbsVGJOnEeKyzykVqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBVCsYwM6M+sxBK
+# +s6dTFYIzUtIJaaeUWYHS9N4opKnfaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -289,17 +294,17 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgzzsqZE1Dpr/6
-# WW/QPpDOU/r4qT7QzlD3ItLWresCk+gwDQYJKoZIhvcNAQEBBQAEggIAVciKYTxo
-# AzwzAmi5tJ1UGdk0Vz8N8dqE9Qr89BMVYIiHQDyYGBTKu68XAXcV7sfwQ9x13oZW
-# eRkp31ET4LkxZei1i70FCt++Didp1UIb5ptlu4eUergS5f8DR/DSHt18sVUM4GhS
-# HgkaYfmJnPCsJBNKM5bM041JdRNV1CGLbHXZWYb0BTK2QDE6iT9bUUzvNDA54qR5
-# HsKTkVWlNCSfrdcwGrpAJGnZ76PQM4DEiQvCKjlIoFPRQBNdMslflQCXQPh4QE+P
-# M47ZaZRgBKKgm1TdkusM3uWM5FUgBM+rxVvQAmDuCQl+4116ZpdtlUdBrRjllXhW
-# 2Z08yNCWp98RZ1JLj6cgd+nMgzs6FZwK4hhX26tcKmzVrgJOz3AMDDG3X7wtY4Ve
-# ZqWKP2pJ2yidRQSvjmdMFyAb0mvB8lDKXcL+ETbySL3vMOrFH5wcFHlGCiBOfGFz
-# Ax+J1ken10k1Ft+nyrtJRZigzLv4cADQ+opsqFcX1WHU5MdO+bbdTBMz9Sb3CJwo
-# 0SMJKDBBCZJ5Fm2UIo1cDbPeuBtC/zPL6h+oYkkCPCxiq5iH3iy9GTq3UzWzwAuw
-# f6fHtP/UUQN2eskGPVlQlFHMFA6W8K1iIY0U1DXVD39Aq/LvhjsO9xhWmC58oXOV
-# PUnwFA21aeZ62xAiD/XpEA/ADqgEIZuTqHQ=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgrJjRuVWC2/R1
+# Sges+RPIgqeSgSfoo/ymeVXppqYEXXAwDQYJKoZIhvcNAQEBBQAEggIAJ65Lgsw+
+# NKlbGKXn2SN4cjQZAyGAN368uwPXUK7x4poL3Y4kHmCavNijxufj1ScdcfeCopoQ
+# 8hF6QYRd6tqJH2NevI3H8G8YqKUl1FisLJyDKrFvT11crblZpGIMYIa0qCLNNNdz
+# mE9KSHZfOnwzG5HqyByNRyjjtjsBTHGIVMLcVAV6UQEFQEQPRJk4mq+q0JmNxUti
+# 1o+GOQHPcNO9DTg7KnO7SGy9cBb7hzo7r37gp4KrpiqF95hjbJBnb3VEO9R7rXMM
+# kNzROBX9BnRlY1MrbaUyTgIoJ6M0p3WjvhliGUXHoK5SZ/WoLK5rIIL1HKbRQROr
+# FIETjSNMbYbfinfYu+Z5M8vkT4qYXknuWC7mTCFxDWmmN90S/gqn+ZylzYR2djRq
+# oXGMZFlO2QiufYH0CcNGdGAByIt+3vXfg4BqjEwQspcqFf0s9lPwyJwhSbHbpEZJ
+# 9IliWPa020yq+J4WK/R+LRlpAzHxQP+XQIBrBT4/X6Jupko0sWfI+1z7BvAi69pE
+# H266ZIBEwnvRFnGtF/sT1ywAMq7VfS8P6d/iIN7kUagZ4IVarclnbGHa/pn0h8JX
+# cceeygDI4WgPwHmYBnVtQS9cJiSFpTrg1ndzuDbQrP1xJGDS8NM84eSEO2YvzC47
+# 9bTz6iRauslq7DndLw8H26ZeMAcYEHNGhyM=
 # SIG # End signature block
