@@ -169,7 +169,7 @@ function Get-vlPowerShellExecutionPolicy {
 
          # go from lowest to highest
          # first check LocalMachine policy
-         $policy = $policys | Where Scope -eq "LocalMachine"
+         $policy = $policys | Where-Object Scope -eq "LocalMachine"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "LocalMachine"
@@ -177,7 +177,7 @@ function Get-vlPowerShellExecutionPolicy {
          }
 
          # check CurrentUser policy
-         $policy = $policys | Where Scope -eq "CurrentUser"
+         $policy = $policys | Where-Object Scope -eq "CurrentUser"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "CurrentUser"
@@ -185,7 +185,7 @@ function Get-vlPowerShellExecutionPolicy {
          }
 
          # check UserPolicy policy
-         $policy = $policys | Where Scope -eq "UserPolicy"
+         $policy = $policys | Where-Object Scope -eq "UserPolicy"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "UserPolicy"
@@ -193,7 +193,7 @@ function Get-vlPowerShellExecutionPolicy {
          }
 
          # check MachinePolicy policy
-         $policy = $policys | Where Scope -eq "MachinePolicy"
+         $policy = $policys | Where-Object Scope -eq "MachinePolicy"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "MachinePolicy"
@@ -299,7 +299,7 @@ Function Get-vlPowerShellLoggingTranscriptionStatus {
       }
    }
    catch {
-
+      return $result
    }
 
    return $result
@@ -329,7 +329,7 @@ Function Get-vlPowerShellLoggingScriptBlockStatus {
       }
    }
    catch {
-
+      return $result
    }
 
    return $result
@@ -358,7 +358,7 @@ Function Get-vlPowerShellLoggingModuleLogging {
       }
    }
    catch {
-
+      return $result
    }
 
    return $result

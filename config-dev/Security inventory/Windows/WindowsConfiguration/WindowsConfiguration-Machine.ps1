@@ -49,25 +49,25 @@ function Test-vlBlockedProgram {
 }
 
 function Get-vlDrives {
-   
+
    $drives = Get-CimInstance -ClassName Win32_DiskDrive
    $driveList = @()
 
    foreach ($drive in $drives) {
       $partitions = Get-CimInstance -Query "ASSOCIATORS OF {Win32_DiskDrive.DeviceID='$($drive.DeviceID)'} WHERE AssocClass = Win32_DiskDriveToDiskPartition"
-      
+
       foreach ($partition in $partitions) {
          $logicalDisks = Get-CimInstance -Query "ASSOCIATORS OF {Win32_DiskPartition.DeviceID='$($partition.DeviceID)'} WHERE AssocClass = Win32_LogicalDiskToPartition"
-         
+
          foreach ($logicalDisk in $logicalDisks) {
-               
+
             $driveObject = [PSCustomObject]@{
                Model       = $drive.Model
                MediaType   = $drive.MediaType
                DriveLetter = $logicalDisk.DeviceID
                Interface   = $drive.InterfaceType
             }
-               
+
             $driveList += $driveObject
          }
       }
@@ -365,4 +365,4 @@ function Get-WindowsConfigurationCheck {
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
+Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)

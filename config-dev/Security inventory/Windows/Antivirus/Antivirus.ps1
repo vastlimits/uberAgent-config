@@ -145,7 +145,7 @@ function Get-vlAntivirusStatus {
                return New-vlErrorObject -message "Status could not be determined because SecurityCenter2 is not available on Windows Server." -errorCode 1 -context $_
             }
          }
-         
+
          return New-vlResultObject -result $result -score $score -riskScore $riskScore
       }
       catch {

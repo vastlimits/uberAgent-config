@@ -75,8 +75,15 @@ function Get-vlLAPSEventLog {
       # Define the log name (for LAPS)
       $logName = 'Microsoft-Windows-LAPS/Operational'
 
+      # Check if $Start time is before $End time if not swap them
+      if ($StartTime -gt $EndTime) {
+         $temp = $StartTime
+         $StartTime = $EndTime
+         $EndTime = $temp
+      }
+
       # Search the Event Logs for each Event ID
-      Get-WinEvent -LogName $logName | Where-Object { $_.Level -eq 2 -or $_.Level -eq 3 -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
+      Get-WinEvent -LogName $logName | Where-Object { ($_.Level -eq 2 -or $_.Level -eq 3) -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
          # only keep: TimeCreated, Id, Message
          $winEvent = [PSCustomObject]@{
             TimeCreated = Get-vlTimeString -time $_.TimeCreated
@@ -144,7 +151,7 @@ function Get-vlLAPSSettings {
       $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey -Value "AdmPwdEnabled"
 
       if ($null -ne $AdmPwdEnabled) {
-         $eventLog = Get-vlLAPSEventLog
+         $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
 
          $lapsAdminAccountName = Get-vlRegValue -Hive "HKLM" -Path $hkey "AdminAccountName"
          $lapsPasswordComplexity = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"

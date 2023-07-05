@@ -17,7 +17,7 @@ function Get-vlGetLatestOfficeVersion {
 
    process {
       try {
-         $versionList = @()
+         #$versionList = @()
          $OfficeVersions = @("16.0", "15.0", "14.0", "12.0")
          $OfficeSubKeys = Get-vlRegSubkeys -Hive "HKCU" -Path "\Software\Microsoft\Office"
 
