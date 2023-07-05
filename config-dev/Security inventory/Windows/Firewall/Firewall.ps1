@@ -121,7 +121,7 @@ function Get-vlOpenFirewallPorts {
       $rulesEx = $rulesEx | Where-Object { $_.ID -notin $rulesStaticServiceStore.ID }
 
       # microsoft uses the group property to identify rules that are created by default
-      $rulesEx = $rulesEx | Where-Object { $_.Group -eq "" -or $_.Group -eq $null }
+      $rulesEx = $rulesEx | Where-Object { $_.Group -eq "" -or $null -eq $_.Group }
 
       $rulesEx = $rulesEx | ForEach-Object {
          $rule = $_

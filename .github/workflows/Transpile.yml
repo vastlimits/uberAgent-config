@@ -3,9 +3,9 @@ name: Transpile Script
 on:
   push:
     branches-ignore:
-      - 'main'
-      - 'version/7.0'
-      - 'version/6.2'
+      - "main"
+      - "version/7.0"
+      - "version/6.2"
 
 jobs:
   transpile:
@@ -25,18 +25,19 @@ jobs:
       - name: Run transpiler script
         shell: bash
         run: python config-dev/transpile.py
-      
+
       - name: Run PSScriptAnalyzer
         uses: microsoft/psscriptanalyzer-action@v1.1
         with:
           path: "config/Security inventory/Windows"
           recurse: true
+          excludeRule: '"PSUseSingularNouns", "PSUseShouldProcessForStateChangingFunctions", "PSAvoidGlobalVars"'
           output: config-dev/generated/psscriptanalyzer_log.sarif
 
       - name: Run PSScriptAnalyzer log analyzer script
         shell: bash
         run: python config-dev/analyzeLog.py --log_level note --fail_level error
-      
+
       - name: Signing Powershell scripts
         if: success() && (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/'))
         shell: powershell
@@ -53,7 +54,7 @@ jobs:
           }
 
           $scripts = Get-ChildItem -Path $env:SCRIPT_DIR -Filter "*.ps1" -Recurse -ErrorAction Stop
-  
+
           foreach ($script in $scripts) {
             try {
               Write-Output "Signing script `"$($script.Name)`" with certificate `"$($certificate.Thumbprint)`""
@@ -68,7 +69,7 @@ jobs:
           BASE64_PFX: ${{ secrets.CERT_BASE64_PFX }}
           PFX_PASSWORD: ${{ secrets.CERT_PFX_PASSWORD }}
           SCRIPT_DIR: "./config/Security inventory/Windows"
-  
+
       - name: Run badge update script
         if: success() || failure()
         run: python config-dev/updateBadge.py

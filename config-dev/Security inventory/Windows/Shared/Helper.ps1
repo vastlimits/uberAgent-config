@@ -32,9 +32,11 @@ function Get-vlIsWindows7 {
         A boolean indicating if the OS is Windows 7
     .EXAMPLE
         return Get-vlIsWindows7
-    #>
+   #>
+   # use CIM instead of WMI
 
-   $osVersion = (Get-WmiObject -Class Win32_OperatingSystem).Version
+   $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
+
    if ($osVersion -match "^6\.1") {
       return $true
    }
@@ -127,7 +129,6 @@ function New-vlErrorObject {
    param (
       [Parameter(Mandatory = $true)]
       $context,
-      $score = 0,
       $message = $null,
       $errorCode = $null
    )
@@ -329,7 +330,7 @@ function Get-vlRegSubkeys {
             $registryItems = $keys | Foreach-Object {
                try {
                   #if Property length is > 0 then Get-ItemProperty else add the key to the array
-                  if ($_.Property -ne $null) {
+                  if ($null -ne $_.Property) {
                      Get-ItemProperty $_.PsPath
                   }
                   else {
@@ -506,6 +507,11 @@ function Restart-vlTimer {
    }
 
    process {
+      # check if $Name is not null or empty
+      if ([string]::IsNullOrEmpty($Name)) {
+         return
+      }
+
       $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
       if ($null -ne $timer) {
          $timer.Start = (Get-Date)
@@ -548,6 +554,11 @@ function Get-vlTimerElapsedTime {
    }
 
    process {
+      # check if $Name is not null or empty
+      if ([string]::IsNullOrEmpty($Name)) {
+         return
+      }
+
       $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
       if ($null -ne $timer) {
          $elapsed = (Get-Date) - $timer.Start
@@ -608,7 +619,7 @@ function Write-vlTimerElapsedTime {
          Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
       }
       else {
-         Write-Host "${Name}: $elapsed $Unit"
+         Write-Debug "${Name}: $elapsed $Unit"
       }
    }
 

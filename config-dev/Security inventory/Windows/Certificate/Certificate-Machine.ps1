@@ -2,9 +2,6 @@
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 . $PSScriptRoot\..\Shared\StlParser.ps1 -Force
 
-$authRootCabTemp = "$env:TEMP\uAauthrootstl.cab"
-$tempAuthRootStl = "$env:TEMP\uAauthroot.stl"
-
 function Get-vlRootCertificateInstallationCheck {
    <#
     .SYNOPSIS
@@ -174,74 +171,6 @@ function Get-vlExpiredCertificateCheck {
    }
 }
 
-function Remove-vlRemoteAuthRoot {
-
-   <#
-    .SYNOPSIS
-        Function that removes the AuthRoot.stl file from the %temp% folder.
-    .DESCRIPTION
-        Function that removes the AuthRoot.stl file from the %temp% folder.
-    .EXAMPLE
-        Remove-vlRemoteAuthRoot
-    #>
-
-   try {
-      #check if $authRootCabTemp already exists
-      if (Test-Path $authRootCabTemp) {
-         Remove-Item $authRootCabTemp
-      }
-
-      #check if $tempAuthRootStl already exists
-      if (Test-Path $tempAuthRootStl) {
-         Remove-Item $tempAuthRootStl
-      }
-   }
-   catch {
-      return New-vlErrorObject($_)
-   }
-}
-
-function Get-vlRemoteAuthRoot {
-   <#
-    .SYNOPSIS
-        Function downloads the latest AuthRoot.stl file from Microsoft and saves it to the %temp% folder.
-    .DESCRIPTION
-        Function downloads the latest AuthRoot.stl file from Microsoft and saves it to the %temp% folder.
-    .OUTPUTS
-        Returns the path to the downloaded AuthRoot.stl file.
-        If there returns an empty string.
-    .EXAMPLE
-        Get-vlRemoteAuthRoot
-    #>
-
-   try {
-      #Download the latest AuthRoot.stl file from Microsoft and save it to the %temp% folder
-      #http://www.download.windowsupdate.com/msdownload/update/v3/static/trustedr/en/authrootstl.cab
-
-      #alternativ: http://www.download.windowsupdate.com/msdownload/update/v3/static/trustedr/en/authrootstl.cab
-      $authRootCabUrl = "http://ctldl.windowsupdate.com/msdownload/update/v3/static/trustedr/en/authrootstl.cab"
-
-      # Cleanup
-      Remove-vlRemoteAuthRoot
-
-      # Download the CAB file
-      Invoke-WebRequest -Uri $authRootCabUrl -OutFile $authRootCabTemp -UseBasicParsing
-
-      #Expand the CAB file
-      Expand-vlCabFile -CabFilePath $authRootCabTemp -DestinationFilePath $tempAuthRootStl
-
-      #check if $tempAuthRootStl was created
-      if (Test-Path $tempAuthRootStl) {
-         return $tempAuthRootStl
-      }
-
-      return ""
-   }
-   catch {
-      return ""
-   }
-}
-
 function Get-vlLastGetSyncTimeByKey {
    <#
     .SYNOPSIS
@@ -283,45 +212,6 @@ function Get-vlLastGetSyncTimeByKey {
    }
 }
 
-function Get-vlStlFromRegistryToFile {
-   <#
-    .SYNOPSIS
-        Function that gets the AuthRoot.stl file from the registry.
-    .DESCRIPTION
-        Function that gets the AuthRoot.stl file from the registry.
-    .OUTPUTS
-        Returns the path to the AuthRoot.stl file.
-        If there returns an empty string.
-    .EXAMPLE
-        Get-vlStlFromRegistryToFile
-    #>
-
-   try {
-      $tempAuthRootStl = "$env:TEMP\uAauthroot-local.stl"
-
-      #Get the AuthRoot.stl file from the registry
-      $authRootStl = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot\AutoUpdate" -Value "EncodedCtl"
-
-      #check if $authRootStl is not empty
-      if ($authRootStl.Length -gt 0) {
-         #check if $tempAuthRootStl already exists
-         if (Test-Path $tempAuthRootStl) {
-            Remove-Item $tempAuthRootStl
-         }
-
-         #Save the AuthRoot.stl file to the %temp% folder
-         [System.IO.File]::WriteAllBytes($tempAuthRootStl, $authRootStl)
-
-         return $tempAuthRootStl
-      }
-
-      return ""
-   }
-   catch {
-      return ""
-   }
-}
-
 function Get-vlStlFromRegistryToMemory {
    <#
     .SYNOPSIS
@@ -348,40 +238,6 @@ function Get-vlStlFromRegistryToMemory {
    }
    catch {
       return ""
-   }
-}
-
-function Get-vlCompareFiles($file1, $file2) {
-   <#
-    .SYNOPSIS
-        Function that compares two files.
-    .DESCRIPTION
-        Function that compares two files.
-    .OUTPUTS
-        Returns true if the files are the same.
-        Returns false if the files are not the same.
-    .EXAMPLE
-        Get-vlCompareFiles -file1 "C:\temp\file1.txt" -file2 "C:\temp\file2.txt"
-    #>
-
-   try {
-      #check if $file1 and $file2 are not empty
-      if ($file1 -and $file2) {
-         #check if $file1 and $file2 exist
-         if ((Test-Path $file1) -and (Test-Path $file2)) {
-            #check if $file1 and $file2 are the same
-            $hash1 = (Get-FileHash $file1 -Algorithm SHA256).Hash
-            $hash2 = (Get-FileHash $file2 -Algorithm SHA256).Hash
-            if ($hash1 -eq $hash2 ) {
-               return $true
-            }
-         }
-      }
-
-      return $false
-   }
-   catch {
-      return $false
    }
 }
 
@@ -466,7 +322,7 @@ function Get-vlGetCTLCheck {
          "7F88CD7223F3C813818C994614A89C99FA3B5247" # Microsoft Authenticode(tm) Root Authority
          "18F7C1FCC3090203FD5BAA2F861A754976C8DD25" # NO LIABILITY ACCEPTED, (c)97 VeriSign, Inc.
       )
-      
+
       # filter out $allowList from $localMachineCerts
       $localMachineCerts = $localMachineCerts | Where-Object { $_.Thumbprint -notin $allowList }
 
@@ -490,7 +346,7 @@ function Get-vlGetCTLCheck {
 
 }
 
-function Get-vlCheckSyncTimes {
+function Get-vlCheckSyncTime {
    <#
     .SYNOPSIS
         Function that checks when the Certificates were last synced.
@@ -499,7 +355,7 @@ function Get-vlCheckSyncTimes {
     .OUTPUTS
         Returns the last time the AuthRoot.stl file was synced.
     .EXAMPLE
-        Get-vlCheckSyncTimes
+        Get-vlCheckSyncTime
     #>
 
    $score = 10
@@ -597,7 +453,7 @@ function Get-vlCertificateCheck {
       }
    }
    if ($params.Contains("all") -or $params.Contains("CMLaSync")) {
-      $lastSync = Get-vlCheckSyncTimes
+      $lastSync = Get-vlCheckSyncTime
       $Output += [PSCustomObject]@{
          Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"

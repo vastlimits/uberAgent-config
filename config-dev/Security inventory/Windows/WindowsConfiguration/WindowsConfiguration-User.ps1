@@ -144,4 +144,4 @@ function Get-WindowsConfigurationCheck {
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
+Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)

@@ -48,7 +48,36 @@ function Test-vlBlockedProgram {
    }
 }
 
-function Get-BitlockerEnabled {
+function Get-vlDrives {
+
+   $drives = Get-CimInstance -ClassName Win32_DiskDrive
+   $driveList = @()
+
+   foreach ($drive in $drives) {
+      $partitions = Get-CimInstance -Query "ASSOCIATORS OF {Win32_DiskDrive.DeviceID='$($drive.DeviceID)'} WHERE AssocClass = Win32_DiskDriveToDiskPartition"
+
+      foreach ($partition in $partitions) {
+         $logicalDisks = Get-CimInstance -Query "ASSOCIATORS OF {Win32_DiskPartition.DeviceID='$($partition.DeviceID)'} WHERE AssocClass = Win32_LogicalDiskToPartition"
+
+         foreach ($logicalDisk in $logicalDisks) {
+
+            $driveObject = [PSCustomObject]@{
+               Model       = $drive.Model
+               MediaType   = $drive.MediaType
+               DriveLetter = $logicalDisk.DeviceID
+               Interface   = $drive.InterfaceType
+            }
+
+            $driveList += $driveObject
+         }
+      }
+   }
+
+   return $driveList
+}
+
+
+function Get-vlBitlockerEnabled {
    <#
     .SYNOPSIS
         Checks if Bitlocker is enabled and used on the system.
@@ -58,30 +87,53 @@ function Get-BitlockerEnabled {
         PSCustomObject
         enabled: true if enabled, false if not
     .EXAMPLE
-        Get-BitlockerEnabled
+        Get-vlBitlockerEnabled
     #>
 
    try {
-      $score = 10
       $riskScore = 80
 
       # check if bitlocker is enabled using Get-BitLockerVolume
-      $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage
+      $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property  MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage, VolumeType
+      $drives = Get-vlDrives
+
+      # add the properties of drive to the bitlocker object by MountPoint and DriveLetter
+      foreach ($drive in $drives) {
+         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Model -Value $drive.Model
+         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name MediaType -Value $drive.MediaType
+         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Interface -Value $drive.Interface
+      }
 
       if ($bitlockerEnabled) {
          $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
       }
 
-      if ($bitlockerEnabled.ProtectionStatus -ne "On") {
-         $score = 0
+      # Initialize variables
+      $allEncrypted = $true
+      $osEncrypted = $false
+
+      foreach ($item in $bitlockerEnabled) {
+         if ($item.Interface -eq "USB") {
+            continue
+         }
+
+         if ($item.ProtectionStatus -ne "On" -or $item.EncryptionPercentage -ne 100) {
+            $allEncrypted = $false
+         }
+
+         if ($item.VolumeType -eq "OperatingSystem" -and $item.ProtectionStatus -eq "On" -and $item.EncryptionPercentage -eq 100) {
+            $osEncrypted = $true
+         }
+      }
+
+      if ($allEncrypted) {
+         $score = 10
+      }
+      elseif ($osEncrypted) {
+         $score = 5
       }
       else {
-         if ($bitlockerEnabled.EncryptionPercentage -eq 100) {
-            $score = 10
-         }
-         else {
-            $score = 5
-         }
+         $score = 0
       }
 
       return New-vlResultObject -result $bitlockerEnabled -score $score -riskScore $riskScore
@@ -252,7 +304,7 @@ function Get-WindowsConfigurationCheck {
    $Output = @()
 
    if ($params.Contains("all") -or $params.Contains("WCBitlocker")) {
-      $checkBitlockerEnabled = Get-BitlockerEnabled
+      $checkBitlockerEnabled = Get-vlBitlockerEnabled
       $Output += [PSCustomObject]@{
          Name         = "WCBitlocker"
          DisplayName  = "WindowsConfiguration Bitlocker"
@@ -313,4 +365,4 @@ function Get-WindowsConfigurationCheck {
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
+Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)

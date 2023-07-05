@@ -228,70 +228,34 @@ public class StlParser
 "@
 
 if ("StlParser" -as [type]) {
-   Write-Verbose "StlParser already loaded";
+    Write-Verbose "StlParser already loaded";
 }
 else {
-   Add-Type -TypeDefinition $definitionCode -Language CSharp;
+    Add-Type -TypeDefinition $definitionCode -Language CSharp;
 }
 
 function Get-vlCertificateTrustListFromBytes {
-   [CmdletBinding()]
-   param (
-      $bytes
-   )
+    [CmdletBinding()]
+    [OutputType([System.Collections.Generic.List[System.String]])]
+    param (
+        $bytes
+    )
 
-   #Check if byte array is not null
-   if ($bytes.Length -eq 0) {
-      Write-Error "Invalid byte array"
-      return
-   }
+    #Check if byte array is not null
+    if ($bytes.Length -eq 0) {
+        Write-Error "Invalid byte array"
+        return
+    }
 
-   $listOfTrustedCerts = @()
+    $listOfTrustedCerts = @()
 
-   try {
-      $listOfTrustedCerts = [StlParser]::parseMemory($bytes);
-   }
-   catch {
-      Write-Error "Error while parsing file"
-      return
-   }
+    try {
+        $listOfTrustedCerts = [StlParser]::parseMemory($bytes);
+    }
+    catch {
+        Write-Error "Error while parsing file"
+        return
+    }
 
-   return $listOfTrustedCerts
-}
-
-function Get-vlCertificateTrustListFromFile {
-   [CmdletBinding()]
-   param (
-      [Parameter()]
-      [string]
-      $path
-   )
-
-   #Check if file exists
-   if (!(Test-Path $path)) {
-      Write-Error "File not found"
-      return
-   }
-
-   $listOfTrustedCerts = @()
-
-   try {
-      $listOfTrustedCerts = [StlParser]::parse($path);
-   }
-   catch {
-      Write-Error "Error while parsing file"
-      return
-   }
-
-   return $listOfTrustedCerts
-}
-
-function Expand-vlCabFile {
-   param(
-      [string]$CabFilePath,
-      [string]$DestinationFilePath
-   )
-
-   $command = "expand.exe `"$CabFilePath`" `"$DestinationFilePath`""
-   $result = Invoke-Expression $command
+    return $listOfTrustedCerts
 }
