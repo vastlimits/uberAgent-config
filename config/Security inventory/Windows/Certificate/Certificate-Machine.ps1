@@ -2,9 +2,6 @@
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 . $PSScriptRoot\..\Shared\StlParser.ps1 -Force
 
-$authRootCabTemp = "$env:TEMP\uAauthrootstl.cab"
-$tempAuthRootStl = "$env:TEMP\uAauthroot.stl"
-
 function Get-vlRootCertificateInstallationCheck {
    <#
     .SYNOPSIS
@@ -174,74 +171,6 @@ function Get-vlExpiredCertificateCheck {
    }
 }
 
-function Remove-vlRemoteAuthRoot {
-
-   <#
-    .SYNOPSIS
-        Function that removes the AuthRoot.stl file from the %temp% folder.
-    .DESCRIPTION
-        Function that removes the AuthRoot.stl file from the %temp% folder.
-    .EXAMPLE
-        Remove-vlRemoteAuthRoot
-    #>
-
-   try {
-      #check if $authRootCabTemp already exists
-      if (Test-Path $authRootCabTemp) {
-         Remove-Item $authRootCabTemp
-      }
-
-      #check if $tempAuthRootStl already exists
-      if (Test-Path $tempAuthRootStl) {
-         Remove-Item $tempAuthRootStl
-      }
-   }
-   catch {
-      return New-vlErrorObject($_)
-   }
-}
-
-function Get-vlRemoteAuthRoot {
-   <#
-    .SYNOPSIS
-        Function downloads the latest AuthRoot.stl file from Microsoft and saves it to the %temp% folder.
-    .DESCRIPTION
-        Function downloads the latest AuthRoot.stl file from Microsoft and saves it to the %temp% folder.
-    .OUTPUTS
-        Returns the path to the downloaded AuthRoot.stl file.
-        If there returns an empty string.
-    .EXAMPLE
-        Get-vlRemoteAuthRoot
-    #>
-
-   try {
-      #Download the latest AuthRoot.stl file from Microsoft and save it to the %temp% folder
-      #http://www.download.windowsupdate.com/msdownload/update/v3/static/trustedr/en/authrootstl.cab
-
-      #alternativ: http://www.download.windowsupdate.com/msdownload/update/v3/static/trustedr/en/authrootstl.cab
-      $authRootCabUrl = "http://ctldl.windowsupdate.com/msdownload/update/v3/static/trustedr/en/authrootstl.cab"
-
-      # Cleanup
-      Remove-vlRemoteAuthRoot
-
-      # Download the CAB file
-      Invoke-WebRequest -Uri $authRootCabUrl -OutFile $authRootCabTemp -UseBasicParsing
-
-      #Expand the CAB file
-      Expand-vlCabFile -CabFilePath $authRootCabTemp -DestinationFilePath $tempAuthRootStl
-
-      #check if $tempAuthRootStl was created
-      if (Test-Path $tempAuthRootStl) {
-         return $tempAuthRootStl
-      }
-
-      return ""
-   }
-   catch {
-      return ""
-   }
-}
-
 function Get-vlLastGetSyncTimeByKey {
    <#
     .SYNOPSIS
@@ -283,45 +212,6 @@ function Get-vlLastGetSyncTimeByKey {
    }
 }
 
-function Get-vlStlFromRegistryToFile {
-   <#
-    .SYNOPSIS
-        Function that gets the AuthRoot.stl file from the registry.
-    .DESCRIPTION
-        Function that gets the AuthRoot.stl file from the registry.
-    .OUTPUTS
-        Returns the path to the AuthRoot.stl file.
-        If there returns an empty string.
-    .EXAMPLE
-        Get-vlStlFromRegistryToFile
-    #>
-
-   try {
-      $tempAuthRootStl = "$env:TEMP\uAauthroot-local.stl"
-
-      #Get the AuthRoot.stl file from the registry
-      $authRootStl = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot\AutoUpdate" -Value "EncodedCtl"
-
-      #check if $authRootStl is not empty
-      if ($authRootStl.Length -gt 0) {
-         #check if $tempAuthRootStl already exists
-         if (Test-Path $tempAuthRootStl) {
-            Remove-Item $tempAuthRootStl
-         }
-
-         #Save the AuthRoot.stl file to the %temp% folder
-         [System.IO.File]::WriteAllBytes($tempAuthRootStl, $authRootStl)
-
-         return $tempAuthRootStl
-      }
-
-      return ""
-   }
-   catch {
-      return ""
-   }
-}
-
 function Get-vlStlFromRegistryToMemory {
    <#
     .SYNOPSIS
@@ -348,40 +238,6 @@ function Get-vlStlFromRegistryToMemory {
    }
    catch {
       return ""
-   }
-}
-
-function Get-vlCompareFiles($file1, $file2) {
-   <#
-    .SYNOPSIS
-        Function that compares two files.
-    .DESCRIPTION
-        Function that compares two files.
-    .OUTPUTS
-        Returns true if the files are the same.
-        Returns false if the files are not the same.
-    .EXAMPLE
-        Get-vlCompareFiles -file1 "C:\temp\file1.txt" -file2 "C:\temp\file2.txt"
-    #>
-
-   try {
-      #check if $file1 and $file2 are not empty
-      if ($file1 -and $file2) {
-         #check if $file1 and $file2 exist
-         if ((Test-Path $file1) -and (Test-Path $file2)) {
-            #check if $file1 and $file2 are the same
-            $hash1 = (Get-FileHash $file1 -Algorithm SHA256).Hash
-            $hash2 = (Get-FileHash $file2 -Algorithm SHA256).Hash
-            if ($hash1 -eq $hash2 ) {
-               return $true
-            }
-         }
-      }
-
-      return $false
-   }
-   catch {
-      return $false
    }
 }
 
@@ -466,7 +322,7 @@ function Get-vlGetCTLCheck {
          "7F88CD7223F3C813818C994614A89C99FA3B5247" # Microsoft Authenticode(tm) Root Authority
          "18F7C1FCC3090203FD5BAA2F861A754976C8DD25" # NO LIABILITY ACCEPTED, (c)97 VeriSign, Inc.
       )
-      
+
       # filter out $allowList from $localMachineCerts
       $localMachineCerts = $localMachineCerts | Where-Object { $_.Thumbprint -notin $allowList }
 
@@ -490,7 +346,7 @@ function Get-vlGetCTLCheck {
 
 }
 
-function Get-vlCheckSyncTimes {
+function Get-vlCheckSyncTime {
    <#
     .SYNOPSIS
         Function that checks when the Certificates were last synced.
@@ -499,7 +355,7 @@ function Get-vlCheckSyncTimes {
     .OUTPUTS
         Returns the last time the AuthRoot.stl file was synced.
     .EXAMPLE
-        Get-vlCheckSyncTimes
+        Get-vlCheckSyncTime
     #>
 
    $score = 10
@@ -597,7 +453,7 @@ function Get-vlCertificateCheck {
       }
    }
    if ($params.Contains("all") -or $params.Contains("CMLaSync")) {
-      $lastSync = Get-vlCheckSyncTimes
+      $lastSync = Get-vlCheckSyncTime
       $Output += [PSCustomObject]@{
          Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"
@@ -633,8 +489,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBOh/PCaXiqw1gb
-# ZRG5raZjfDCdye4Y4OWMDiyRgsBvMaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDg7OLrXyLsmVgG
+# YwNOX6Cxk5tVDLEWbPfJZl/4LpNPlKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -711,17 +567,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgJP5pvTN+TGPW
-# T6S2nBcK0ayVlDymGhyFnZta5gkvbo4wDQYJKoZIhvcNAQEBBQAEggIAo44vFbod
-# pUptF9llvnxMVFqqi6ZOXYyr+l5PhvXMShB9oKmDcA16i3pqtqMmHLd/MHfOP4GD
-# IBKcZklUH1EDFzo/gi0fpxJ+DwucijEhT7ZHKSTv52zmvdaj6cejqeZOPs4EuauO
-# RSB4dx9ttXr+YYRMZLEVO2Kbx2PsUxfwPdi4mXr2lTzOVVt+euyKMyY7h5eBp8fY
-# MF5yuR2kprkRFfZy++g6GAFQZX7ZF+xixlWNdljC4XswCQZlsZwcYWU/CRDEe6Ov
-# +6fTj+ha3ulgqWxUZPD1hTgPW14Ve9oJIKc1f/cJdZUrY2/UEh2Hea7gao+CM3zg
-# 0oNSr6bfTdUAkvLtU24d36304JYaONgpPyQfdQh079QzoknWjBEXRcDOGRWKAyjJ
-# 7bhjXXMOF6p//CPoeHKgh9X0SvmlWRYyjgZETyULILDZTq06cBtGn1WFSZODtzbQ
-# oaN9yeB+BkRbBEuCoFbymBXB0fcptb0quAl9vVWkvAuAt6b8UZnPXYXnrT19DgsJ
-# ZwJP7OIhuYy1C3NhBrJttOM54sePPA+PDKXO6rDTQymcHMnm6gdouFTN70m7Fb2d
-# sHIV1JnCJ0vqUBhEav0zzP6HeWqkN/0WIpfWzKWTV6ZuzfM8ZjpBviMpFlhlZv9l
-# lFULQpaTXyjPs6m/i3mnJrSf+GmeuA7h0r8=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgXQ8yDjNLjWAg
+# FRERQKW2eYQVQbf9xwyiEn3+X1vobXEwDQYJKoZIhvcNAQEBBQAEggIAp0G7sIfF
+# 1u66OUjKp6YwIo/lLoB9kffzZYTsHNtOOPN/dG0+116dvGKN+gWZJIBEFpeuiBVf
+# YJZwlaT6/FdB1iiBjYkFna/8/50IDQq076i4EbRJE4t1ipm7sybpWruJHZMbImzH
+# QVn3zThkf0zDDwndop+7JVJPa19ZGEwaHk/ZEjBF2PczccyidbROFeCf0zp4GlNY
+# Crkbv69CUB0e+mxhjt53BaLmU5kvD53eWXY2HsFD8QZwioyik1Y+31I6INaWRcOs
+# RcA4tO3kHqzMhAyMaIzdnkUN2XPXdwzHZOip2BEOwPr5VqcjjvxfYHjdXVpo0PmW
+# VSQWwGK9ZGdXS9uUXlXwWtawOyPsrSBxynApeoG2JlPbayaz6WedohPZp4oXhoZk
+# ePGuL+VYlSY18NpT7NXdenYEkSl+83Km3GJKfv15cfd7SWZ5f96fMPc2iKXH6wlf
+# KpzbTLlUfjWyrNhQ3gwiI5YhKrKUSv61c7n7BxpDuxnZb4WNONw2KHCcLS+D2/7S
+# K/0fH3n4vWnfn8VhluqjSDEErGDSrvCtv0EqQM0ayJBOTDNXKd6CBno9zDGdQCAV
+# ZcH77oFCQSOgBp4X8y/X2k0aoLyfnTeoejqU/afjhHlE7XjwUIZA71YhG3pQc9pd
+# m21EryqOZMTydyp9gO7DjIt+hW+hSUNGxPY=
 # SIG # End signature block

@@ -75,8 +75,15 @@ function Get-vlLAPSEventLog {
       # Define the log name (for LAPS)
       $logName = 'Microsoft-Windows-LAPS/Operational'
 
+      # Check if $Start time is before $End time if not swap them
+      if ($StartTime -gt $EndTime) {
+         $temp = $StartTime
+         $StartTime = $EndTime
+         $EndTime = $temp
+      }
+
       # Search the Event Logs for each Event ID
-      Get-WinEvent -LogName $logName | Where-Object { $_.Level -eq 2 -or $_.Level -eq 3 -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
+      Get-WinEvent -LogName $logName | Where-Object { ($_.Level -eq 2 -or $_.Level -eq 3) -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
          # only keep: TimeCreated, Id, Message
          $winEvent = [PSCustomObject]@{
             TimeCreated = Get-vlTimeString -time $_.TimeCreated
@@ -144,7 +151,7 @@ function Get-vlLAPSSettings {
       $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey -Value "AdmPwdEnabled"
 
       if ($null -ne $AdmPwdEnabled) {
-         $eventLog = Get-vlLAPSEventLog
+         $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
 
          $lapsAdminAccountName = Get-vlRegValue -Hive "HKLM" -Path $hkey "AdminAccountName"
          $lapsPasswordComplexity = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"
@@ -370,8 +377,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDnKgNhqRg9H9UU
-# XvaV49Jd2EIztylXVIJchxrH26St2KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAdsYUNbU60QguN
+# tnqcsPxmkZqHsIaKDVYp7DqVdc80aqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -448,17 +455,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgrkQjY//75DhF
-# TrqlMq5b41ziVR80RIG24ddgQp78KaYwDQYJKoZIhvcNAQEBBQAEggIAZr7EbRHM
-# YOSL5lzerOlCQUlrH3+zUYvlMoTGbmYGJQwbUNyQJku830XizUoaLTHVhwXvFJig
-# JQdzq77IAAsp0LdMlYa0fRlp41JMU/8m2rW3w1ExlYWscU0zznhI9UQ7dbqAqVwX
-# 5Jzrrr/hzxGQBE5kQvxe31aPKQvJIU6UOCY28FbRf7o1ifr2js3VfbJ2F8AvLHsr
-# cQfa2PPDAPIESy1gLepSaYFyUUvXrt8BZAFcyZboQlUrVvKOp4vuRx1PLd09GgEt
-# gnRbmesURfhJv4qCNbUZ7zamJYRbAytppEgpehyil6UlgasHmTm8fp6XFz0EnFe3
-# 8r2J53qb3RZwJ6BWppF/Hx76Kgz2BEPYAXdYjBlqQtL0rjcwG/2RfaK2g8Ry6ri/
-# bQRvZ1u3loEJIbimte7S1pJkZwfqKmRxdAesY86dLMCd84LWl5FY46UIx5kn7pg/
-# rSSUUBfr0QSAnM/0q0zbNCzdcLpR2YNFJ14oOKZhKrkFBI1o1QMidq1z8QRvau5Y
-# G74LmTaUTZkwCktDEny4Hjox9HZccMgHIzbKgaPiYNtrOuOH5IRUjAgMhzeMg1cn
-# l0niRqOLvF4k8E3jvSQRQ2nu0QVJ/1i46++f3SVHlDryUQjunzofEimxhH6bgiQ3
-# l6x+MosjmPIKuekh31OLLqVSAjPvLxBy7zg=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgTft29p+K39f2
+# 2eGivtsbUlXwnu1lFmT1UGqSbx/2QuowDQYJKoZIhvcNAQEBBQAEggIAidZ0H848
+# lMsqrvHxO6X6GPiGpbOzXAfwAAezJepQw+zEk+NkIIvyRB9z/yMHE86UtdQM79c6
+# Ba25aXt0t6fEfBC/RCJbCQvc/XXCCRou3Dry8bv6jq6lqk50lddkqgkrDx/Fei3P
+# BJiNs7STYmf1S6fkPWUly3L/hjMKise6ykMyncs57DclfBKYPHnSdnP+058vl0yl
+# mYsFSRapSxs/YhTuaol3ReeYOT1GdcfUTqas2x+MRJfNAzPpKbV3t3lY1Zr6sPvF
+# tnU8C7q/noEQnDDfNHRAUkGTeeCoJx1qD41TISG3tvb6zprUCMEC+ic70iC9h6Yk
+# ax6HLl4JA+MViJDnS+rGksYHX/uQkPV4UD8u7Bpg5CRiofnyAJChG1de/hZ0UEWC
+# JdBhkX3IUbamC1wyLsycqQiKKAbNkO+4Y3VdweGdpa+jSc2964Sxr7pxdIIJSA0V
+# JZzre9fkJvHaT5pD88XCdm7Tcp+BRgDoDCYFVWnTZfZRSi+mMtyA+QNZU89qkJk+
+# E5MnFU+Wl748fSNYa2HLdpPuRg2buIUBfXHX9dW8DaoTGUia7A+ObXue2oZwPybk
+# 0VG9okgt8Lv4Qu2qfMFqJd2MixGr2qCuyCaBrPIT432ZBRIf9XamBuwkB0F8QNh7
+# W8nFKDWatCOuS7noNCzGs1roARO//kIGPqw=
 # SIG # End signature block

@@ -169,7 +169,7 @@ function Get-vlPowerShellExecutionPolicy {
 
          # go from lowest to highest
          # first check LocalMachine policy
-         $policy = $policys | Where Scope -eq "LocalMachine"
+         $policy = $policys | Where-Object Scope -eq "LocalMachine"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "LocalMachine"
@@ -177,7 +177,7 @@ function Get-vlPowerShellExecutionPolicy {
          }
 
          # check CurrentUser policy
-         $policy = $policys | Where Scope -eq "CurrentUser"
+         $policy = $policys | Where-Object Scope -eq "CurrentUser"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "CurrentUser"
@@ -185,7 +185,7 @@ function Get-vlPowerShellExecutionPolicy {
          }
 
          # check UserPolicy policy
-         $policy = $policys | Where Scope -eq "UserPolicy"
+         $policy = $policys | Where-Object Scope -eq "UserPolicy"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "UserPolicy"
@@ -193,7 +193,7 @@ function Get-vlPowerShellExecutionPolicy {
          }
 
          # check MachinePolicy policy
-         $policy = $policys | Where Scope -eq "MachinePolicy"
+         $policy = $policys | Where-Object Scope -eq "MachinePolicy"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
             $highestPolicy = "MachinePolicy"
@@ -299,7 +299,7 @@ Function Get-vlPowerShellLoggingTranscriptionStatus {
       }
    }
    catch {
-
+      return $result
    }
 
    return $result
@@ -329,7 +329,7 @@ Function Get-vlPowerShellLoggingScriptBlockStatus {
       }
    }
    catch {
-
+      return $result
    }
 
    return $result
@@ -358,7 +358,7 @@ Function Get-vlPowerShellLoggingModuleLogging {
       }
    }
    catch {
-
+      return $result
    }
 
    return $result
@@ -564,8 +564,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBXhzw5qzapkAQQ
-# LFDqD2RdQVdH286ai+fBVX8OjbG6ZqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAF5HQ9ZrPwB2XK
+# 4vkRNPpE82nOxplTZBZd6+3pJoQ0QKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -642,17 +642,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgSIOGnwNz/FnB
-# +c1eFy5ZvlDXYhcsygkIJ1o0Sg/3hVMwDQYJKoZIhvcNAQEBBQAEggIAGn0im9qr
-# oeYMyC/jbM8ca/rYqC66fAG+towyPW6rxxAMR1Zf/wOQlHjzVKTTeKbBoo8YqBgZ
-# DP+cQNMLCKTKPc1RIsxwPmnM/lWplfWHmKcxemKGlK+k3yoZZivSPSt0KYf1H5Ka
-# VdsW377aK05v4jyf5i4vezFljWRIirdFFGepZ9I93EkdEgaRtfdKIdWSzQXE6uFS
-# acx5Tb2ViJBs00SKDsj6AX63nkX8nUsElEid0aPu4QS9cNTgqbw/+TlZd85iZQ0h
-# eMUJS0G09fDX/exA6WGPLfLGMMZyxpIZoXFNcSwm32DBmH2LzDY01vrFn1IXXMo1
-# 18Jdya9VxTg68XGvNifrMimJwc+t54fm+JDEBfJSzCh4Vj7nR5Zr5IkmoZUVc6ez
-# bH46Vm9d/w1oT+m/ecHzKIlT1euEdK7Ib1UylgQ74AvPomN+mRT5slJw6DoYo2Wf
-# hgtnqvKBiPMsnSGXtu4ZgpyGHXrUhxZ4LluiUzZVhmFgZLtLoUtU0RDDJqqmgWsq
-# y+z2+tg82l6HFI446ScD7DWZPeZmS1rGnyiukNE9UQGipxzmo/UWUukp7q6Uhg1/
-# P30iBwvkvD93jqwNVDV7B76A0O5GeZM+Tjcnq3Lpjv34fTqg5km4Zh5NT42hqYtg
-# zzba3ue9HdGqY4x0reWO1CUbA/K4DkkErxc=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg+BmeS0/GDW0F
+# qJYShrv3X6D8aq4SyGOA6X1n3XsnNzcwDQYJKoZIhvcNAQEBBQAEggIAAfW08+8C
+# nn7Gx3iEeH/N4FVX+kn3NuWXP9l9/Mres7LHMu73N5bNfp6cGgZrz5nZPeyS2xYm
+# F+bOM2wZImunO27mjxTv/dSnFxIa33Ny39J7g/RbxCJhy3MDcfSZmFu7nfWZcn8i
+# ynpb3f4mpa2E1WRZne53Yen3z5otscI9h+4EATu1qm9dV1IK3+BtwXjDaSVyB8px
+# h4DeDJ1I6mONqTZ7zOGNUk5OlnYCweg4rB7Hujp9aEC0zv8/i0T5kDLYs9Q6G1Hl
+# /+d5L3Rtgx8BCeAkA/Eq5yn3I9VKS6vjacekJlbA0MhfAiLuw6ZF6JEH+p25tBN3
+# hKkUJEPmuYHFEFlMzY3o8bBVs0wwIGYtBwweO3NWsS+mWgCWln8tXIjylnZGEuU6
+# RROxyqd+JCyDEKZJ3i05ibCXtayE+JWIwO10QX9wYdQbXIpcn3glFHHo9Jji3sCl
+# 6+lxWXP9AXKu0fuOha0XinyO6SSgCphkMIfFV8zafHHKkRAd0PaF7UGhuc2JHcNn
+# a0MzCVzmMM3cMrzOCJIiTeHDeoQS1+3ucX+xBonqzS6Bg1Sxs87x+GkaNROfvqc0
+# 2rf2QrqCnWHP4E31RiWNuhI16b5B0GPy5A6AzX6HorUUlExqba7v2HkqE7aVggft
+# CnqHL9rj+jmnHnCprzDlZFHJIRehQ3H7J9I=
 # SIG # End signature block

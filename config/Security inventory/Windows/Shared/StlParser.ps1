@@ -228,78 +228,42 @@ public class StlParser
 "@
 
 if ("StlParser" -as [type]) {
-   Write-Verbose "StlParser already loaded";
+    Write-Verbose "StlParser already loaded";
 }
 else {
-   Add-Type -TypeDefinition $definitionCode -Language CSharp;
+    Add-Type -TypeDefinition $definitionCode -Language CSharp;
 }
 
 function Get-vlCertificateTrustListFromBytes {
-   [CmdletBinding()]
-   param (
-      $bytes
-   )
+    [CmdletBinding()]
+    [OutputType([System.Collections.Generic.List[System.String]])]
+    param (
+        $bytes
+    )
 
-   #Check if byte array is not null
-   if ($bytes.Length -eq 0) {
-      Write-Error "Invalid byte array"
-      return
-   }
+    #Check if byte array is not null
+    if ($bytes.Length -eq 0) {
+        Write-Error "Invalid byte array"
+        return
+    }
 
-   $listOfTrustedCerts = @()
+    $listOfTrustedCerts = @()
 
-   try {
-      $listOfTrustedCerts = [StlParser]::parseMemory($bytes);
-   }
-   catch {
-      Write-Error "Error while parsing file"
-      return
-   }
+    try {
+        $listOfTrustedCerts = [StlParser]::parseMemory($bytes);
+    }
+    catch {
+        Write-Error "Error while parsing file"
+        return
+    }
 
-   return $listOfTrustedCerts
-}
-
-function Get-vlCertificateTrustListFromFile {
-   [CmdletBinding()]
-   param (
-      [Parameter()]
-      [string]
-      $path
-   )
-
-   #Check if file exists
-   if (!(Test-Path $path)) {
-      Write-Error "File not found"
-      return
-   }
-
-   $listOfTrustedCerts = @()
-
-   try {
-      $listOfTrustedCerts = [StlParser]::parse($path);
-   }
-   catch {
-      Write-Error "Error while parsing file"
-      return
-   }
-
-   return $listOfTrustedCerts
-}
-
-function Expand-vlCabFile {
-   param(
-      [string]$CabFilePath,
-      [string]$DestinationFilePath
-   )
-
-   $command = "expand.exe `"$CabFilePath`" `"$DestinationFilePath`""
-   $result = Invoke-Expression $command
+    return $listOfTrustedCerts
 }
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBFliK1ZFAyJtda
-# SFLf/axhq5j/LDkrTZA8KAnnvxibcqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCLXEnvJuyfxdvs
+# 0+1ZfiOtI+PAa9P8k8szr2ftBT4jeqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -376,17 +340,17 @@ function Expand-vlCabFile {
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgaqWIZrGZKE7c
-# yhJvovRuxjxDl7f3s7SlPn85w0sJMwkwDQYJKoZIhvcNAQEBBQAEggIAJGFhCLaR
-# C2a2CZwzKPd3cPR8A4fqIp+vP9O3pov+DKusJK6TayL8N3VWw0HpKXe1cG1KMkb3
-# fq1Oe1bpYd0s9mqRof5GSanI151wpcknPgxlixNE5nSkYK9mPgAm5xiHlZBtwN+4
-# ZxP/f5Jl8iEGiEHA4OFyuF8n9KN4uLqFlXta9zl0keDGIQranTb5bikX3Sf7LbhZ
-# NhTTJ4eBVSauoMzt0dQHDV9PxxYfTeYh+CYRHqib8z8GxbMogUZdWpPchk64RD03
-# F8+O1nQePL54JVSBUMKS+XJUIMmF9ww+MhI/KStxQKvLpZGU0Cg/utqof1E9jAFg
-# lOD02ZQr1k3wUaApD9O4biF9atk7AmjIqMWkVIRAT6fTt1V4QlrUBiRoceGMEkJ1
-# NSwFBwcPAc6eKKp3rB2K1CjFZbc2peA3du+DZ5wdTvCXX4oxjmdKzvcjbNoprYyx
-# Hr+tJFwglddOMWd990bIl85eS0R2PBji0OtCkH9UwkyxSyMO0bZysJlzFuLGv8og
-# vcMm6f0TiQfIwOLWjJsErEdooRnvfG1MTLgdR5ZuU9GpsI5DKm5R6uoHTdwmhc6N
-# 44VMeI6bN6MczgoE0W3IL2ITJ24wUUajFAe1VvMDHpQeVd2rTPaiPkAoiKLfagl0
-# 6qAod0wKpUrGX5ETQZGB5SKaIch+7L6FJfk=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgFjHDQaYkJS9c
+# 36acAI4kdtF1eWKSF4ohQ/Z3wR1QYggwDQYJKoZIhvcNAQEBBQAEggIAKTou12w6
+# JrGsK0059rCU8qCEsOkFz79EJelJhrGK91dCYD4MRJJO7z15+0fNuFrvufgaTz/X
+# pxRB6UvhEHDm9XcAgEd9DByt3lh0/vsEHCNJyBkZ+MJQBECgMV+Df3wZCr4AJftx
+# bAPZtVUc5aEQ6GP1likDHG45raNMeJtui+iBdjiNd12hIlVugrd2RptIyY1guriC
+# I2wYFiuAVgSJFaBRWdktHEwGCR3SnaWn4Z7mlb5WJSfoRwo/koERBpYK5SFkMGT+
+# /Nw30DSGs1kXNJGuJRV60lrVB/S2yX9SApl6OKfRjD0frKBS+AX6WpdKMU2sps2X
+# MoNbkDmbddnso8VK34HTMGV2CJuuNMtnIKHWpFzRisKswQafooyJbh6zLSYK57jC
+# WkbUwRORzC+rWWBbF7RgF8/lDWkG2WjpG18PsCsPWcg8i/13BQ+XgXbbcs18Sand
+# SW//6B8Ax/Fj6h/WstfGgFuK3GpZIyE0EYWRYAvGqdw/q+KvmJR2oDQ167RR3rIK
+# dqY89Qps2nhWP75xjFuWNRCOhsPN28OsoQVAMozcCKc62pLfOugfGamedShfumFG
+# TodgVIooKAMiTlsUGOJPXtSTfbB20q8VhL9QsCGfgOH1a1kDDU7BCpqc74ZTWZF8
+# pe3e73H/0XOxWRC6Q+s2ErWNjw1qV1ppMc8=
 # SIG # End signature block

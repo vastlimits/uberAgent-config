@@ -32,9 +32,11 @@ function Get-vlIsWindows7 {
         A boolean indicating if the OS is Windows 7
     .EXAMPLE
         return Get-vlIsWindows7
-    #>
+   #>
+   # use CIM instead of WMI
 
-   $osVersion = (Get-WmiObject -Class Win32_OperatingSystem).Version
+   $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
+
    if ($osVersion -match "^6\.1") {
       return $true
    }
@@ -127,7 +129,6 @@ function New-vlErrorObject {
    param (
       [Parameter(Mandatory = $true)]
       $context,
-      $score = 0,
       $message = $null,
       $errorCode = $null
    )
@@ -329,7 +330,7 @@ function Get-vlRegSubkeys {
             $registryItems = $keys | Foreach-Object {
                try {
                   #if Property length is > 0 then Get-ItemProperty else add the key to the array
-                  if ($_.Property -ne $null) {
+                  if ($null -ne $_.Property) {
                      Get-ItemProperty $_.PsPath
                   }
                   else {
@@ -506,6 +507,11 @@ function Restart-vlTimer {
    }
 
    process {
+      # check if $Name is not null or empty
+      if ([string]::IsNullOrEmpty($Name)) {
+         return
+      }
+
       $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
       if ($null -ne $timer) {
          $timer.Start = (Get-Date)
@@ -548,6 +554,11 @@ function Get-vlTimerElapsedTime {
    }
 
    process {
+      # check if $Name is not null or empty
+      if ([string]::IsNullOrEmpty($Name)) {
+         return
+      }
+
       $timer = $global:debug_timers | Where-Object { $_.Name -eq $Name }
       if ($null -ne $timer) {
          $elapsed = (Get-Date) - $timer.Start
@@ -608,7 +619,7 @@ function Write-vlTimerElapsedTime {
          Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
       }
       else {
-         Write-Host "${Name}: $elapsed $Unit"
+         Write-Debug "${Name}: $elapsed $Unit"
       }
    }
 
@@ -619,8 +630,8 @@ function Write-vlTimerElapsedTime {
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC8ibVzl/4i3fSh
-# Iok1AqIrvRDBjXxSaE4rh8OPhTYPOqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB86HOTjNCn9O97
+# Klq7SmFiXjoHh7IAKENE8bMjH4ZTs6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -697,17 +708,17 @@ function Write-vlTimerElapsedTime {
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg8YQb2veWIFKS
-# 4kdNd7jtH662R+ZCaUF9sElgr47Rkg4wDQYJKoZIhvcNAQEBBQAEggIAO/gJE3Ai
-# c5r/cSQSgU/f9rkdyeoih5Zi+VxaOobir2U82Y2NBmh71xDZNWcipYAmKyMyKQVY
-# Zb5e0BLUWFBS99jlGFbbZp/kbwSyNMK2ewumXfjTpelldkqoJp1rddQxPgdi2X3E
-# /QgcX4CANIqhPdWUQc9boLwZeVTVhob6+deFeZ6oGDonxqQxNBjlus+h0740+xwa
-# Uzn19jN3ECAeztmjRVFgUeuZ7b87CFSSoP24038lCz/HIoxD/aAI1cl2nqBMKERb
-# Kb2jkHYInPnGS11Vqy6rw1kd88PB2VhMrZ69EeR4UPKOUiUXbnf0KyTefUrYn7kG
-# NasfbCSQRF4CbOvtyfLIGdLFBWWNaNFEeswfd/pR0NRvoNELf/Crv45f14dJyweJ
-# 3zqqfrcrXByoIa+1H9wyDfl8MlyFuq3h8gspBKBPdt7376bj3w24itensRwthh0P
-# muhwQVhvOxid4dY1CnbrLDj6Qrbadl+2V3fp56gehXbjHU0znAyghZaahfBIAkyI
-# +EsHIc+c4YzdRblBpXGwp36euFvS+zcCLqk7874EEqGylmOntKstiZ+uPnR5y0Zh
-# uA25Cm3TFlTc6RPJfz7T1XOUtVQoFcbKc/l6TrOo+9rjdQw6ihBSjEdljpIkDtE5
-# hoOBbvSdcPCU/4kxU3haIlOslzEf99TX3j8=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgjcS6ZSUy35RB
+# p5k0eJxllHokRMNGoDqTQ5b1bqIgPokwDQYJKoZIhvcNAQEBBQAEggIAMQDPzWRY
+# hNdJmjgQiYDsF995uEIkRIA7gZSnd6gG8dHnH+dZvYqF8eg7pdHLaYzR81Rs4APw
+# P0baLvBI9pTB7JEsGSbcysFEvvdDvLf1m1qFE2brmxR/kgJBscOJmGZT7KQRP1In
+# hlZuIMyXrm/4nTkomzIYyhlD6l6bxCS2V5BMPOs8Ihp0M0XskDaFMAuzKrRHXUQU
+# jxfse/MSY8sFTZLZ3k2aeYr+2pzBduIOr4cFt3I0liXFB4WgNUA8/Ow9Ca79Kkeg
+# 82lyYHUaNzWSA9oVRX0W039ajjeopwgK+gAva5gy50qbiuAgiYMTQQnINM2tokny
+# hiUmOsTK4wAOs2wcbkcfFBtU+CRh9eY3xDy7y2rGX69QhOv74Y2VT+5E6y/h2JO7
+# cGkO05ojxrdOrWJ8a0aRGIJxPUzflxAaSzUh3KL2aCqpsK72WbnI3hljr5O2zbKD
+# SF4HCK5QmaPyVMFwLB5HntDr3+TkSrQ9+E2vJv7Su9sUhytfj/MYtdg5xGc9DLsX
+# OVHfT5Kbeb+rXMggCjnLdPXLGqTozrCiKOAMeVgIzMAHrUcQTAWKoDiHO69yTFhd
+# QmZiQUST+rF39EgPyImH74GcNrhX974eO9snN+BzSdxi4wX/b+D9C/2nqYrEbO0y
+# 58ZCTYFINWalflhlnxPb1hcmeJ63/w69iZU=
 # SIG # End signature block

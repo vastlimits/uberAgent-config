@@ -17,7 +17,7 @@ function Get-vlGetLatestOfficeVersion {
 
    process {
       try {
-         $versionList = @()
+         #$versionList = @()
          $OfficeVersions = @("16.0", "15.0", "14.0", "12.0")
          $OfficeSubKeys = Get-vlRegSubkeys -Hive "HKCU" -Path "\Software\Microsoft\Office"
 
@@ -95,7 +95,7 @@ function Get-vlIsVBADisabled {
 
       try {
          $latestVersion = Get-vlGetLatestOfficeVersion
-         $macroConfig = Get-vlMacroConfig
+         #$macroConfig = Get-vlMacroConfig
 
          if ($null -ne $latestVersion) {
             # office is installed
@@ -172,8 +172,8 @@ Write-Output (Get-vlMSOfficeCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA6H5svt0aXAhSz
-# O/nXr/Bdu2ysv0O0WuVivM7CjuvKUaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB4oC2aE0nKBhDk
+# n9qq9B15aa6psniWsBqsIjUq1NAA8KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -250,17 +250,17 @@ Write-Output (Get-vlMSOfficeCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgv8j5YGLvqHwH
-# E+VsHNN0yc0e1Gl8kMo5DJvi3Mk5IYUwDQYJKoZIhvcNAQEBBQAEggIAMXaYUox5
-# Al9vfx8oX4KG7Lp7prVVjWn3jqd6UJ/2aMRV9BICJcyFOo/cV80SyRDK2jO3g6WL
-# wPxxYz2nsdNMECG48d0tEV7HDUW1uWAUoaq/LUA8x2eERhgGKnguTRk65uxdmGK1
-# MN1M+fp2oyRxA6c4BS+HL2k5J8cBi11LDAbDCg7zF3IUxFKKyR6uwxSK4D+XmgDq
-# UIr+B6x0kT2Bc4R90yy3z38km+UkaUWPYye9dtOkdWG3GfhhIPlVL/ZDN0hkFDpp
-# Iu4AX7ezS2ZLPCH+WE18sRrsyMMhsinTc8YRxBBRo2ZyFLZzZk9Z4x93KG9y4el1
-# IzC8pW3THQLx9xHQrDXQNjaRnu18EAVY9UXd72Z+a0dgx6aHOsVzkt1VuMhefZiI
-# StD59W4lIzBu3L6xPD/MOiqBBe3BcxN1hmm/h6/V314pT4W3EvZtV9R7FxK3IDdJ
-# Ms763FYZlBGBusQEEsN42bg2Hg6unrk0hkwxQxWFFEsFPM9VXVvBu2ZsjOnpOluG
-# eozUBrS/HFl26W9v7UnoiaDntOwXXwTlRmWHvX/5ZWgIghx1/11/BT/SQf1Y+GCz
-# InGfGBY/2nMChFtXpEFshJ2G4sXNo2W/NrhG/FpwMOCcoLrDppG0pIvYmisgzljc
-# DwoN2Coo8B8PsYqiyZv9i7TqxO6W5DkTsYQ=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQggoZiGVWDSf4k
+# KliEvDnEorNivPHSgyN7FUmZf+gUFPgwDQYJKoZIhvcNAQEBBQAEggIAYDuzGVuy
+# GSIZnZZD2uL1cgs2eTlMMK4QJGQeLJeMMx4JQU0pSoKVqOuFethQZ8VOYHITJRpK
+# rzBD2lPDJ7GgjXFMjvgBZrxFU+LUj3E2PHUK+gM2FcI9QiWGPRkh/zCg36HrVwsl
+# 5GUBZqSorguNPDGfxDMQArflxZoMRA+84Ju2agqbOabnw3Prx0mAH0XoOY9UBTGK
+# 1EMHNMHLrnoHSCpmUpsLW5FPXaT3B3CXmqT3jSzR9e2z8h36f4wFOmiBNo4ulPad
+# 1k7EfcOQA9hnuoBniqex0hz6oxJBGMOHxEljFg23CpnJ386xJ51jNLZIXlnDB7En
+# aGJVuZNxMeToPKhQbQM4nizUlIivSevzgO68QNcu5ZEe6QwQwM16fe6EV3Svd/Ud
+# XQgAHqhK0uZnYdTotIG3gCAWz0hfHBctinL88R+dvs7vs8jXjISv8udyqc4OaFJi
+# hUVcog3BXy8vGmaHdfou6BV85SOj75wdEz/4/zkM0d9TZ/iaW821npY2QCPwnnfP
+# JJq56WfNGBGvVHOwNkkGrHbDFGz+SHCSSI7nyIvRExS1YC5FXZaQDUdtEqaaEuGE
+# a/6Xa5PMXQ1lLnzxm9kl345abQDEz7Ay1koosx5N9t+tLUyIBevuTQNtzirzxE47
+# nihh4EfKxW9RLC8LxoSnMQi88QNVVXijgzs=
 # SIG # End signature block

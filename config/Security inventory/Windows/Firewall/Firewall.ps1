@@ -121,7 +121,7 @@ function Get-vlOpenFirewallPorts {
       $rulesEx = $rulesEx | Where-Object { $_.ID -notin $rulesStaticServiceStore.ID }
 
       # microsoft uses the group property to identify rules that are created by default
-      $rulesEx = $rulesEx | Where-Object { $_.Group -eq "" -or $_.Group -eq $null }
+      $rulesEx = $rulesEx | Where-Object { $_.Group -eq "" -or $null -eq $_.Group }
 
       $rulesEx = $rulesEx | ForEach-Object {
          $rule = $_
@@ -216,8 +216,8 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBVCsYwM6M+sxBK
-# +s6dTFYIzUtIJaaeUWYHS9N4opKnfaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAmIFqyjQ/Tw+sb
+# g38sqqA6SOe5ecb16ieJZEDy3ODWWaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -294,17 +294,17 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgrJjRuVWC2/R1
-# Sges+RPIgqeSgSfoo/ymeVXppqYEXXAwDQYJKoZIhvcNAQEBBQAEggIAJ65Lgsw+
-# NKlbGKXn2SN4cjQZAyGAN368uwPXUK7x4poL3Y4kHmCavNijxufj1ScdcfeCopoQ
-# 8hF6QYRd6tqJH2NevI3H8G8YqKUl1FisLJyDKrFvT11crblZpGIMYIa0qCLNNNdz
-# mE9KSHZfOnwzG5HqyByNRyjjtjsBTHGIVMLcVAV6UQEFQEQPRJk4mq+q0JmNxUti
-# 1o+GOQHPcNO9DTg7KnO7SGy9cBb7hzo7r37gp4KrpiqF95hjbJBnb3VEO9R7rXMM
-# kNzROBX9BnRlY1MrbaUyTgIoJ6M0p3WjvhliGUXHoK5SZ/WoLK5rIIL1HKbRQROr
-# FIETjSNMbYbfinfYu+Z5M8vkT4qYXknuWC7mTCFxDWmmN90S/gqn+ZylzYR2djRq
-# oXGMZFlO2QiufYH0CcNGdGAByIt+3vXfg4BqjEwQspcqFf0s9lPwyJwhSbHbpEZJ
-# 9IliWPa020yq+J4WK/R+LRlpAzHxQP+XQIBrBT4/X6Jupko0sWfI+1z7BvAi69pE
-# H266ZIBEwnvRFnGtF/sT1ywAMq7VfS8P6d/iIN7kUagZ4IVarclnbGHa/pn0h8JX
-# cceeygDI4WgPwHmYBnVtQS9cJiSFpTrg1ndzuDbQrP1xJGDS8NM84eSEO2YvzC47
-# 9bTz6iRauslq7DndLw8H26ZeMAcYEHNGhyM=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgBfL5sV/HbUJZ
+# 4nkfuvn32/q4SknLrDVMgOzs3srQyBwwDQYJKoZIhvcNAQEBBQAEggIAkzMWzTeI
+# xBlq0VaXMsfd4kIsXdMOyQ4iew+3SvR+QJYQVlIbyGLoQuCtYDdX9IIlApw7ia92
+# Pa1fQvewyjLS9oLzsV8JgPEqTS8BvMhwJH+42CcWocPG+vxO9JH42LNcUJme5nIv
+# NiS768wwfTincRZP2PMH8bYfoRh8T6cJWtyq2b9AcTqijooG+g4Oe9wy/RU0XoMx
+# Gy3q6I8YhcEKBRTf6ReRaIoQ8lgfFxQazjIpHm+YeAX+v4GljFhkdu0lZDwmJxQd
+# oRO87rPWoB3MgVXayyetOpiizRmo1BJGSbQNCoT9xvgvi8Ng1PTonQzcD7Cbysft
+# HWi9u15JfjIYsgMlMf4JAd7o3VvIq2Tw3W6lWEA8K7ZQwJaC4boMiGy+7Yjjxxc/
+# psSk4x5BBsUzRVBriIy0jogy+TVZqkR+S78YqGszqdnLM9zyk+9emeulOjC/u2vL
+# vpNlJC0TNx/mrSUYDsmbIVlZgeGNCvCADYcArLJurl4tKnKYnUAgGwH1ErZzNKIF
+# 4WC2EUp/AS6NPZb9Yv6IDPPrJAzgVB4ssmao+Ho2miZIDDpSFQNKJeTQDPsg4eVs
+# QvJrtkS8Y9rYR4/LGZ/GWzrxqToaokNjvYi0gI4V+5JDHGScfU0SSBt8C7lRiL2N
+# kEU7IshJZaMXUG6fDCH99O15+j7yy3+mt4Y=
 # SIG # End signature block

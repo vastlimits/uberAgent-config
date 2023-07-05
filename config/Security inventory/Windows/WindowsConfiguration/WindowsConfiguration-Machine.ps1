@@ -48,7 +48,36 @@ function Test-vlBlockedProgram {
    }
 }
 
-function Get-BitlockerEnabled {
+function Get-vlDrives {
+
+   $drives = Get-CimInstance -ClassName Win32_DiskDrive
+   $driveList = @()
+
+   foreach ($drive in $drives) {
+      $partitions = Get-CimInstance -Query "ASSOCIATORS OF {Win32_DiskDrive.DeviceID='$($drive.DeviceID)'} WHERE AssocClass = Win32_DiskDriveToDiskPartition"
+
+      foreach ($partition in $partitions) {
+         $logicalDisks = Get-CimInstance -Query "ASSOCIATORS OF {Win32_DiskPartition.DeviceID='$($partition.DeviceID)'} WHERE AssocClass = Win32_LogicalDiskToPartition"
+
+         foreach ($logicalDisk in $logicalDisks) {
+
+            $driveObject = [PSCustomObject]@{
+               Model       = $drive.Model
+               MediaType   = $drive.MediaType
+               DriveLetter = $logicalDisk.DeviceID
+               Interface   = $drive.InterfaceType
+            }
+
+            $driveList += $driveObject
+         }
+      }
+   }
+
+   return $driveList
+}
+
+
+function Get-vlBitlockerEnabled {
    <#
     .SYNOPSIS
         Checks if Bitlocker is enabled and used on the system.
@@ -58,30 +87,53 @@ function Get-BitlockerEnabled {
         PSCustomObject
         enabled: true if enabled, false if not
     .EXAMPLE
-        Get-BitlockerEnabled
+        Get-vlBitlockerEnabled
     #>
 
    try {
-      $score = 10
       $riskScore = 80
 
       # check if bitlocker is enabled using Get-BitLockerVolume
-      $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage
+      $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property  MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage, VolumeType
+      $drives = Get-vlDrives
+
+      # add the properties of drive to the bitlocker object by MountPoint and DriveLetter
+      foreach ($drive in $drives) {
+         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Model -Value $drive.Model
+         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name MediaType -Value $drive.MediaType
+         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Interface -Value $drive.Interface
+      }
 
       if ($bitlockerEnabled) {
          $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
       }
 
-      if ($bitlockerEnabled.ProtectionStatus -ne "On") {
-         $score = 0
+      # Initialize variables
+      $allEncrypted = $true
+      $osEncrypted = $false
+
+      foreach ($item in $bitlockerEnabled) {
+         if ($item.Interface -eq "USB") {
+            continue
+         }
+
+         if ($item.ProtectionStatus -ne "On" -or $item.EncryptionPercentage -ne 100) {
+            $allEncrypted = $false
+         }
+
+         if ($item.VolumeType -eq "OperatingSystem" -and $item.ProtectionStatus -eq "On" -and $item.EncryptionPercentage -eq 100) {
+            $osEncrypted = $true
+         }
+      }
+
+      if ($allEncrypted) {
+         $score = 10
+      }
+      elseif ($osEncrypted) {
+         $score = 5
       }
       else {
-         if ($bitlockerEnabled.EncryptionPercentage -eq 100) {
-            $score = 10
-         }
-         else {
-            $score = 5
-         }
+         $score = 0
       }
 
       return New-vlResultObject -result $bitlockerEnabled -score $score -riskScore $riskScore
@@ -252,7 +304,7 @@ function Get-WindowsConfigurationCheck {
    $Output = @()
 
    if ($params.Contains("all") -or $params.Contains("WCBitlocker")) {
-      $checkBitlockerEnabled = Get-BitlockerEnabled
+      $checkBitlockerEnabled = Get-vlBitlockerEnabled
       $Output += [PSCustomObject]@{
          Name         = "WCBitlocker"
          DisplayName  = "WindowsConfiguration Bitlocker"
@@ -313,13 +365,13 @@ function Get-WindowsConfigurationCheck {
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
+Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB27p+RIs2+0vml
-# MEgW5svJ2aQlSEieNCw+vPWx9udQEqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBMhPislwFcs9RM
+# ZEUBGEp4UvuKinb+u9y35RWWxpizF6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -396,17 +448,17 @@ Write-Host (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgq4CdwfD+X4zc
-# J39/2X6E+KxSpwiUUP0qBm+OnSio/wMwDQYJKoZIhvcNAQEBBQAEggIAN+YZy4wJ
-# hxnqGUgHQ2IHsg5IsxTcU/FY52a9akg5e/kwltUvo9yD+eHkLiedIiTglEWOIcp1
-# Fy4ThdinOzAnyE3fn0DGEYkeXBd7NsGI9Nh5IyvGxb+ZoK6rzIfaD/9NGWq4cEZm
-# nLiDypXrdJTfT2nk6iG7rdFkYWYTB64F09L+EggjHIE8TM5v3XY6R1MytRToHNzz
-# j0b1dtlrh9z6gExTjTr38ec28du4019SBI+IXO+A4o3kNEKx/EbWx/Q+45zrVN78
-# Ybe9uo6K1z2074+HHavOiJNeXU6JPyeVYuaZxF8U9ceuJ1iypNnhSt6zjcHb0k87
-# Git1zqREL6C7eDuYvObPseFgyff5ob5CS4aknd+DMe3o3L8pNrWMjlqLfxq2ocey
-# xvLjQWaY/Mor9zuYmODmU+T92Gqxvy/0dJSctEjcDb/3S8DCKT5aIJ8kID+7/vx0
-# 7o2OUTEMcMVdv3egfGF/fPKtUKvBOEAKp0yNlOe6B1HpMBsu1Si9kFAKay3OY6Ld
-# tcYcF8HOJk7o9AOMfXyPVFHFiTnq0QKUWJjmAKRdIjErsua9sSaKq99V+L14Y5ga
-# oHJbN8FFYpQdce43t7qIaWFHE29vhbEY1a58U861H9aTx/syXtiUFjLECwtOTWM5
-# u5Kn7bIzzhkQLNRy82CIvSiwdrTzFXqqc1A=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgsGpI2McRc6CF
+# a9kRjrlDBbJlF+Fh0h0V9vfNZrmi+tUwDQYJKoZIhvcNAQEBBQAEggIAq2Rc0ZxJ
+# gQYF12DNriJbOp15dcGZW4YSoSl7e5yvhgFqMsuP8IWPhbGvR3X5FRX/L0A8RwCA
+# HBIqPcHLkiXZWc2+5T1vOEg9lu0gE0EkxKBlcFDd1YeUHZj2yYr+aGs6zNuMPnrZ
+# N+xihLczUGVISGD2j9BE3GVIrpjLeD6rvXErMwpJFoetBwycm8C0p1iDxSh7Soz7
+# ETdzjgKg/7DwB5OHf0riBEQdy9GXbznkxdtWyxVPex1WvsHno/Ia3gcD9SZzNnwk
+# WkxONgw55noGvIJh78/XKfwamiKqu9PDPjzNQ5CUxNzzt8QrkI5fq1T1ZKH4q91R
+# FfS3zgbMlLYUE0Bt4NZT6YLX3xhhYWPCmQmZEL+tyDYH0oUuCRP89O7yXMggPGV4
+# zgzP5AYurtfONieALiENw1n/jo78gG5ujEus8y0QTdSIt6ZL3u6ryW6+hbBHoaR4
+# +5EXN9ogYp3jOYVPge+ZZmLgdQSeB0Rwf3QMh9NehPxV8FFJC5Z9yA1KR32ubVtx
+# bBfgeCRYbDygOoNH3wMylDNtL6mG8C7W7B8ayRy1VGI9202cvmo3gNFdwPDrABGF
+# RV9Ztq3hOzun9mDHmon/hZVwqpSv/teg2hVdmo+XGxr08tIZ4lgFGW5BnBEWKWCR
+# 2SNBftqx6TN0mSjkgiwA8zotsZIu0jP+Z0E=
 # SIG # End signature block
