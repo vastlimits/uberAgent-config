@@ -95,7 +95,7 @@ function Get-vlIsVBADisabled {
 
       try {
          $latestVersion = Get-vlGetLatestOfficeVersion
-         $macroConfig = Get-vlMacroConfig
+         #$macroConfig = Get-vlMacroConfig
 
          if ($null -ne $latestVersion) {
             # office is installed
