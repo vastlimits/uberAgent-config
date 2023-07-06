@@ -308,7 +308,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCBitlocker"
          DisplayName  = "WindowsConfiguration Bitlocker"
-         Description  = "Checks if Bitlocker is enabled on the system."
+         Description  = "This check verifies the status of BitLocker, a hard disk encryption feature in Windows operating systems that provides enhanced data protection by encrypting the contents of drives, especially the system drive."
          Score        = $checkBitlockerEnabled.Score
          ResultData   = $checkBitlockerEnabled.Result
          RiskScore    = $checkBitlockerEnabled.RiskScore
@@ -322,7 +322,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCComHijacking"
          DisplayName  = "WindowsConfiguration COM hijacking"
-         Description  = "Checks if mmc.exe is set as the default program for .msc files"
+         Description  = "This check is designed to assess whether the 'mmc.exe' executable file is set as the default program for .msc (Microsoft Management Console) files. The Microsoft Management Console is a Windows utility that provides a host for administrative tools and snap-ins, allowing users to manage various aspects of the operating system."
          Score        = $COMHijacking.Score
          ResultData   = $COMHijacking.Result
          RiskScore    = $COMHijacking.RiskScore
@@ -336,7 +336,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCTimeProvHijacking"
          DisplayName  = "WindowsConfiguration time provider hijacking"
-         Description  = "Checks if w32time.dll is set as the defalut time provider"
+         Description  = "This check is designed to assess whether the 'w32time.dll' file is set as the default time provider in the Windows operating system. The w32time.dll file is a crucial component responsible for time synchronization and accuracy within the system. Accurate timekeeping is essential for various system functionalities, including security protocols, authentication processes, and event logging. By verifying if w32time.dll is set as the default time provider, this function ensures that the system relies on a trusted and reliable source for time synchronization."
          Score        = $timeProviderHijacking.Score
          ResultData   = $timeProviderHijacking.Result
          RiskScore    = $timeProviderHijacking.RiskScore
