@@ -141,8 +141,7 @@ function Get-vlOpenFirewallPorts {
          }
       }
 
-      if($null -eq $rulesEx)
-      {
+      if ($null -eq $rulesEx) {
          $rulesEx = @()
       }
 
@@ -183,7 +182,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWState"
          DisplayName  = "Firewall status"
-         Description  = "Checks if the firewall is enabled."
+         Description  = "Checks whether the firewall is enabled or disabled. The current connection status of the network profile (Public, Domain, Public) is also displayed."
          Score        = $firewallEnabled.Score
          ResultData   = $firewallEnabled.Result
          RiskScore    = $firewallEnabled.RiskScore

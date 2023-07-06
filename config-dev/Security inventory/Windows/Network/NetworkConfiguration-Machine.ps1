@@ -283,7 +283,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCSMBv1"
          DisplayName  = "Network Configuration SMBv1"
-         Description  = "Checks whether SMBv1 is enabled."
+         Description  = "This check is designed to verify the status of Server Message Block version 1 (SMBv1), a network protocol that provides shared access to files, printers, and serial ports within a network. SMBv1, while still functional, is an outdated version of the protocol and is known to have several security vulnerabilities. These vulnerabilities can potentially be exploited by malicious actors to gain unauthorized access to network resources or execute arbitrary code. Modern versions of the SMB protocol, such as SMBv2 and SMBv3, provide the same functionality but with improved performance and security."
          Score        = $SMBv1.Score
          ResultData   = $SMBv1.Result
          RiskScore    = $SMBv1.RiskScore
@@ -297,7 +297,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCSMBSign"
          DisplayName  = "Network Configuration SMB Signing"
-         Description  = "Checks whether SMB signing is enabled."
+         Description  = "This check is designed to confirm the configuration of Server Message Block (SMB) Signing, a security feature within the network protocol. SMB, used by Windows computers, facilitates shared access to files, printers, serial ports, and other resources on a network. However, without SMB Signing, these communications can be susceptible to man-in-the-middle attacks, where unauthorized individuals intercept and potentially alter the communication between the client and server."
          Score        = $SMBSigning.Score
          ResultData   = $SMBSigning.Result
          RiskScore    = $SMBSigning.RiskScore
@@ -311,7 +311,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCNetBIOS"
          DisplayName  = "Network configuration NetBIOS"
-         Description  = "Checks whether NetBIOS is enabled."
+         Description  = "This check is designed to ascertain the status of the Network Basic Input/Output System (NetBIOS), a software protocol that enables applications on different computers to communicate over a local area network (LAN). While NetBIOS can be beneficial for certain types of network communication, it's an older protocol that can pose security risks if left enabled. For instance, NetBIOS can potentially reveal sensitive system information to attackers on the same network, and it can also be exploited as a pathway for certain types of network attacks."
          Score        = $NetBIOS.Score
          ResultData   = $NetBIOS.Result
          RiskScore    = $NetBIOS.RiskScore
@@ -325,7 +325,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCWINS"
          DisplayName  = "Network configuration WINS"
-         Description  = "Checks whether WINS is enabled."
+         Description  = "This check is designed to assess the configuration of Windows Internet Name Service (WINS), a legacy computer name registration and resolution service that maps network computer names to IP addresses. WINS, while functional, is an older system that has been largely superseded by more modern, secure, and efficient systems like DNS. WINS can pose potential security risks if left enabled and improperly configured. For instance, it can be exploited by attackers to redirect network traffic, gain unauthorized access to network resources, or execute arbitrary code."
          Score        = $WINS.Score
          ResultData   = $WINS.Result
          RiskScore    = $WINS.RiskScore
@@ -339,7 +339,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "MNCSSLTLS"
          DisplayName  = "Network configuration SSL/TLS - Machine"
-         Description  = "Checks whether only secure protocols are used"
+         Description  = "This check is designed to verify that only newer versions of the Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols are being used. TLS is the successor to SSL and is a cryptographic protocol that enables secure communications over a network. They are typically used to secure Internet traffic, email transmissions, and other types of network communications. The use of insecure or outdated versions of the protocols can pose significant security risks, including the exposure of sensitive data and vulnerability to various types of attacks, such as man-in-the-middle attacks. SSL and TLS, especially in their newer versions, provide robust security features that help protect data integrity and privacy."
          Score        = $SSLTLS.Score
          ResultData   = $SSLTLS.Result
          RiskScore    = $SSLTLS.RiskScore

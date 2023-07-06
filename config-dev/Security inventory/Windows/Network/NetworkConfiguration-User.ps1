@@ -24,7 +24,7 @@ function Get-vlNetworkConfigurationSSLTLSUser {
       # 10240 = TLS 1.2 & TLS 1.3
       # 8192  = TLS 1.3
       # 2048  = TLS 1.2
-      $DesiredValues = @(10240,8192,2048)
+      $DesiredValues = @(10240, 8192, 2048)
 
       $SecureProtocols = Get-vlRegValue -Hive "HKCU" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings" -Value SecureProtocols -IncludePolicies $true
 
@@ -75,7 +75,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "UNCSSLTLS"
          DisplayName  = "Network configuration SSL/TLS - User"
-         Description  = "Checks whether only secure protocols are used"
+         Description  = "This check is designed to verify that only newer versions of the Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols are being used. TLS is the successor to SSL and is a cryptographic protocol that enables secure communications over a network. They are typically used to secure Internet traffic, email transmissions, and other types of network communications. The use of insecure or outdated versions of the protocols can pose significant security risks, including the exposure of sensitive data and vulnerability to various types of attacks, such as man-in-the-middle attacks. SSL and TLS, especially in their newer versions, provide robust security features that help protect data integrity and privacy."
          Score        = $SSLTLS.Score
          ResultData   = $SSLTLS.Result
          RiskScore    = $SSLTLS.RiskScore

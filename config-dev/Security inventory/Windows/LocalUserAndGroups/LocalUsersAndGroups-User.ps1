@@ -260,7 +260,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUUWinBio"
          DisplayName  = "Local user Windows Hello / biometrics"
-         Description  = "Checks if Windows Hello is enabled and if the local user has enrolled factors."
+         Description  = "Checks if Windows Hello is enabled for the current user and which factors are enrolled. Windows Hello is an alternative to traditional password authentication that was introduced with Windows 10. In addition to a PIN, Windows Hello also supports authentication using biometric features such as fingerprint, facial or iris recognition."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
          RiskScore    = $windowsHelloStatus.RiskScore

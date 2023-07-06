@@ -332,7 +332,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUMUac"
          DisplayName  = "User account control"
-         Description  = "Checks if the User Account Control is enabled."
+         Description  = "This check examines the status of User Account Control (UAC), an important security feature in Windows operating systems. User Account Control helps prevent unauthorised changes to the system by requiring administrator-level permission before certain types of changes are allowed. This can include installing new software, changing system settings, or changing system files."
          Score        = $uac.Score
          ResultData   = $uac.Result
          RiskScore    = $uac.RiskScore
@@ -345,7 +345,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUMLaps"
          DisplayName  = "Local administrator password solution"
-         Description  = "Checks if the Local Administrator Password Solution is enabled."
+         Description  = "This check verifies that the Local Administrator Password Solution (LAPS) is set up and enabled. It also checks the event log for errors related to LAPS. LAPS is a security feature that helps to manage local administrator passwords to prevent unauthorised access."
          Score        = $laps.Score
          ResultData   = $laps.Result
          RiskScore    = $laps.RiskScore
@@ -358,7 +358,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUMWinBio"
          DisplayName  = "Windows Hello/biometrics"
-         Description  = "Checks if Windows Hello is enabled and what factors are available."
+         Description  = "Checks if Windows Hello is enabled and which factors are available. Windows Hello is an alternative to traditional password authentication that was introduced with Windows 10. In addition to a PIN, Windows Hello also supports authentication using biometric features such as fingerprint, facial or iris recognition."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
          RiskScore    = $windowsHelloStatus.RiskScore

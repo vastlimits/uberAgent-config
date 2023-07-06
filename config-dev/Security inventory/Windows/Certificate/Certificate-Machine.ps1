@@ -457,7 +457,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"
-         Description  = "Checks when the certificates were last synchronized."
+         Description  = "Checks when the certificates were last synchronised with Microsoft servers."
          Score        = $lastSync.Score
          ResultData   = $lastSync.Result
          RiskScore    = $lastSync.RiskScore
@@ -470,7 +470,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMTrByWin"
          DisplayName  = "Certificates trusted by Windows"
-         Description  = "Checks if there are unknown certificates installed within the trusted root certificate store."
+         Description  = "Checks for unknown certificates installed in the machine's trusted root certificate store. It bases its trust evaluation on Microsoft's Certificate Trusted List (CTL)."
          Score        = $ctlCheck.Score
          ResultData   = $ctlCheck.Result
          RiskScore    = $ctlCheck.RiskScore
