@@ -182,7 +182,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWState"
          DisplayName  = "Firewall status"
-         Description  = "This check is designed to verify the status of the firewall on the system, determining whether it is enabled or disabled. The firewall acts as a protective barrier, monitoring and controlling network traffic to safeguard the system against unauthorized access and potential security threats. In addition to checking the firewall status, this function also displays the current connection status of the network profiles: Public, Domain, and Private. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network, a corporate domain, or a private home network."
+         Description  = "This check verifies the status of the firewall on the system and whether it's enabled or disabled. It also shows the connection status of the network profiles: Public, Domain, and Private. Network profiles help the system to adjust the firewall settings based on the network location."
          Score        = $firewallEnabled.Score
          ResultData   = $firewallEnabled.Result
          RiskScore    = $firewallEnabled.RiskScore
@@ -196,7 +196,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWPorts"
          DisplayName  = "Open firewall ports"
-         Description  = "This check is designed to evaluate the presence of open firewall ports on the system and provide a list of those open ports. Firewall ports act as entry points for network traffic, and open ports can potentially expose the system to unauthorized access or malicious activities. It's important to note that if a rule has been added to a group, that specific rule will be filtered out from the final list. "
+         Description  = "This check is designed to evaluate the presence of open firewall ports on the system and provide a list of those open ports. Ports act as entry points for network traffic, and open ports can potentially expose the system to unauthorized access or malicious activities. Default rules will be filtered out."
          Score        = $openPorts.Score
          ResultData   = $openPorts.Result
          RiskScore    = $openPorts.RiskScore
