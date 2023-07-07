@@ -444,7 +444,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMAuCerUp"
          DisplayName  = "Auto certificate update"
-         Description  = "This check is designed to evaluate whether automatic certificate updating is enabled on the system. Automatic certificate updating refers to the process of automatically retrieving and installing updated certificate revocation lists (CRLs) and certificate trust lists (CTLs) from trusted sources like the Microsoft update server. Certificates play a vital role in establishing trust and securing communication channels. However, certificates can become compromised or revoked, rendering them untrustworthy. To ensure the integrity of certificates, it is important to regularly update and validate them against up-to-date trust and revocation information."
+         Description  = "This check verifies that automatic certificate updating is enabled on the system. When automatic certificate updating is enabled, the system obtains the latest Certificate Revocation Lists (CRL) and Certificate Trust Lists (CTL) from trusted sources, such as the Microsoft Update server. Certificates are used to establish trust and secure communication channels. Certificates can be compromised or revoked, making them untrustworthy. Regularly updating and validating certificates with the latest trust and revocation information is essential to ensure certificate integrity."
          Score        = $autoCertUpdateCheck.Score
          ResultData   = $autoCertUpdateCheck.Result
          RiskScore    = $autoCertUpdateCheck.RiskScore
@@ -457,7 +457,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"
-         Description  = "This check is designed to evaluate when the certificates on the system were last synchronized with Microsoft servers. Certificate synchronization refers to the process of updating certificate revocation information and trust lists by retrieving the latest data from trusted Microsoft servers."
+         Description  = "This check determines the last time that the Certificate Revocation Lists (CRL) and Certificate Trust Lists (CTL) were synchronized with Microsoft servers."
          Score        = $lastSync.Score
          ResultData   = $lastSync.Result
          RiskScore    = $lastSync.RiskScore
