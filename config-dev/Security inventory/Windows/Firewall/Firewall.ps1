@@ -129,15 +129,15 @@ function Get-vlOpenFirewallPorts {
          $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule
 
          [PSCustomObject]@{
-            Name                  = $rule.Name
-            DisplayName           = $rule.DisplayName
-            ApplicationName       = $appFilter.Program
-            LocalPorts            = $portFilter.LocalPort
-            RemotePorts           = $portFilter.RemotePort
-            Protocol              = $portFilter.Protocol
-            Group                 = $rule.Group
-            Profile               = $rule.Profile
-            PolicyStoreSourceType = $rule.PolicyStoreSourceType
+            Name              = $rule.Name
+            DisplayName       = $rule.DisplayName
+            ApplicationName   = $appFilter.Program
+            LocalPorts        = $portFilter.LocalPort
+            RemotePorts       = $portFilter.RemotePort
+            Protocol          = $portFilter.Protocol
+            Group             = $rule.Group
+            Profile           = $rule.Profile
+            PolicyStoreSource = $rule.PolicyStoreSource
          }
       }
 
