@@ -196,7 +196,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWPorts"
          DisplayName  = "Open firewall ports"
-         Description  = "This test evaluates the presence of open firewall ports on the system and provides a list of these open ports. Open ports are entry points and can potentially expose the system to unauthorized access. Rules marked as standard are filtered out."
+         Description  = "This test evaluates the presence of open inbound firewall rules on the system and provides a list of open ports. Open ports are entry points and can potentially expose the system to unauthorized access. Rules marked as default are filtered out."
          Score        = $openPorts.Score
          ResultData   = $openPorts.Result
          RiskScore    = $openPorts.RiskScore
