@@ -82,29 +82,40 @@ function Get-vlLAPSEventLog {
          $EndTime = $temp
       }
 
-      # Search the Event Logs for each Event ID
-      Get-WinEvent -LogName $logName | Where-Object { ($_.Level -eq 2 -or $_.Level -eq 3) -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
-         # only keep: TimeCreated, Id, Message
-         $winEvent = [PSCustomObject]@{
-            TimeCreated = Get-vlTimeString -time $_.TimeCreated
-            Id          = $_.Id
-            Message     = $_.Message
+      try {
+         # Search the Event Logs for each Event ID
+         Get-WinEvent -LogName $logName -ErrorAction Stop | Where-Object { ($_.Level -eq 2 -or $_.Level -eq 3) -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
+            # only keep: TimeCreated, Id, Message
+            $winEvent = [PSCustomObject]@{
+               TimeCreated = Get-vlTimeString -time $_.TimeCreated
+               Id          = $_.Id
+               Message     = $_.Message
+            }
+
+            # add the event to the errors array if the event id is 2 (error)
+            if ($_.Level -eq 2) {
+               $errors += $winEvent
+            }
+
+            # add the event to the warnings array if the event id is 3 (warning)
+            if ($_.Level -eq 3) {
+               $warnings += $winEvent
+            }
          }
 
-         # add the event to the errors array if the event id is 2 (error)
-         if ($_.Level -eq 2) {
-            $errors += $winEvent
-         }
-
-         # add the event to the warnings array if the event id is 3 (warning)
-         if ($_.Level -eq 3) {
-            $warnings += $winEvent
-         }
+         # filter $errors and $warnings for unique events. Only keep latest event for each event id
+         $errors = $errors | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
+         $warnings = $warnings | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
       }
+      catch {
+         # if the log does not exist, return an empty result
+         $result = [PSCustomObject]@{
+            Errors   = $errors
+            Warnings = $warnings
+         }
 
-      # filter $errors and $warnings for unique events. Only keep latest event for each event id
-      $errors = $errors | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
-      $warnings = $warnings | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
+         return $result
+      }
 
       $result = [PSCustomObject]@{
          Errors   = $errors

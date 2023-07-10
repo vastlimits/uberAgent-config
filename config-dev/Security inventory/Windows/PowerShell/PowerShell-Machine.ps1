@@ -479,9 +479,12 @@ function Get-vlPowerShellCheck {
    $params = if ($global:args) { $global:args } else { "all" }
    $params = $params | ForEach-Object { $_.ToLower() }
 
+   $isWindows7 = Get-vlIsWindows7
+
    $Output = @()
 
-   if ($params.Contains("all") -or $params.Contains("PSLMV2")) {
+   # disable this check for Windows 7 since Get-WindowsOptionalFeature is not available
+   if (($params.Contains("all") -or $params.Contains("PSLMV2")) -and $isWindows7 -eq $false) {
       $powerShellV2 = Get-vlPowerShellV2Status
       $Output += [PSCustomObject]@{
          Name         = "PSLMV2"
