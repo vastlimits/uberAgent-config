@@ -308,7 +308,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCBitlocker"
          DisplayName  = "WindowsConfiguration Bitlocker"
-         Description  = "This test verifies the status of BitLocker, a hard disk encryption feature in Windows operating systems that provides enhanced data protection by encrypting the contents of drives."
+         Description  = "This test verifies the status of BitLocker, a hard disk encryption feature in Windows operating systems that provides enhanced data protection by encrypting the contents of hard disks."
          Score        = $checkBitlockerEnabled.Score
          ResultData   = $checkBitlockerEnabled.Result
          RiskScore    = $checkBitlockerEnabled.RiskScore

@@ -159,7 +159,7 @@ function Get-vlWindowsServicesCheck {
       $Output += [PSCustomObject]@{
          Name         = "Service.dll"
          DisplayName  = "Uncommon locations of service.dll"
-         Description  = "This test scans the Windows registry for service DLL files and determines whether a DLL file is located outside the Windows system directory. DLL files are important components used by various services and applications of the Windows operating system. Malicious actors often use techniques to compromise system security and achieve persistence by registering their malicious DLL files."
+         Description  = "This test scans the Windows registry for service DLL files and determines whether a DLL file is located outside the Windows system directory. DLL files are important components used by various services and applications of the Windows operating system. Malicious actors try to execute code and gain persistence by registering their malicious DLL files."
          Score        = $ServiceDLLLocations.Score
          ResultData   = $ServiceDLLLocations.Result
          RiskScore    = $ServiceDLLLocations.RiskScore

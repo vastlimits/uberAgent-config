@@ -444,7 +444,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMAuCerUp"
          DisplayName  = "Auto certificate update"
-         Description  = "This test verifies that automatic certificate updating is enabled on the system. When automatic certificate updating is enabled, the system obtains the latest Certificate Revocation Lists (CRL) and Certificate Trust Lists (CTL) from trusted sources, such as the Microsoft Update server. Regularly updating and validating certificates with the latest trust and revocation information is essential to ensure certificate integrity."
+         Description  = "This test verifies that automatic certificate updating is enabled on the system. When automatic certificate updating is enabled, the system obtains the latest Certificate Revocation List (CRL) and Certificate Trust List (CTL) from the Microsoft Update server. Regularly updating and validating certificates with the latest trust and revocation information is essential to ensure certificate integrity."
          Score        = $autoCertUpdateCheck.Score
          ResultData   = $autoCertUpdateCheck.Result
          RiskScore    = $autoCertUpdateCheck.RiskScore
@@ -457,7 +457,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"
-         Description  = "This test determines the last time that the Certificate Revocation Lists (CRL) and Certificate Trust Lists (CTL) were synchronized with Microsoft servers."
+         Description  = "This test determines the last time that the Certificate Revocation List (CRL) and Certificate Trust List (CTL) were synchronized with Microsoft servers."
          Score        = $lastSync.Score
          ResultData   = $lastSync.Result
          RiskScore    = $lastSync.RiskScore
@@ -470,7 +470,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMTrByWin"
          DisplayName  = "Certificates trusted by Windows - Machine"
-         Description  = "This test identifies unknown certificates that are installed in the machine's trusted root certificate store. The trusted root certificate store contains certificates from trusted certification authorities (CAs) that establish the foundation of trust for various digital interactions, such as secure websites, email encryption, and software validation. To perform this evaluation, the check relies on Microsoft's Certificate Trust List (CTL). Microsoft maintains a curated list of trusted certificates, and this test uses the CTL as a reference for trust evaluation. Any certificate that is not recognized or included in the trusted list is flagged as an unknown certificate."
+         Description  = "This test relies on the Microsoft maintained Certificate Trust List (CTL) to validate the status of certificates found in the machine's trusted root certificate store. Any certificate that is not recognized or included in the trusted list is flagged as an unknown certificate."
          Score        = $ctlCheck.Score
          ResultData   = $ctlCheck.Result
          RiskScore    = $ctlCheck.RiskScore

@@ -486,7 +486,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMV2"
          DisplayName  = "PowerShell V2"
-         Description  = "This test verifies the status of PowerShell version 2. While PowerShell V2 is functional, it is an deprecated version of the scripting language and is known to contain several security vulnerabilities and weaknesses in security design."
+         Description  = "This test verifies the status of PowerShell version 2. PowerShell V2 is an deprecated version of the scripting language and is known to contain several security vulnerabilities and weaknesses in security design."
          Score        = $powerShellV2.Score
          ResultData   = $powerShellV2.Result
          RiskScore    = $powerShellV2.RiskScore
@@ -500,7 +500,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMRemoting"
          DisplayName  = "PowerShell Remoting"
-         Description  = "This test verifies the status of PowerShell Remoting, a feature in PowerShell that enables remote management of computers. While PowerShell Remoting can be a powerful tool for system administrators, enabling it can pose potential security risks if not managed properly. The use of Just Enough Administration (JAE) is recommended for restrictive use of PowerShell remoting."
+         Description  = "This test verifies the status of PowerShell Remoting, a feature that enables remote management of computers. While PowerShell Remoting can be a powerful tool for system administrators, enabling it can pose potential security risks if not managed properly. The use of Just Enough Administration (JAE) is recommended for restrictive use."
          Score        = $powerShellRemoting.Score
          ResultData   = $powerShellRemoting.Result
          RiskScore    = $powerShellRemoting.RiskScore
@@ -530,7 +530,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMPolicy"
          DisplayName  = "PowerShell policy"
-         Description  = "This test verifies the PowerShell Execution Policy, a security feature in PowerShell that determines the conditions under which PowerShell loads configuration files and runs scripts. For example, an unrestricted policy could allow a malicious script to run without any warnings or prompts, potentially leading to unauthorised system changes or data breaches. We recommend using at least the RemoteSigned policy."
+         Description  = "This test verifies the PowerShell Execution Policy, a security feature in PowerShell that determines the conditions under which PowerShell loads configuration files and runs scripts. For example, an unrestricted policy could allow a malicious script to run without any warnings or prompts, potentially leading to unauthorized system changes or data breaches. We recommend using at least the RemoteSigned policy."
          Score        = $powerShellExecutionPolicy.Score
          ResultData   = $powerShellExecutionPolicy.Result
          RiskScore    = $powerShellExecutionPolicy.RiskScore

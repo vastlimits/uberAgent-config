@@ -182,7 +182,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWState"
          DisplayName  = "Firewall status"
-         Description  = "This test verifies the status of the firewall on the system and whether it's enabled or disabled. It also shows the connection status of the network profiles: Public, Domain, and Private. Network profiles help the system to adjust the firewall settings based on the network location."
+         Description  = "This test verifies whether the Windows Defender Firewall is enabled or disabled. It also shows the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings depending on the network location, for example, a public Wi-Fi (Public), a corporate network (Domain) or a home network (Private)."
          Score        = $firewallEnabled.Score
          ResultData   = $firewallEnabled.Result
          RiskScore    = $firewallEnabled.RiskScore
