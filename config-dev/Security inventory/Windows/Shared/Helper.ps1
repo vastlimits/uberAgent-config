@@ -22,6 +22,23 @@ function Get-vlOsArchitecture {
    return (Get-CimInstance Win32_operatingsystem).OSArchitecture
 }
 
+function Get-vlOsVersion {
+   <#
+    .SYNOPSIS
+        Retruns the OS version
+    .DESCRIPTION
+        Retruns the OS version
+    .OUTPUTS
+        A string containing the OS version
+    .EXAMPLE
+        return Get-vlOsVersion
+   #>
+
+   $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
+
+   return $osVersion
+}
+
 function Get-vlIsWindows7 {
    <#
     .SYNOPSIS
