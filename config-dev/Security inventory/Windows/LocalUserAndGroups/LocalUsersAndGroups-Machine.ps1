@@ -332,7 +332,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUMUac"
          DisplayName  = "User account control"
-         Description  = "This check examines the status of User Account Control (UAC), an important security feature in Windows operating systems. User Account Control helps prevent unauthorised changes to the system by requiring administrator-level permission before certain types of changes are allowed. This can include installing new software, changing system settings, or changing system files."
+         Description  = "This test examines the status of User Account Control (UAC). User Account Control prevents unauthorized installation of new software, changes to system settings, or system files by requiring administrator-level privileges."
          Score        = $uac.Score
          ResultData   = $uac.Result
          RiskScore    = $uac.RiskScore
@@ -345,7 +345,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUMLaps"
          DisplayName  = "Local administrator password solution"
-         Description  = "This check verifies that the Local Administrator Password Solution (LAPS) is set up and enabled. It also checks the event log for errors related to LAPS. LAPS is a security feature that helps to manage local administrator passwords to prevent unauthorised access."
+         Description  = "This test verifies that the Local Administrator Password Solution (LAPS) is set up and enabled. The test scans the event log for any LAPS-related errors. Explanation of LAPS: It is not only a solution for administrator passwords. Therefore, the description should be adjusted to something like: LAPS is a Windows feature that, among other functions, automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
          Score        = $laps.Score
          ResultData   = $laps.Result
          RiskScore    = $laps.RiskScore
@@ -357,8 +357,8 @@ function Get-vlLocalUsersAndGroupsCheck {
       $windowsHelloStatus = Get-vlWindowsHelloStatusLocalMachine
       $Output += [PSCustomObject]@{
          Name         = "LUMWinBio"
-         DisplayName  = "Windows Hello/biometrics"
-         Description  = "Checks if Windows Hello is enabled and which factors are available. Windows Hello is an alternative to traditional password authentication that was introduced with Windows 10. In addition to a PIN, Windows Hello also supports authentication using biometric features such as fingerprint, facial or iris recognition."
+         DisplayName  = "Windows Hello/biometrics - Machine"
+         Description  = "This test determines if Windows Hello is enabled and which factors are available. Windows Hello enables authentication using biometric features such as fingerprint, facial or iris recognition additionally to PIN codes."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
          RiskScore    = $windowsHelloStatus.RiskScore

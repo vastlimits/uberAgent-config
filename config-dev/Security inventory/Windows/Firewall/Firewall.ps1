@@ -182,7 +182,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWState"
          DisplayName  = "Firewall status"
-         Description  = "This check verifies the status of the firewall on the system and whether it's enabled or disabled. It also shows the connection status of the network profiles: Public, Domain, and Private. Network profiles help the system to adjust the firewall settings based on the network location."
+         Description  = "This test verifies the status of the firewall on the system and whether it's enabled or disabled. It also shows the connection status of the network profiles: Public, Domain, and Private. Network profiles help the system to adjust the firewall settings based on the network location."
          Score        = $firewallEnabled.Score
          ResultData   = $firewallEnabled.Result
          RiskScore    = $firewallEnabled.RiskScore
@@ -196,7 +196,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWPorts"
          DisplayName  = "Open firewall ports"
-         Description  = "This check evaluates the presence of open firewall ports on the system and provides a list of these open ports. Ports act as entry points for network traffic and can potentially expose the system to unauthorized access or malicious activity. Rules marked as standard are filtered out."
+         Description  = "This test evaluates the presence of open firewall ports on the system and provides a list of these open ports. Open ports are entry points and can potentially expose the system to unauthorized access. Rules marked as standard are filtered out."
          Score        = $openPorts.Score
          ResultData   = $openPorts.Result
          RiskScore    = $openPorts.RiskScore

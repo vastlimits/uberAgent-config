@@ -247,7 +247,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUUIsAdmin"
          DisplayName  = "Local user is admin"
-         Description  = "Checks if the local user is a member of the local Administrators group."
+         Description  = "This test determines whether the local user is a member of the local Administrators group."
          Score        = $isLocalAdmin.Score
          ResultData   = $isLocalAdmin.Result
          RiskScore    = $isLocalAdmin.RiskScore
@@ -259,8 +259,8 @@ function Get-vlLocalUsersAndGroupsCheck {
       $windowsHelloStatus = Get-vlWindowsHelloStatusLocalUser
       $Output += [PSCustomObject]@{
          Name         = "LUUWinBio"
-         DisplayName  = "Local user Windows Hello / biometrics"
-         Description  = "Checks if Windows Hello is enabled for the current user and which factors are enrolled. Windows Hello is an alternative to traditional password authentication that was introduced with Windows 10. In addition to a PIN, Windows Hello also supports authentication using biometric features such as fingerprint, facial or iris recognition."
+         DisplayName  = "Windows Hello/biometrics - User"
+         Description  = "This test determines if Windows Hello is enabled for the current user and which factors are enrolled. Windows Hello is an alternative to traditional password authentication that was introduced with Windows 10. In addition to a PIN, Windows Hello also supports authentication using biometric features such as fingerprint, facial or iris recognition."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
          RiskScore    = $windowsHelloStatus.RiskScore

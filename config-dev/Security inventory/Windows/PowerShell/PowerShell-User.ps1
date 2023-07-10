@@ -121,7 +121,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSCUPolicy"
          DisplayName  = "PowerShell policy"
-         Description  = "This check is designed to evaluate the PowerShell Execution Policy, a security feature in PowerShell that determines the conditions under which PowerShell loads configuration files and runs scripts. The execution policy can be set to various levels of restriction, ranging from allowing all scripts to run (unrestricted) to not allowing any scripts to run (restricted), with several levels in between. While PowerShell is a powerful system administration tool, it can also be exploited by malicious actors to run malicious scripts if the execution policy is not configured properly. For example, an unrestricted policy could allow a malicious script to run without any warnings or prompts, potentially leading to unauthorised system changes or data breaches."
+         Description  = "This test verifies the PowerShell Execution Policy, a security feature in PowerShell that determines the conditions under which PowerShell loads configuration files and runs scripts. For example, an unrestricted policy could allow a malicious script to run without any warnings or prompts, potentially leading to unauthorised system changes or data breaches. We recommend using at least the RemoteSigned policy."
          Score        = $powerShellExecutionPolicy.Score
          ResultData   = $powerShellExecutionPolicy.Result
          RiskScore    = $powerShellExecutionPolicy.RiskScore

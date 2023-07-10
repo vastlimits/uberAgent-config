@@ -152,7 +152,7 @@ function Get-vlMSOfficeCheck {
       $Output += [PSCustomObject]@{
          Name         = "MSOCUVBA"
          DisplayName  = "MS Office VBA disabled"
-         Description  = "This check is used to examine the status of Visual Basic for Applications (VBA) in Microsoft Office. VBA is a programming language used to automate tasks in Microsoft Office applications. While it can be a powerful tool for productivity, it can also be a security risk if misused, as it can be used to create macros that perform malicious actions."
+         Description  = "This test examines the status of Visual Basic for Applications (VBA) in Microsoft Office. VBA is a programming language used to automate tasks in Microsoft Office applications. VBA may be intentionally enabled, although it could be misused to create macros to execute malicious code."
          Score        = $vbaDisabled.Score
          ResultData   = $vbaDisabled.Result
          RiskScore    = $vbaDisabled.RiskScore

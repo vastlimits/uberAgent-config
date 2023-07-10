@@ -75,7 +75,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "UNCSSLTLS"
          DisplayName  = "Network configuration SSL/TLS - User"
-         Description  = "This check is designed to verify that only newer versions of the Transport Layer Security (TLS) and Secure Sockets Layer (SSL) protocols are being used. TLS is the successor to SSL and is a cryptographic protocol that enables secure communications over a network. They are typically used to secure Internet traffic, email transmissions, and other types of network communications. The use of insecure or outdated versions of the protocols can pose significant security risks, including the exposure of sensitive data and vulnerability to various types of attacks, such as man-in-the-middle attacks. SSL and TLS, especially in their newer versions, provide robust security features that help protect data integrity and privacy."
+         Description  = "This test verifies that only newer versions of the Transport Layer Security (TLS 1.2, TLS 1.3) protocol are used. TLS is the successor to SSL. The use of insecure or outdated versions of the protocol, e.g. SSL 3.0, TLS 1.0, can pose significant security risks, including the exposure of sensitive data and vulnerability to various types of attacks, e.g. man-in-the-middle attacks."
          Score        = $SSLTLS.Score
          ResultData   = $SSLTLS.Result
          RiskScore    = $SSLTLS.RiskScore

@@ -486,7 +486,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMV2"
          DisplayName  = "PowerShell V2"
-         Description  = "The purpose of this check is to verify the status of PowerShell version 2. PowerShell V2, while functional, is an older version of the scripting language and is known to have several security vulnerabilities and weaknesses in the security design concept. These vulnerabilities can potentially be exploited by malicious actors to gain unauthorized access to system resources or execute arbitrary code. Modern versions of PowerShell, such as PowerShell 5.1 or PowerShell 7, provide improved security and performance."
+         Description  = "This test verifies the status of PowerShell version 2. While PowerShell V2 is functional, it is an deprecated version of the scripting language and is known to contain several security vulnerabilities and weaknesses in security design."
          Score        = $powerShellV2.Score
          ResultData   = $powerShellV2.Result
          RiskScore    = $powerShellV2.RiskScore
@@ -500,7 +500,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMRemoting"
          DisplayName  = "PowerShell Remoting"
-         Description  = "This check is used to verify the status of PowerShell Remoting, a feature in PowerShell that enables remote management of computers. While PowerShell Remoting can be a powerful tool for system administrators, enabling it can pose potential security risks if not managed properly. For example, it could be exploited by malicious actors to execute commands remotely, resulting in unauthorised access to system resources or data. The use of Just Enough Administration (JAE) is recommended for restrictive use of PowerShell remoting and will be taken into account by this check."
+         Description  = "This test verifies the status of PowerShell Remoting, a feature in PowerShell that enables remote management of computers. While PowerShell Remoting can be a powerful tool for system administrators, enabling it can pose potential security risks if not managed properly. The use of Just Enough Administration (JAE) is recommended for restrictive use of PowerShell remoting."
          Score        = $powerShellRemoting.Score
          ResultData   = $powerShellRemoting.Result
          RiskScore    = $powerShellRemoting.RiskScore
@@ -530,7 +530,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMPolicy"
          DisplayName  = "PowerShell policy"
-         Description  = "This check is designed to evaluate the PowerShell Execution Policy, a security feature in PowerShell that determines the conditions under which PowerShell loads configuration files and runs scripts. The execution policy can be set to various levels of restriction, ranging from allowing all scripts to run (unrestricted) to not allowing any scripts to run (restricted), with several levels in between. While PowerShell is a powerful system administration tool, it can also be exploited by malicious actors to run malicious scripts if the execution policy is not configured properly. For example, an unrestricted policy could allow a malicious script to run without any warnings or prompts, potentially leading to unauthorised system changes or data breaches."
+         Description  = "This test verifies the PowerShell Execution Policy, a security feature in PowerShell that determines the conditions under which PowerShell loads configuration files and runs scripts. For example, an unrestricted policy could allow a malicious script to run without any warnings or prompts, potentially leading to unauthorised system changes or data breaches. We recommend at least the RemoteSigned policy."
          Score        = $powerShellExecutionPolicy.Score
          ResultData   = $powerShellExecutionPolicy.Result
          RiskScore    = $powerShellExecutionPolicy.RiskScore
@@ -544,7 +544,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMLogging"
          DisplayName  = "PowerShell logging"
-         Description  = "This check is designed to verify the status of PowerShell Logging, a feature in PowerShell that records the details of PowerShell commands executed on a system. It can provide valuable insight into system operations and potential security incidents."
+         Description  = "This test verifies the status of PowerShell Logging, a feature in PowerShell that records the details of PowerShell commands executed on a system."
          Score        = $powerShellLogging.Score
          ResultData   = $powerShellLogging.Result
          RiskScore    = $powerShellLogging.RiskScore
