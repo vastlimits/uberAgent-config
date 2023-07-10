@@ -457,7 +457,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"
-         Description  = "This test determines the last time that the Certificate Revocation List (CRL) and Certificate Trust List (CTL) were synchronized with Microsoft servers."
+         Description  = "This test determines the last time the Certificate Revocation List (CRL) and Certificate Trust List (CTL) were synchronized with Microsoft servers."
          Score        = $lastSync.Score
          ResultData   = $lastSync.Result
          RiskScore    = $lastSync.RiskScore
