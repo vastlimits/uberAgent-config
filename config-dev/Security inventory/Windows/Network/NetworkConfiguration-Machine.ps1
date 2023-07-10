@@ -20,8 +20,8 @@ function Get-vlNetworkConfigurationSMBv1 {
 
    try {
       $riskScore = 100
-
       $OSVersion = Get-vlOsVersion
+
       if ([version]$OSVersion -ge [version]'6.0' -and [version]$OSVersion -lt [version]'6.2') {
          $SMB1ClientServiceDependency = Get-Service -name LanManWorkstation -RequiredServices -ErrorAction Stop | Where-Object -FilterScript { $_.Name -eq 'MrxSmb10' }
          if ($SMB1ClientServiceDependency) {
