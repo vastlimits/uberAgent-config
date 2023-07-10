@@ -21,19 +21,17 @@ function Get-vlNetworkConfigurationSMBv1 {
    try {
       $riskScore = 100
 
-      $OS = Get-WmiObject -Class win32_operatingsystem
-      if ([version]$OS.version -ge [version]'6.0' -and [version]$OS.version -lt [version]'6.2')
-      {
-         $SMB1ClientServiceDependency = Get-Service -name LanManWorkstation -RequiredServices -ErrorAction Stop | Where-Object -FilterScript {$_.Name -eq 'MrxSmb10'}
+      $OSVersion = Get-vlOsVersion
+      if ([version]$OSVersion -ge [version]'6.0' -and [version]$OSVersion -lt [version]'6.2') {
+         $SMB1ClientServiceDependency = Get-Service -name LanManWorkstation -RequiredServices -ErrorAction Stop | Where-Object -FilterScript { $_.Name -eq 'MrxSmb10' }
          if ($SMB1ClientServiceDependency) {
             $SMBv1 = 1
-            }
+         }
          else {
             $SMBv1 = 2
-            }
+         }
       }
-      else
-      {
+      else {
          $SMBv1 = (Get-CimInstance -query "select * from  Win32_OptionalFeature where name = 'SMB1Protocol'").InstallState
       }
 
