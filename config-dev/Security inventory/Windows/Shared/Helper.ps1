@@ -22,33 +22,6 @@ function Get-vlOsArchitecture {
    return (Get-CimInstance Win32_operatingsystem).OSArchitecture
 }
 
-function Get-vlOsName {
-   <#
-    .SYNOPSIS
-        Returns the OS name
-    .DESCRIPTION
-         Returns the OS name
-    .OUTPUTS
-        A string containing the OS name (e.g. Windows 10)
-    .EXAMPLE
-        return Get-vlOsName
-   #>
-
-   # Get OS Name from Win32_OperatingSystem
-   $osName = (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
-
-   # Remove Microsoft From the string
-   $osName = $osName.Replace("Microsoft ", "")
-
-   # get the first two words
-   $osName = $osName.Split(" ")[0..1] -join " "
-
-   # trim beginning and end
-   $osName = $osName.Trim()
-
-   return $osName
-}
-
 function Get-vlOsVersion {
    <#
     .SYNOPSIS
