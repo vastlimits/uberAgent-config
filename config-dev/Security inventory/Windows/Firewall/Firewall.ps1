@@ -56,19 +56,22 @@ function Get-vlIsFirewallEnabled {
       $domainAuthenticatedNetwork = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "DomainAuthenticated" }
 
       $firewall = Get-NetFirewallProfile -All
-      $result = [PSCustomObject]@{
-         Domain  = [PSCustomObject]@{
-            Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled)
-            Connected = if ($domainAuthenticatedNetwork) { $true } else { $false }
-         }
-         Private = [PSCustomObject]@{
-            Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Private" } | select-object -ExpandProperty Enabled)
-            Connected = if ($privateNetwork) { $true } else { $false }
-         }
-         Public  = [PSCustomObject]@{
-            Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Public" } | select-object -ExpandProperty Enabled)
-            Connected = if ($publicNetwork) { $true } else { $false }
-         }
+      $result = [PSCustomObject]@()
+
+      $result += [PSCustomObject]@{
+         Profile   = "Domain"
+         Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled)
+         Connected = if ($domainAuthenticatedNetwork) { $true } else { $false }
+      }
+      $result += [PSCustomObject]@{
+         Profile   = "Private"
+         Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Private" } | select-object -ExpandProperty Enabled)
+         Connected = if ($privateNetwork) { $true } else { $false }
+      }
+      $result += [PSCustomObject]@{
+         Profile   = "Public"
+         Enabled   = [bool]($firewall | where-object { $_.Profile -eq "Public" } | select-object -ExpandProperty Enabled)
+         Connected = if ($publicNetwork) { $true } else { $false }
       }
 
       $score = 10
@@ -141,8 +144,7 @@ function Get-vlOpenFirewallPorts {
          }
       }
 
-      if($null -eq $rulesEx)
-      {
+      if ($null -eq $rulesEx) {
          $rulesEx = @()
       }
 
