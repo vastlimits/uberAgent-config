@@ -249,7 +249,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CUTrByWin"
          DisplayName  = "Certificates trusted by Windows - User"
-         Description  = "Checks if there are unknown certificates installed within the CurrentUser store."
+         Description  = "This test relies on the Microsoft maintained Certificate Trust List (CTL) to validate the status of certificates found in the users trusted root certificate store. Any certificate that is not recognized or included in the trusted list is flagged as an unknown certificate."
          Score        = $ctlCheck.Score
          ResultData   = $ctlCheck.Result
          RiskScore    = $ctlCheck.RiskScore

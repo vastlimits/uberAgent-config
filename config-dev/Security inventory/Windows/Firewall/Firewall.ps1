@@ -129,20 +129,19 @@ function Get-vlOpenFirewallPorts {
          $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule
 
          [PSCustomObject]@{
-            Name                  = $rule.Name
-            DisplayName           = $rule.DisplayName
-            ApplicationName       = $appFilter.Program
-            LocalPorts            = $portFilter.LocalPort
-            RemotePorts           = $portFilter.RemotePort
-            Protocol              = $portFilter.Protocol
-            Group                 = $rule.Group
-            Profile               = $rule.Profile
-            PolicyStoreSourceType = $rule.PolicyStoreSourceType
+            Name              = $rule.Name
+            DisplayName       = $rule.DisplayName
+            ApplicationName   = $appFilter.Program
+            LocalPorts        = $portFilter.LocalPort
+            RemotePorts       = $portFilter.RemotePort
+            Protocol          = $portFilter.Protocol
+            Group             = $rule.Group
+            Profile           = $rule.Profile
+            PolicyStoreSource = $rule.PolicyStoreSource
          }
       }
 
-      if($null -eq $rulesEx)
-      {
+      if ($null -eq $rulesEx) {
          $rulesEx = @()
       }
 
@@ -183,7 +182,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWState"
          DisplayName  = "Firewall status"
-         Description  = "Checks if the firewall is enabled."
+         Description  = "This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private)."
          Score        = $firewallEnabled.Score
          ResultData   = $firewallEnabled.Result
          RiskScore    = $firewallEnabled.RiskScore
@@ -197,7 +196,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWPorts"
          DisplayName  = "Open firewall ports"
-         Description  = "Checks if there are open firewall ports and returns the list of open ports. Note: If a rule has been added to a group, that rule will be filtered out."
+         Description  = "This test evaluates the presence of open inbound firewall rules on the system and provides a list of open ports. Open ports are entry points and can expose the system to unauthorized access. Rules marked as default are filtered out."
          Score        = $openPorts.Score
          ResultData   = $openPorts.Result
          RiskScore    = $openPorts.RiskScore

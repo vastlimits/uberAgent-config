@@ -30,8 +30,8 @@ function Get-vlServiceLocations {
             $ServiceName = $PSItem.PSChildName
             if ($ImagePath -inotmatch '^(\\\?\?\\)?\\?SystemRoot.*$|^(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\WINDOWS\\(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\Program Files( \(x86\))?\\.*$|^(\\\?\?\\)?"?C:\\WINDOWS\\Microsoft\.NET\\.*$|^(\\\?\?\\)?"?C:\\ProgramData\\Microsoft\\Windows Defender\\.*$') {
                $result += [PSCustomObject]@{
-                  Service  = $ServiceName
-                  ImagePath     = $ImagePath
+                  Service   = $ServiceName
+                  ImagePath = $ImagePath
                }
             }
 
@@ -90,8 +90,8 @@ function Get-vlServiceDLLLocations {
             if ($ServiceDLL -inotmatch '^C:\\WINDOWS\\system32.*$') {
 
                $result += [PSCustomObject]@{
-                  Service  = $ServiceName
-                  ServiceDLL     = $ServiceDLL
+                  Service    = $ServiceName
+                  ServiceDLL = $ServiceDLL
                }
             }
 
@@ -145,7 +145,7 @@ function Get-vlWindowsServicesCheck {
       $Output += [PSCustomObject]@{
          Name         = "Locations"
          DisplayName  = "Uncommon locations"
-         Description  = "Checks whether services are running in uncommon locations"
+         Description  = "This test evaluates whether services are running in unusual or unexpected locations on the system. Unusual or unexpected locations in this case means outside of folders such as C:\WINDOWS\ or C:\Program Files, which may indicate a potential security issue or a compromise."
          Score        = $ServiceLocations.Score
          ResultData   = $ServiceLocations.Result
          RiskScore    = $ServiceLocations.RiskScore
@@ -159,7 +159,7 @@ function Get-vlWindowsServicesCheck {
       $Output += [PSCustomObject]@{
          Name         = "Service.dll"
          DisplayName  = "Uncommon locations of service.dll"
-         Description  = "Checks whether services use service.dll in uncommon locations"
+         Description  = "This test scans the Windows registry for service DLL files and determines whether a DLL file is located outside the Windows system directory. DLL files are important components used by various services and applications of the Windows operating system. Malicious actors try to execute code and gain persistence by registering their malicious DLL files."
          Score        = $ServiceDLLLocations.Score
          ResultData   = $ServiceDLLLocations.Result
          RiskScore    = $ServiceDLLLocations.RiskScore
