@@ -183,7 +183,7 @@ function Get-vlAntivirusCheck {
       $Output += [PSCustomObject]@{
          Name         = "AVState"
          DisplayName  = "Antivirus status"
-         Description  = "Checks if the antivirus is enabled and up to date."
+         Description  = "This test determines whether an antivirus product is installed and its current status. If the test is performed on a Windows server operating system, due to technical limitations, only the Defender status is evaluated. If Windows Defender is enabled, the test will provide additional information, such as the status of the last signature update and the current signature version."
          Score        = $avStatus.Score
          ResultData   = $avStatus.Result
          RiskScore    = $avStatus.RiskScore
@@ -203,8 +203,8 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB1cuhkOuVMqR8x
-# fcW1UzN/kRuWe30NXfPGJ9LHbziARqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBpVWKdcmD+QPyd
+# Kmx1fEeSaS/QLWlqXAwj1lz3dbEzraCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -281,17 +281,17 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgh5wIYXam7VSX
-# 0J7egYKj4CoBYgaNJrCpU3va08qnGNEwDQYJKoZIhvcNAQEBBQAEggIAUOV5nZgY
-# NhvtEg7sSCPzWYfeDAScwwTyJRilkJRSsA51/MA1Quwn5iZblP0C+SrC9bvbTLW9
-# 57F5YzgDCPUr1FGri9MGbXr1gB8V0LRfzH1sxNWcg332jYcZIv7n6TlZXKkn0CCk
-# NGaGmo5HrxDqXFM+c/DlOtuKlUX3Pb/+jkHSTnZ6c7cG+1a+7WTz2IjRXeodHnVn
-# CfAed8nYZ8SnPH4Jl70RNqGSX89wHp8ngmCwzSzONaR2TGmhDRvHXOd73GnJ0OVG
-# OEp7CBxn+//pb4BcYTTKCB8badYc+3fe7Gxv6TmwXQQWnk+SM/s2LU8pn6+jnTdT
-# Xkuz3XGgeMpoo4ULuvlYLIeonRm0fTeHNK1OhpwHqwI4snGQQIY5Tp4IyzGkOWUU
-# 0Q/YM57SigZ5KoaR77T2xn4BexnwbdIRUcIhlkS8d3V9jK32vx58TOWWtNgWVqsc
-# zQMCKbVcGHty7BqeyOYWUbje6Is7w2lqLK4DlTs5ksXXcqo5YQAUZ3Flrf7qqw/K
-# 1pNkFC9udXMq0zXTlNZXAD1klL/HzQgBYP5fltb9hUoojrxpaD2LnRw2/hfVN95Y
-# pduk4GFX/AZ48bCNilYSm6dvp9e9ZsYOcvxtmOsydrL44naEOa/KR9Hr1r/brBFe
-# UHGzoWTI+xS3nbhUMD4FoIAWyi66p38NrDU=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgm55oNsX7mUsl
+# Se267/q8LQQN2Uw0xgE62Z6WdSqvJaAwDQYJKoZIhvcNAQEBBQAEggIAFT7Y3oKD
+# kOJlAEpSuHbSsRCxiYtJpmxocmcIqzn0xjD8Ue3dxpynSkuAs0kmJRgweXDK/R7I
+# 8otFOhjxLz/AsSuAacEDkgoHn2RyBGaGLxTGy1a0zoVsaU/xfRS08zx/3W7ge1PR
+# xgzXqsEPP5bgkk+hQAw31ZUzyGH7ZTeuEmFXuIx46va9BG4EhfseWJHScyYzB0AV
+# sKpQW18RFRErkn648/KlWxyD8t5OKE39SrK1bmLF3BObyaJZEoc/YdX6/Eo7sLmy
+# aM+GcBAzhWAThqJ8hpyzGmDnZX91pKlBPEHIBDgwC3EubQVahekdJzh3GrBk5gde
+# oZsrmmHL0IvkcBrv/5juJQUG3JrGCwqPwO26bCSgf5XW/HhFXxn8ux6Hy8dCmYis
+# PDz4QWhTLJP2L5SCOwXLROaz5cEx2NvVuu4f52b4jbAff8ILV8okaqt8BcAgf6Le
+# ETo7iT4yRfVgjF8uOGmqhNAzcxoZ+/SjO/1c/NseyGlhhVfJPBUQshH8rYawqkDB
+# aZNN7w9/BzdLVFfpQ98C+Op2f0NILgODaD0M078F7+EVX/NEiMZg4yusCssoKbnL
+# M9vrEUBhGtIDJU7zCySQ/F7/AZoorF9P8F0robcn+Ue2nLzgVDGrinHwrPfGpti2
+# VyNlc0x+7JF1mmfnYCTebw9PJ8Tj+sO+ztw=
 # SIG # End signature block

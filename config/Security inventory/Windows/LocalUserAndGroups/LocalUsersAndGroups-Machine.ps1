@@ -332,7 +332,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUMUac"
          DisplayName  = "User account control"
-         Description  = "Checks if the User Account Control is enabled."
+         Description  = "This test examines the status of User Account Control (UAC). User Account Control prevents unauthorized installation of new software, changes to system settings, or system files by requiring administrator-level privileges."
          Score        = $uac.Score
          ResultData   = $uac.Result
          RiskScore    = $uac.RiskScore
@@ -345,7 +345,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUMLaps"
          DisplayName  = "Local administrator password solution"
-         Description  = "Checks if the Local Administrator Password Solution is enabled."
+         Description  = "This test verifies that the Local Administrator Password Solution (LAPS) is set up and enabled. The test scans the event log for any LAPS-related errors. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
          Score        = $laps.Score
          ResultData   = $laps.Result
          RiskScore    = $laps.RiskScore
@@ -357,8 +357,8 @@ function Get-vlLocalUsersAndGroupsCheck {
       $windowsHelloStatus = Get-vlWindowsHelloStatusLocalMachine
       $Output += [PSCustomObject]@{
          Name         = "LUMWinBio"
-         DisplayName  = "Windows Hello/biometrics"
-         Description  = "Checks if Windows Hello is enabled and what factors are available."
+         DisplayName  = "Windows Hello/biometrics - Machine"
+         Description  = "This test determines if Windows Hello is enabled and which factors are available. Windows Hello enables authentication using biometric factors such as fingerprint, facial or iris recognition additionally to PIN codes."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
          RiskScore    = $windowsHelloStatus.RiskScore
@@ -377,8 +377,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAdsYUNbU60QguN
-# tnqcsPxmkZqHsIaKDVYp7DqVdc80aqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA3ul1HbTA412zN
+# hXcRdV7iySruTuVS7hkSAIgACQmrs6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -455,17 +455,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgTft29p+K39f2
-# 2eGivtsbUlXwnu1lFmT1UGqSbx/2QuowDQYJKoZIhvcNAQEBBQAEggIAidZ0H848
-# lMsqrvHxO6X6GPiGpbOzXAfwAAezJepQw+zEk+NkIIvyRB9z/yMHE86UtdQM79c6
-# Ba25aXt0t6fEfBC/RCJbCQvc/XXCCRou3Dry8bv6jq6lqk50lddkqgkrDx/Fei3P
-# BJiNs7STYmf1S6fkPWUly3L/hjMKise6ykMyncs57DclfBKYPHnSdnP+058vl0yl
-# mYsFSRapSxs/YhTuaol3ReeYOT1GdcfUTqas2x+MRJfNAzPpKbV3t3lY1Zr6sPvF
-# tnU8C7q/noEQnDDfNHRAUkGTeeCoJx1qD41TISG3tvb6zprUCMEC+ic70iC9h6Yk
-# ax6HLl4JA+MViJDnS+rGksYHX/uQkPV4UD8u7Bpg5CRiofnyAJChG1de/hZ0UEWC
-# JdBhkX3IUbamC1wyLsycqQiKKAbNkO+4Y3VdweGdpa+jSc2964Sxr7pxdIIJSA0V
-# JZzre9fkJvHaT5pD88XCdm7Tcp+BRgDoDCYFVWnTZfZRSi+mMtyA+QNZU89qkJk+
-# E5MnFU+Wl748fSNYa2HLdpPuRg2buIUBfXHX9dW8DaoTGUia7A+ObXue2oZwPybk
-# 0VG9okgt8Lv4Qu2qfMFqJd2MixGr2qCuyCaBrPIT432ZBRIf9XamBuwkB0F8QNh7
-# W8nFKDWatCOuS7noNCzGs1roARO//kIGPqw=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgyLdd4e5UTxuD
+# UaoMgonXcaNxjlELst01Y3wAd7leWe0wDQYJKoZIhvcNAQEBBQAEggIAwz1gpDbK
+# 0wqJl5JXkhrOgzczx8RWld1eS6ghgJtjJaOKx+sdC2eukyrTde/Aafn1hxI6d8Os
+# 9BKTQUygeFMyduyqNrVYjZuzadN/c1wyp3h28cU6v3o2PLvG0ySdKIUkb0gx+Oq9
+# E7BadC//ZGuEPkLkKEMY13eYIieZ53iibuY3atfvrbAu2xatHbY6Np0Ft5jiCAjv
+# MrKSB+K+FeVm58kwVFBDGF1xfGRLQH0IuDSczX+A0f4aB6mmxCyLpOnswz+nI2XR
+# qur2CvQDO43UZ003vvSglnDa4pCB2fWtMclXX2DopFqqFDFWfbCUouKA/X1v9fwW
+# kDbp3UQO4G/O6h47FDVc98+CYPLu82bbU3ds6MPhxG6tMJ+F8A1vUXUy8/EZ40bL
+# xyO4G9lAjf+eYVYh6SSebuE+OWzDUd3baPR5yCqfNh5t+a6XrI3MS8HhhLuodGBk
+# UB1lUEUEf2thPArr1hEEiqUUsm8CBVao4mO6Q6YWpnGTAEwQRs+rcweQKh4R5hmc
+# lOVEbINVZKrRXhkhg1o+pQqPZaKZ4vH2d3bhyqPmZeGYD+QmYxVuGsXpvRh83+ps
+# nXMjIabsMWj1PfZXJVFxtQX5KlizZKjvJsHJ1Z2U8r2aX+9snTXBXR+yJJj4G6Wj
+# BCKRI5JAjGVtQe2k94/IeyvaVQNFdt5c+jA=
 # SIG # End signature block

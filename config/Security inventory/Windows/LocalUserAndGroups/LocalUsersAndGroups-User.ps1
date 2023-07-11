@@ -247,7 +247,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUUIsAdmin"
          DisplayName  = "Local user is admin"
-         Description  = "Checks if the local user is a member of the local Administrators group."
+         Description  = "This test determines whether the local user is a member of the local Administrators group."
          Score        = $isLocalAdmin.Score
          ResultData   = $isLocalAdmin.Result
          RiskScore    = $isLocalAdmin.RiskScore
@@ -259,8 +259,8 @@ function Get-vlLocalUsersAndGroupsCheck {
       $windowsHelloStatus = Get-vlWindowsHelloStatusLocalUser
       $Output += [PSCustomObject]@{
          Name         = "LUUWinBio"
-         DisplayName  = "Local user Windows Hello / biometrics"
-         Description  = "Checks if Windows Hello is enabled and if the local user has enrolled factors."
+         DisplayName  = "Windows Hello/biometrics - User"
+         Description  = "This test determines if Windows Hello is enabled for the current user and which factors are enrolled. Windows Hello enables authentication using biometric factors such as fingerprint, facial or iris recognition additionally to PIN codes."
          Score        = $windowsHelloStatus.Score
          ResultData   = $windowsHelloStatus.Result
          RiskScore    = $windowsHelloStatus.RiskScore
@@ -279,8 +279,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAazZqd+jAlJBq3
-# sn62VQ0p1OcYW6wIKlTeT+bxmFG0M6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBac/q0d3QJysL+
+# lGVywHwe4OtLA1InGyfbPoYpkYFhuKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -357,17 +357,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgdBgNWV8X3Ovb
-# U0DKKh/z/ktslHERIBCZR/B33cZbnswwDQYJKoZIhvcNAQEBBQAEggIAUj3F3mbY
-# 56xgClPJgwh1135yrZlDXIZxIavzm3gScZ1S7GLV44r+/b1vpQKPKcUkgg4Vdt18
-# E90uhwIElE+3reBtPhjQeWGnGXoLqtP081oh/cDZ6R+Wm7v33AIUXTGxfC9y0erc
-# jtpjYoGF73zSpWpu/HZ9U99jieHFoWIAK/ds8kpH/6WLu5oPDyCpwdQxLVbPdxFr
-# Azjsn7S4/7bD+5YRttUb83TmaufFJ3/i0Uu/Aqi0WSC/MpsJpZQkJ4v7/2vmA/wI
-# S2AbplQ6NQYe7ace/zywiYEjG14pNqwTnE0zBcEwFRGBxjeGbPO2CWGfRFH5cDJh
-# nCgKnMYZdrekM0CZI0pXb+T/bPRCfXkz6h0UWt/qxUddp16qP9hmXTMfloVSv6lM
-# qJPu79FaQ6oWw7UrDnZUEUdL3fCYctliOfykkekTBTov++B0wVI89Vq5vD6DEie0
-# 0iC8eqEmoQm78tkTshKPMi8eZ5Cpxt0LkfeyXbhb9RlwCSZeTaMcjdrXFGR76C8+
-# zcKjjPFcRPnIENS0MofSCzC5kxwV91R3mmKegFCOL8XVTHdxTwUn72EfG6Xrm92s
-# SDJI0xQhfpx7v6C0PfZSiXaX/TSXxkDaZabU1t6eOAbqMxU7ppPse4svyRSjJGLE
-# /8KQ/iie1B+Db+i5vtro1NSMIdRlNXXs86o=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgnpXWd9q+eABW
+# AR393Z6Nbn1u0K9w4GWzZqOU0O/CpFgwDQYJKoZIhvcNAQEBBQAEggIA12hgzjji
+# D8YlpcqwA52YVrNX08ea20KRUKDCZva3Mp8bQzUMWwDhuYFbyYh6LkoZYWaJ5CVZ
+# kvNTKwEoOfgSIBu0WHD7w2fFTyQqsBen7jGHbN8tBGXEP60dCxCzL/iMC+W0t2nY
+# o7WyZqMz7rFAJtHw/TvoBS/Gq/OnuNlL36auFulsvAq5vbcOvtnEHd3Uy1irwu80
+# /w/vmzGEetu4DQU418n6+VfsNINAY5MQFH4S0aWOIrJ0rrssmuhX7jipuNNmTr5R
+# n4oT4mSnhO+IF6cFr8MDnq1Avvziz9x4B1q2txlxNf9AcxgAEFMhx8V193U5+QoH
+# Oor+Jn/rnRGdy+E7VQltPZlHiBTuiQbcNfCarNkCL4joExwBdjrtULol8Rf25ytX
+# ZquExIaFQ+5UNt4WAi8+Re5KHkh81uQpRVlROKAzzihX90QckpBoU2WPvjDEBb+g
+# pFXxVRVMZ0j0k0LEkSaRFxK4FmMxK/EXSEuXQlW3pDfYR2Qj1SL+Pws9j02XZGGs
+# WEGfx7ev5hFFhlT/Vj1BX1E0ieJEeH/4uYzzjzKNiFGGmJy5wNEbgm+r/7rWHO71
+# AOaKlu6YBoQYn8v8dz4qiTl5jp7DkT7ObF3xb5O52iOw3FZKNn++6ALK03RfumCP
+# xLomRcNqgubGAslAgiDz2VOwV0Nc4J+gU9s=
 # SIG # End signature block

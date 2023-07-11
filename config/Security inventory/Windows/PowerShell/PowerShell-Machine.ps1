@@ -90,7 +90,7 @@ Function Get-vlPowerShellRemotingStatus {
     .DESCRIPTION
         Checks the current PowerShell remoting status
     .LINK
-        https://uberagent.com
+        https://learn.microsoft.com/en-us/powershell/scripting/learn/remoting/jea/overview?view=powershell-7.3
     .OUTPUTS
         A [psobject] containing the current PowerShell remoting status
     .EXAMPLE
@@ -486,7 +486,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMV2"
          DisplayName  = "PowerShell V2"
-         Description  = "Checks if PowerShell V2 is enabled"
+         Description  = "This test verifies the status of PowerShell version 2. PowerShell V2 is an deprecated version of the scripting language and is known to contain several security vulnerabilities and weaknesses in security design."
          Score        = $powerShellV2.Score
          ResultData   = $powerShellV2.Result
          RiskScore    = $powerShellV2.RiskScore
@@ -500,7 +500,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMRemoting"
          DisplayName  = "PowerShell Remoting"
-         Description  = "Checks if PowerShell remoting is enabled"
+         Description  = "This test examines the status of PowerShell Remoting and Just Enough Administration (JEA). PowerShell Remoting is a feature that enables remote administration of computers. While PowerShell Remoting can be a powerful tool for system administrators, enabling it can introduce potential security risks if not managed properly. The use of Just Enough Administration (JEA) is recommended, it is a security technology that can control permissions and limit functionality of PowerShell Remoting instances."
          Score        = $powerShellRemoting.Score
          ResultData   = $powerShellRemoting.Result
          RiskScore    = $powerShellRemoting.RiskScore
@@ -530,7 +530,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMPolicy"
          DisplayName  = "PowerShell policy"
-         Description  = "Checks and evaluates the PowerShell Execution Policy"
+         Description  = "This test verifies the PowerShell Execution Policy, a security feature in PowerShell that determines the conditions under which PowerShell loads configuration files and runs scripts. For example, an unrestricted policy could allow a malicious script to run without any warnings or prompts, potentially leading to unauthorized system changes or data breaches. We recommend using at least the RemoteSigned policy."
          Score        = $powerShellExecutionPolicy.Score
          ResultData   = $powerShellExecutionPolicy.Result
          RiskScore    = $powerShellExecutionPolicy.RiskScore
@@ -544,7 +544,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMLogging"
          DisplayName  = "PowerShell logging"
-         Description  = "Checks if PowerShell Logging is enabled"
+         Description  = "This test verifies the status of PowerShell Logging, a feature in PowerShell that records the details of PowerShell commands executed on a system."
          Score        = $powerShellLogging.Score
          ResultData   = $powerShellLogging.Result
          RiskScore    = $powerShellLogging.RiskScore
@@ -564,8 +564,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAF5HQ9ZrPwB2XK
-# 4vkRNPpE82nOxplTZBZd6+3pJoQ0QKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD1X1qx9Bp9/HOV
+# qyOGw+nCmmESr7EJKTObc6tz/zoWY6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -642,17 +642,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg+BmeS0/GDW0F
-# qJYShrv3X6D8aq4SyGOA6X1n3XsnNzcwDQYJKoZIhvcNAQEBBQAEggIAAfW08+8C
-# nn7Gx3iEeH/N4FVX+kn3NuWXP9l9/Mres7LHMu73N5bNfp6cGgZrz5nZPeyS2xYm
-# F+bOM2wZImunO27mjxTv/dSnFxIa33Ny39J7g/RbxCJhy3MDcfSZmFu7nfWZcn8i
-# ynpb3f4mpa2E1WRZne53Yen3z5otscI9h+4EATu1qm9dV1IK3+BtwXjDaSVyB8px
-# h4DeDJ1I6mONqTZ7zOGNUk5OlnYCweg4rB7Hujp9aEC0zv8/i0T5kDLYs9Q6G1Hl
-# /+d5L3Rtgx8BCeAkA/Eq5yn3I9VKS6vjacekJlbA0MhfAiLuw6ZF6JEH+p25tBN3
-# hKkUJEPmuYHFEFlMzY3o8bBVs0wwIGYtBwweO3NWsS+mWgCWln8tXIjylnZGEuU6
-# RROxyqd+JCyDEKZJ3i05ibCXtayE+JWIwO10QX9wYdQbXIpcn3glFHHo9Jji3sCl
-# 6+lxWXP9AXKu0fuOha0XinyO6SSgCphkMIfFV8zafHHKkRAd0PaF7UGhuc2JHcNn
-# a0MzCVzmMM3cMrzOCJIiTeHDeoQS1+3ucX+xBonqzS6Bg1Sxs87x+GkaNROfvqc0
-# 2rf2QrqCnWHP4E31RiWNuhI16b5B0GPy5A6AzX6HorUUlExqba7v2HkqE7aVggft
-# CnqHL9rj+jmnHnCprzDlZFHJIRehQ3H7J9I=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgsf1Z+Puz9Wvz
+# NjFk6TXQ+3oCoHJpclJwc5UfCGG8gA8wDQYJKoZIhvcNAQEBBQAEggIAjwm1gt2F
+# K1rxHW/X+iHCSuwBs6fiWNMe3V1xWPVOnYr/as7VCwuY0AmG5Gghg/i5hm3ZsKIt
+# mVxS0fHyWVhs2AXiDEYU15eTk0NmcDPu0jycX4BtFNYm5ET76SV6CdSVOkjUt2Yp
+# 48m3micLz43uOUEcVChso0Vd1jxdQw5ltpeZw1juJPNLVWPFYRSn3S1Ubm3NIRk3
+# U6Y+HyBIDJjxxLIgS/C5cCyZwworSR0vCgJXA6enUeDbVQMgZLLNVQXMk5iBPpbr
+# eR3NLmlX2UtYJXt4E9zkwCvtTI7+IFiRnm0TTk2QNtDZNz1DOSCAOOGshEyEqiit
+# SzDAVqQVh1PRouNSvM29PlNDwtNx7DsXYt2reGmeN5MgnPEwa/oe1s7tSMttYVlf
+# mVBI9eByHegO12MhUbfCfgwzcVecaiLZwnvGwuwCcLO5yOharOLknbGGyd0bt57T
+# z1SsCKpeU81z9HMubzATXm0T5Czr9pZjx3qhaV0nh+9a555vsmKoHBBbpbMH1Vfc
+# xqXz4wVw1tI1PLIOH0BY61/Fgg8fAryWSX7yQsajaXVcYJZgdiR0dOmqBUCum0FO
+# aZrI1DkW2nVIgsBmqzsywbyEVB9wsEPprxb1heUsorJ67Rjoy5arAj3+R0z4cY0T
+# XQl7UEMvGZLiMoZ9oEvCNseMkM3ypo2byIQ=
 # SIG # End signature block

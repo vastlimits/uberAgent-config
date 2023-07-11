@@ -308,7 +308,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCBitlocker"
          DisplayName  = "WindowsConfiguration Bitlocker"
-         Description  = "Checks if Bitlocker is enabled on the system."
+         Description  = "This test verifies the status of BitLocker, a hard disk encryption feature in Windows operating systems that provides enhanced data protection by encrypting the contents of hard disks."
          Score        = $checkBitlockerEnabled.Score
          ResultData   = $checkBitlockerEnabled.Result
          RiskScore    = $checkBitlockerEnabled.RiskScore
@@ -322,7 +322,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCComHijacking"
          DisplayName  = "WindowsConfiguration COM hijacking"
-         Description  = "Checks if mmc.exe is set as the default program for .msc files"
+         Description  = "This test determines whether the 'mmc.exe' executable file is set as the default program for .msc (Microsoft Management Console) files."
          Score        = $COMHijacking.Score
          ResultData   = $COMHijacking.Result
          RiskScore    = $COMHijacking.RiskScore
@@ -336,7 +336,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCTimeProvHijacking"
          DisplayName  = "WindowsConfiguration time provider hijacking"
-         Description  = "Checks if w32time.dll is set as the defalut time provider"
+         Description  = "This test verifies whether the 'w32time.dll' file is set as the default time provider in the Windows operating system. The w32time.dll file is a crucial component responsible for time synchronization and accuracy within the system. Accurate timekeeping is essential for various system functionalities, including security protocols, authentication processes, and event logging."
          Score        = $timeProviderHijacking.Score
          ResultData   = $timeProviderHijacking.Result
          RiskScore    = $timeProviderHijacking.RiskScore
@@ -370,8 +370,8 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBMhPislwFcs9RM
-# ZEUBGEp4UvuKinb+u9y35RWWxpizF6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDv3qh3XaHHsywi
+# 76WcPzwIh/zUyH866rHjLSftW/Z2DqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -448,17 +448,17 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgsGpI2McRc6CF
-# a9kRjrlDBbJlF+Fh0h0V9vfNZrmi+tUwDQYJKoZIhvcNAQEBBQAEggIAq2Rc0ZxJ
-# gQYF12DNriJbOp15dcGZW4YSoSl7e5yvhgFqMsuP8IWPhbGvR3X5FRX/L0A8RwCA
-# HBIqPcHLkiXZWc2+5T1vOEg9lu0gE0EkxKBlcFDd1YeUHZj2yYr+aGs6zNuMPnrZ
-# N+xihLczUGVISGD2j9BE3GVIrpjLeD6rvXErMwpJFoetBwycm8C0p1iDxSh7Soz7
-# ETdzjgKg/7DwB5OHf0riBEQdy9GXbznkxdtWyxVPex1WvsHno/Ia3gcD9SZzNnwk
-# WkxONgw55noGvIJh78/XKfwamiKqu9PDPjzNQ5CUxNzzt8QrkI5fq1T1ZKH4q91R
-# FfS3zgbMlLYUE0Bt4NZT6YLX3xhhYWPCmQmZEL+tyDYH0oUuCRP89O7yXMggPGV4
-# zgzP5AYurtfONieALiENw1n/jo78gG5ujEus8y0QTdSIt6ZL3u6ryW6+hbBHoaR4
-# +5EXN9ogYp3jOYVPge+ZZmLgdQSeB0Rwf3QMh9NehPxV8FFJC5Z9yA1KR32ubVtx
-# bBfgeCRYbDygOoNH3wMylDNtL6mG8C7W7B8ayRy1VGI9202cvmo3gNFdwPDrABGF
-# RV9Ztq3hOzun9mDHmon/hZVwqpSv/teg2hVdmo+XGxr08tIZ4lgFGW5BnBEWKWCR
-# 2SNBftqx6TN0mSjkgiwA8zotsZIu0jP+Z0E=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgW6Z3pr/vkqhc
+# SguOAN5vkpve4j/qE7c3BsaPSYEtMcowDQYJKoZIhvcNAQEBBQAEggIAiYg6/GzD
+# TzgJqJPwGwYci9wlii0ABr+qnLSU9nSOmPDjBVCUdpwU5sZ/gddCM1FN6ekRi6Jg
+# gQTKeVr5MSSnxuuAWrxkL6ogIru9GOqWIrcwU6I5GX8dtCa6l4fjGg2sZ7RDqvcV
+# 7evRUJkN13f1BMI4rev+K4tLVJxnhU0XUdgJzxeirS7AOj4PXI2tStHFDUdgHEsb
+# YJJbkee4nH2t6n7HxXU9I5nDR8lyfEaVc68GW9BnF0tUx3lOpnddMQv5vtrejLES
+# ZJM1bN8d0njxAn75BTr9Rtku+zXx+SH+MGnfMi137zpOQ46nAeqCRgsG6cGDirJJ
+# u228KD8PKQo90V0Of0s7lVa/TTMp5HzuGIgInObpNkpBJZTRj14JaJs4RDZCLi//
+# oC7VLU/jYkOaJx3UmtP/hZPmL5ibxLjnFLBliArkXuval5uzPgYpZ6HiMwfkA/TK
+# HCAN2jCz7D+ZvySS8c4tLJg1PMmz8VC/02l4ygjDDkueh2kaL4iOC2B6KdfxZp4X
+# roC3U/S2cZd/tnlc3kOmJqTZD90QSGaLqYVmddZBK+xuJaN5MWKE9Q5UVfgq9/Ba
+# yzGJIltJoF9DVZGm2qGV6KJzwYRrq+a9C8A0odhI7p0CD8/WoAG64Kk/qCV7zAof
+# R8FhrYqm6UJ6575DHPuxnWFLT7uPv2P650c=
 # SIG # End signature block

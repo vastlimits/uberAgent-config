@@ -129,20 +129,19 @@ function Get-vlOpenFirewallPorts {
          $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule
 
          [PSCustomObject]@{
-            Name                  = $rule.Name
-            DisplayName           = $rule.DisplayName
-            ApplicationName       = $appFilter.Program
-            LocalPorts            = $portFilter.LocalPort
-            RemotePorts           = $portFilter.RemotePort
-            Protocol              = $portFilter.Protocol
-            Group                 = $rule.Group
-            Profile               = $rule.Profile
-            PolicyStoreSourceType = $rule.PolicyStoreSourceType
+            Name              = $rule.Name
+            DisplayName       = $rule.DisplayName
+            ApplicationName   = $appFilter.Program
+            LocalPorts        = $portFilter.LocalPort
+            RemotePorts       = $portFilter.RemotePort
+            Protocol          = $portFilter.Protocol
+            Group             = $rule.Group
+            Profile           = $rule.Profile
+            PolicyStoreSource = $rule.PolicyStoreSource
          }
       }
 
-      if($null -eq $rulesEx)
-      {
+      if ($null -eq $rulesEx) {
          $rulesEx = @()
       }
 
@@ -183,7 +182,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWState"
          DisplayName  = "Firewall status"
-         Description  = "Checks if the firewall is enabled."
+         Description  = "This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private)."
          Score        = $firewallEnabled.Score
          ResultData   = $firewallEnabled.Result
          RiskScore    = $firewallEnabled.RiskScore
@@ -197,7 +196,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWPorts"
          DisplayName  = "Open firewall ports"
-         Description  = "Checks if there are open firewall ports and returns the list of open ports. Note: If a rule has been added to a group, that rule will be filtered out."
+         Description  = "This test evaluates the presence of open inbound firewall rules on the system and provides a list of open ports. Open ports are entry points and can expose the system to unauthorized access. Rules marked as default are filtered out."
          Score        = $openPorts.Score
          ResultData   = $openPorts.Result
          RiskScore    = $openPorts.RiskScore
@@ -216,8 +215,8 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAmIFqyjQ/Tw+sb
-# g38sqqA6SOe5ecb16ieJZEDy3ODWWaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCrmFmf0lo2hgF9
+# oCyIvLrRLrQFI6xXlALm72buN1Js1KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -294,17 +293,17 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgBfL5sV/HbUJZ
-# 4nkfuvn32/q4SknLrDVMgOzs3srQyBwwDQYJKoZIhvcNAQEBBQAEggIAkzMWzTeI
-# xBlq0VaXMsfd4kIsXdMOyQ4iew+3SvR+QJYQVlIbyGLoQuCtYDdX9IIlApw7ia92
-# Pa1fQvewyjLS9oLzsV8JgPEqTS8BvMhwJH+42CcWocPG+vxO9JH42LNcUJme5nIv
-# NiS768wwfTincRZP2PMH8bYfoRh8T6cJWtyq2b9AcTqijooG+g4Oe9wy/RU0XoMx
-# Gy3q6I8YhcEKBRTf6ReRaIoQ8lgfFxQazjIpHm+YeAX+v4GljFhkdu0lZDwmJxQd
-# oRO87rPWoB3MgVXayyetOpiizRmo1BJGSbQNCoT9xvgvi8Ng1PTonQzcD7Cbysft
-# HWi9u15JfjIYsgMlMf4JAd7o3VvIq2Tw3W6lWEA8K7ZQwJaC4boMiGy+7Yjjxxc/
-# psSk4x5BBsUzRVBriIy0jogy+TVZqkR+S78YqGszqdnLM9zyk+9emeulOjC/u2vL
-# vpNlJC0TNx/mrSUYDsmbIVlZgeGNCvCADYcArLJurl4tKnKYnUAgGwH1ErZzNKIF
-# 4WC2EUp/AS6NPZb9Yv6IDPPrJAzgVB4ssmao+Ho2miZIDDpSFQNKJeTQDPsg4eVs
-# QvJrtkS8Y9rYR4/LGZ/GWzrxqToaokNjvYi0gI4V+5JDHGScfU0SSBt8C7lRiL2N
-# kEU7IshJZaMXUG6fDCH99O15+j7yy3+mt4Y=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg91kp2+Xl/6k+
+# 2MyzvFPNGpERg4LVt/EQ4HRzNNxUZikwDQYJKoZIhvcNAQEBBQAEggIAIpiObsBn
+# sjWV1uyRXqUbNrLdb7Iax5YoDZEvf8GUL20vBuavOedoNMtz/9I0FHQBBgsafZOY
+# ICyWT8eMHdKFNkLX8gRWMGxYviLX8guB0BW4J7bgVOcravRofOYJy/t6eeQNTckF
+# pnh5I09Pac0OcD9jszrKG/dQ6j25IlB9hQwFr3NRtaYnpUYHzn+HJ+xzii2QNYmN
+# pMwuH9F9VVJyHk1RFGRtzQXth3SdP3YQa89Li3A3c6IaoC7Mp19kJYaC43RlnkQC
+# XkIoKeBL3zdd0Fr6V/q1VTltwx4DyvCZLq07EUlQlU3OWaqfJNVSZ9TsFUrKx/Tf
+# czQWohyb9/9CAkU5ZBIIMwjZxdwdrTNhwq0h+UwGbLTqly6TjvV/Fk+kRLujUBmF
+# ttf96fi29nP6UOMSuEYRHg+giSiKJ3RNQhGmD3FgGOP/o4dxGCGIKIYveXd8ae8D
+# 8nMvlualsyz2oqhCpe8DYxPk7rhBvUcakow26724lKoqvtjZT/NwpjJHSwQlhqaq
+# EG4Y8W3B89GWzQ+ctXuB2pjuhpB3/KIAQbHYGvc76vVfWBpk298hM0q47m4k/pQ9
+# l3X9tRh/ZHDhXHt9/6fjE9rZnjt5Se/y8ufK8xDev0I6+XK6lue26COVypodIcqG
+# MclOHFoXIf3RX+ir4bnO2MYJSnYPvdK8j84=
 # SIG # End signature block

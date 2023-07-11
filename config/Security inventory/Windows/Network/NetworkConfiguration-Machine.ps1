@@ -295,7 +295,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCSMBv1"
          DisplayName  = "Network Configuration SMBv1"
-         Description  = "Checks whether SMBv1 is enabled."
+         Description  = "This test determines the status of Server Message Block version 1. SMBv1 is a network protocol that provides shared access to files, printers, and serial ports within a network. SMBv1, while still functional, is an outdated version of the protocol and is known to have several security vulnerabilities. Attackers can exploit the vulnerabilities to gain unauthorized access to network resources or execute arbitrary code."
          Score        = $SMBv1.Score
          ResultData   = $SMBv1.Result
          RiskScore    = $SMBv1.RiskScore
@@ -309,7 +309,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCSMBSign"
          DisplayName  = "Network Configuration SMB Signing"
-         Description  = "Checks whether SMB signing is enabled."
+         Description  = "This test determines the configuration of Server Message Block (SMB) Signing. SMB signing means that each SMB message has a signature generated using the session key. Connections not secured with SMB Signing are vulnerable to man-in-the-middle attacks, where attackers can intercept and modify communications between the client and server."
          Score        = $SMBSigning.Score
          ResultData   = $SMBSigning.Result
          RiskScore    = $SMBSigning.RiskScore
@@ -323,7 +323,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCNetBIOS"
          DisplayName  = "Network configuration NetBIOS"
-         Description  = "Checks whether NetBIOS is enabled."
+         Description  = "This test determines the status of NetBIOS over TCP/IP. NetBIOS is an aged network technology that poses security risks such as vulnerability to poisoning attacks."
          Score        = $NetBIOS.Score
          ResultData   = $NetBIOS.Result
          RiskScore    = $NetBIOS.RiskScore
@@ -337,7 +337,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCWINS"
          DisplayName  = "Network configuration WINS"
-         Description  = "Checks whether WINS is enabled."
+         Description  = "This test determines the configuration of Windows Internet Name Service (WINS), a legacy computer name registration and resolution service that maps network computer names to IP addresses. WINS is Microsoft's predecessor to DNS for name resolution. WINS can be exploited by attackers to redirect network traffic, or gain unauthorized access to network resources, or execute arbitrary code."
          Score        = $WINS.Score
          ResultData   = $WINS.Result
          RiskScore    = $WINS.RiskScore
@@ -351,7 +351,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "MNCSSLTLS"
          DisplayName  = "Network configuration SSL/TLS - Machine"
-         Description  = "Checks whether only secure protocols are used"
+         Description  = "This test verifies that only newer versions of the Transport Layer Security (TLS 1.2, TLS 1.3) protocol are used. TLS is the successor to SSL. The use of insecure or outdated versions of the protocol, e.g. SSL 3.0, TLS 1.0, can pose significant security risks, including the exposure of sensitive data and vulnerability to various types of attacks, e.g. man-in-the-middle attacks."
          Score        = $SSLTLS.Score
          ResultData   = $SSLTLS.Result
          RiskScore    = $SSLTLS.RiskScore
@@ -370,8 +370,8 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDFYeh81955NU4q
-# OrrtNaDw9enb3LHn8SBTgbeFFrNTE6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCPRwcfoOsewBZz
+# CydgjzPzP3poQZ8kR482X4PiWWsfJKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -448,17 +448,17 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgli97XuXmEwIf
-# /YW5BNUHUmUH291i5tW/wSpCKkRVe2YwDQYJKoZIhvcNAQEBBQAEggIAoly3dWWB
-# rchmwBO4mcEDWdxgl/9df3XWmbYovkhlr8zoUvIQXf9D5o+l3lbggJVDQcE9tQeW
-# 5i9glxMLr+3/TstC3RkQhZw6/8J/GBROia+oXmHnNiaxQq02nmxYrK2zLuInOmnz
-# ApDMZdUqvee0EADLH2V0LQTfNizBCPa+silLOBMhObKMXyU/qZlRxBTk9vk+04Ao
-# XQ4hb88XufkMKnvcrDTnHpvybyC1j3QszRq779NIod+smePBwHQVYOLRM9BjCLk7
-# l+Ygh4f7Lng6k//eAI5iD3Tix7YeJcsvAS4BKUts6yXjIzAnpCIhBaBwBgxegbfm
-# B8LydK163VEm48Y5CGdQ3BwwUHcIbQIrK+rbdbUNMMfviXLevJXTlX+jOdDlmO0X
-# 9h2oxcLoYBim4xHOQP6Bb9/6Ici1bahGqaUKUigAMyA1UekodQMF6UouSFoWXott
-# eZIcKX27QBxKQ8zdSTdUBzuyId60ErftYqH6iHzsrvkaa8uOEx3er5gM0mz5Sgs4
-# CZ5CroB8FH/Y3VBgdZq0ZEwQp69AykZ58mgsv4yK3XEsukYERCHXYYSbBQ0C3nRJ
-# 4Ce7fIXcBeYH7zowjuNA/z6xfAVuL27n657zfmzH47u5nvSzB3NNsIAqei1rY8sF
-# o1LOX/xtHvSM4GPU7VCbe+plTD6O+M4ofOA=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgOvUmfuuPu3JO
+# CdptzHOinOUqcrc4AtkmPq0I8YM0JFAwDQYJKoZIhvcNAQEBBQAEggIAX3ftGbLX
+# O/90ePrETmGSwbUuVBvhNZDkriLzJGNgo5C6oG2Q3VXERpXJ/0KiVsAERAGOBUyP
+# POMWN/26ZN80GN3oOhwvIHp7b5gQj6WyOnphD5zMpF77rtsRXcm27rYN0tLy+1en
+# PazFxQ5wNPhAk/Jx99OUlkjLcXfC792PMJiOYh/YifKOiga19c9Jit8keocWfsXB
+# wHGf/MS37HUnuhce7xZELkll3FbZy5hxXhMQbF3+sWV4/eYcOnDtM6r0oKw49jJq
+# hycdfDZpWPsKmJfleBu40H5xS/tklo17fJObS5uRiwzVkNbM40ftcAJqDY9JwiPx
+# d5xGOivwrcAvRRKo9f6G001GVeF9AOt2YCgNEa+NqpMgLrpovtEFoyuyx4dIU1O0
+# 0k7/6SpPkwpcFGFcToVGRvdHCOjFbqgdIwiL3Ru4CL47nsRN/1BtMa7ci2ABPDF4
+# dljthDjHmvpxnrU5SKAKV+eUZ+q+hYVmxhW0L7zvdHUXpfcqLnEa66rOQ1p5vTi8
+# NgaVFnsd6kOcl/HFsPF3T+TCfoAoo70Kjk5dp6Thtr5RmXcUdUhtfEmCij+eNRNb
+# 8WiQXGzQc4stHjV07TzLks1/uTxXEFgI0ts47uKeNo8yok9zcmQY7tuaTIY6gy+e
+# 3xGRHqEnz8m3s6CyNJojkS8ZTiaoQQMREvQ=
 # SIG # End signature block

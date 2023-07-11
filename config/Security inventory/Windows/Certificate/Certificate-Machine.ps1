@@ -444,7 +444,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMAuCerUp"
          DisplayName  = "Auto certificate update"
-         Description  = "Checks if automatic certificate updating is enabled."
+         Description  = "This test verifies that automatic certificate updating is enabled on the system. When automatic certificate updating is enabled, the system obtains the latest Certificate Revocation List (CRL) and Certificate Trust List (CTL) from the Microsoft Update server. Regularly updating and validating certificates with the latest trust and revocation information is essential to ensure certificate integrity."
          Score        = $autoCertUpdateCheck.Score
          ResultData   = $autoCertUpdateCheck.Result
          RiskScore    = $autoCertUpdateCheck.RiskScore
@@ -457,7 +457,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"
-         Description  = "Checks when the certificates were last synchronized."
+         Description  = "This test determines the last time the Certificate Revocation List (CRL) and Certificate Trust List (CTL) were synchronized with Microsoft servers."
          Score        = $lastSync.Score
          ResultData   = $lastSync.Result
          RiskScore    = $lastSync.RiskScore
@@ -469,8 +469,8 @@ function Get-vlCertificateCheck {
       $ctlCheck = Get-vlGetCTLCheck
       $Output += [PSCustomObject]@{
          Name         = "CMTrByWin"
-         DisplayName  = "Certificates trusted by Windows"
-         Description  = "Checks if there are unknown certificates installed within the trusted root certificate store."
+         DisplayName  = "Certificates trusted by Windows - Machine"
+         Description  = "This test relies on the Microsoft maintained Certificate Trust List (CTL) to validate the status of certificates found in the machine's trusted root certificate store. Any certificate that is not recognized or included in the trusted list is flagged as an unknown certificate."
          Score        = $ctlCheck.Score
          ResultData   = $ctlCheck.Result
          RiskScore    = $ctlCheck.RiskScore
@@ -489,8 +489,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDg7OLrXyLsmVgG
-# YwNOX6Cxk5tVDLEWbPfJZl/4LpNPlKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCvCXvnJm2I4jjQ
+# Dq1KywAjs+hFpw/I4YhDgYXo+1CwE6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -567,17 +567,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgXQ8yDjNLjWAg
-# FRERQKW2eYQVQbf9xwyiEn3+X1vobXEwDQYJKoZIhvcNAQEBBQAEggIAp0G7sIfF
-# 1u66OUjKp6YwIo/lLoB9kffzZYTsHNtOOPN/dG0+116dvGKN+gWZJIBEFpeuiBVf
-# YJZwlaT6/FdB1iiBjYkFna/8/50IDQq076i4EbRJE4t1ipm7sybpWruJHZMbImzH
-# QVn3zThkf0zDDwndop+7JVJPa19ZGEwaHk/ZEjBF2PczccyidbROFeCf0zp4GlNY
-# Crkbv69CUB0e+mxhjt53BaLmU5kvD53eWXY2HsFD8QZwioyik1Y+31I6INaWRcOs
-# RcA4tO3kHqzMhAyMaIzdnkUN2XPXdwzHZOip2BEOwPr5VqcjjvxfYHjdXVpo0PmW
-# VSQWwGK9ZGdXS9uUXlXwWtawOyPsrSBxynApeoG2JlPbayaz6WedohPZp4oXhoZk
-# ePGuL+VYlSY18NpT7NXdenYEkSl+83Km3GJKfv15cfd7SWZ5f96fMPc2iKXH6wlf
-# KpzbTLlUfjWyrNhQ3gwiI5YhKrKUSv61c7n7BxpDuxnZb4WNONw2KHCcLS+D2/7S
-# K/0fH3n4vWnfn8VhluqjSDEErGDSrvCtv0EqQM0ayJBOTDNXKd6CBno9zDGdQCAV
-# ZcH77oFCQSOgBp4X8y/X2k0aoLyfnTeoejqU/afjhHlE7XjwUIZA71YhG3pQc9pd
-# m21EryqOZMTydyp9gO7DjIt+hW+hSUNGxPY=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgOQzlV3pUTBc/
+# 7MQ4EUwk3uBygLXKTjfHH69Dtx/GdpEwDQYJKoZIhvcNAQEBBQAEggIA3fWsIzf5
+# 9wMxd05PdDgjmUSA5HoXZrbTHKk5iEP5HE8V1lrjrSuCrjbd6VWVJRyyou+zy2Wp
+# fszXibrSm1dY7I1B24WnPs2NjNW6sURKpQGNegxfUQREdvaCqpEX1WFoBHnGqv47
+# EEIrWe5dwsEG+j8R6+/ffRtzrYt8STM2hZmoEixRXp86rK0+Q/pnRTNGSqphMEK4
+# W5Pg3jHc8nLhtQiuz0TYSzKkQWCMQL6G4RJmD2RPQV0yfCDPoiSkLtvQkp0q7ZmV
+# 47A0WaGwPo6Zgql1Rx9LdMIlXqDYGJUwP3sLMu3mdtsu2wOQ3PHge8fZsjPkQK5y
+# xeccPcIZHbZ+EJ0B0kjEDoSkh+rQyjggslFowMQrzwhy7iyM+j0qtlRGuzcWboTL
+# dFeA9FY7foAaYluhV+Vp2qP1Tnm5/X53AwmPXkM7YXa4PGknZ6aQ2BwT+rvsIPRi
+# hVcc9dXGAOD1vDNFGCE1WdonJt0V3c1qSX80gtfqpEl0eJ3E9L//D4HRYuJNAGr2
+# uVQ6kuhvis434oMLSqoVUW1kGy1CdMn4cNZQ9QV0psHd07xIL1i3zhlU4nYLIn6W
+# oN9lP5uLDTJrEfbJcRDVtGdlJgMJ8TAs1FMOo8/DqgpmT/oHC5Qt8VBmtaeOtIYh
+# oZTp5xwwSyZ32s8ciQwJjl++1Tut+953z8Y=
 # SIG # End signature block
