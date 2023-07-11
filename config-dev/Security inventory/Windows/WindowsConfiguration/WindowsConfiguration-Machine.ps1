@@ -322,7 +322,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCComHijacking"
          DisplayName  = "WindowsConfiguration COM hijacking"
-         Description  = "This test determines whether the 'mmc.exe' executable file is set as the default program for .msc (Microsoft Management Console) files."
+         Description  = "This test determines whether the mmc.exe executable file is set as the default program for .msc (Microsoft Management Console) files."
          Score        = $COMHijacking.Score
          ResultData   = $COMHijacking.Result
          RiskScore    = $COMHijacking.RiskScore
@@ -336,7 +336,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCTimeProvHijacking"
          DisplayName  = "WindowsConfiguration time provider hijacking"
-         Description  = "This test verifies whether the 'w32time.dll' file is set as the default time provider in the Windows operating system. The w32time.dll file is a crucial component responsible for time synchronization and accuracy within the system. Accurate timekeeping is essential for various system functionalities, including security protocols, authentication processes, and event logging."
+         Description  = "This test verifies whether the w32time.dll file is set as the default time provider in the Windows operating system. The w32time.dll file is a crucial component responsible for time synchronization and accuracy within the system. Accurate timekeeping is essential for various system functionalities, including security protocols, authentication processes, and event logging."
          Score        = $timeProviderHijacking.Score
          ResultData   = $timeProviderHijacking.Result
          RiskScore    = $timeProviderHijacking.RiskScore
