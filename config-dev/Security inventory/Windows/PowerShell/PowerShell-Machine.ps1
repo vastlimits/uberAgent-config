@@ -90,7 +90,7 @@ Function Get-vlPowerShellRemotingStatus {
     .DESCRIPTION
         Checks the current PowerShell remoting status
     .LINK
-        https://uberagent.com
+        https://learn.microsoft.com/en-us/powershell/scripting/learn/remoting/jea/overview?view=powershell-7.3
     .OUTPUTS
         A [psobject] containing the current PowerShell remoting status
     .EXAMPLE
@@ -500,7 +500,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMRemoting"
          DisplayName  = "PowerShell Remoting"
-         Description  = "This test verifies the status of PowerShell Remoting, a feature that enables remote management of computers. While PowerShell Remoting can be a powerful tool for system administrators, enabling it can pose potential security risks if not managed properly. The use of Just Enough Administration (JAE) is recommended for restrictive use."
+         Description  = "This test examines the status of PowerShell Remoting and Just Enough Administration (JAE). PowerShell Remoting is a feature that enables remote administration of computers. While PowerShell Remoting can be a powerful tool for system administrators, enabling it can introduce potential security risks if not managed properly. The use of Just Enough Administration (JAE) is recommended, it is a security technology that can control permissions and limit functionality of PowerShell Remoting instances."
          Score        = $powerShellRemoting.Score
          ResultData   = $powerShellRemoting.Result
          RiskScore    = $powerShellRemoting.RiskScore
