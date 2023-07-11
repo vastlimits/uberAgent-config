@@ -22,6 +22,23 @@ function Get-vlOsArchitecture {
    return (Get-CimInstance Win32_operatingsystem).OSArchitecture
 }
 
+function Get-vlOsVersion {
+   <#
+    .SYNOPSIS
+        Retruns the OS version
+    .DESCRIPTION
+        Retruns the OS version
+    .OUTPUTS
+        A string containing the OS version
+    .EXAMPLE
+        return Get-vlOsVersion
+   #>
+
+   $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
+
+   return $osVersion
+}
+
 function Get-vlIsWindows7 {
    <#
     .SYNOPSIS
@@ -630,8 +647,8 @@ function Write-vlTimerElapsedTime {
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB86HOTjNCn9O97
-# Klq7SmFiXjoHh7IAKENE8bMjH4ZTs6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDG9kZJBZWVzr24
+# P0NwMzX4glCxRqIc1ZmKF+9yCxbplqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -708,17 +725,17 @@ function Write-vlTimerElapsedTime {
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgjcS6ZSUy35RB
-# p5k0eJxllHokRMNGoDqTQ5b1bqIgPokwDQYJKoZIhvcNAQEBBQAEggIAMQDPzWRY
-# hNdJmjgQiYDsF995uEIkRIA7gZSnd6gG8dHnH+dZvYqF8eg7pdHLaYzR81Rs4APw
-# P0baLvBI9pTB7JEsGSbcysFEvvdDvLf1m1qFE2brmxR/kgJBscOJmGZT7KQRP1In
-# hlZuIMyXrm/4nTkomzIYyhlD6l6bxCS2V5BMPOs8Ihp0M0XskDaFMAuzKrRHXUQU
-# jxfse/MSY8sFTZLZ3k2aeYr+2pzBduIOr4cFt3I0liXFB4WgNUA8/Ow9Ca79Kkeg
-# 82lyYHUaNzWSA9oVRX0W039ajjeopwgK+gAva5gy50qbiuAgiYMTQQnINM2tokny
-# hiUmOsTK4wAOs2wcbkcfFBtU+CRh9eY3xDy7y2rGX69QhOv74Y2VT+5E6y/h2JO7
-# cGkO05ojxrdOrWJ8a0aRGIJxPUzflxAaSzUh3KL2aCqpsK72WbnI3hljr5O2zbKD
-# SF4HCK5QmaPyVMFwLB5HntDr3+TkSrQ9+E2vJv7Su9sUhytfj/MYtdg5xGc9DLsX
-# OVHfT5Kbeb+rXMggCjnLdPXLGqTozrCiKOAMeVgIzMAHrUcQTAWKoDiHO69yTFhd
-# QmZiQUST+rF39EgPyImH74GcNrhX974eO9snN+BzSdxi4wX/b+D9C/2nqYrEbO0y
-# 58ZCTYFINWalflhlnxPb1hcmeJ63/w69iZU=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgKM9LyvplaWbQ
+# ak3yn3XxZsdBwY6vUhh1UdvW7RzdtdEwDQYJKoZIhvcNAQEBBQAEggIATEtEItse
+# JCgdbOm8nVUujAOue8zy9ibSqarSCG67s35VGAeaHU27ULEhg6d9KxKj3poDmBQv
+# YNz5EVGzzykFvJiZUxnp8F8NTACf08oNsPPWA2Npj0qzV+cv7G4Vh6u8u9eWBKIe
+# onnCDC+RFXJfQkh97+i9xPrM0jHx63db3U5Qvr3vl6CH4a2+J4/cgstZk+m5pkMz
+# O1BFN9cdBbJiPkYD5pg+YDozRZ67INiAA3ldNdFbqj3nfzDsYPWNOP3VcxkFyNWa
+# eSAYaLznwX07hy9sytSnG7EhgKf1yjaRzwY2L9/wmfVUfZmhiLSlqC8F/z1XCirW
+# TpCWdwv882/99UdeuFQs01/MQFBMkbbIQOA7d9eXLr4lN8HR/S7QKLKj/ra2v78j
+# gVmKqTPHrpr9mahm8bGkaFZx35VZLoDjcimOJ4RxlfzIL702107GVa1vsCIY29yz
+# LuOfEw8iEB5xzENJgq8uJeTqcWd+0o3gP81tLRl1b1e40yr81KC4mK0vzn9Z5VPl
+# v1WHWypxKEgnZZxeBjr1DWu0ZLOKbeR4iSoKu0JKkibpI9mqnuGkmewOcCFj9tAy
+# 04OIFsjRzP/ePmVLn4fUe1fMCUY//z+oaq0OZqErCn5ZFdtVgKrpyod+Ee0hOHYh
+# c7lCouio6eOIf9ICMHENoyEE4Gzn2wfkGYg=
 # SIG # End signature block
