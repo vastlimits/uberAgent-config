@@ -133,7 +133,13 @@ function Get-vlPowerShellCheck {
    Write-Output $output
 }
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+try {
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+catch {
+   $OutputEncoding = [System.Text.Encoding]::UTF8
+}
+
 
 # Entrypoint of the script call the check function and convert the result to JSON
 Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)

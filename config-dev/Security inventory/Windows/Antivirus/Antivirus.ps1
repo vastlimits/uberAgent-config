@@ -48,24 +48,34 @@ function Get-vlAntivirusStatus {
          $score = 0
          $riskScore = 100
 
-         $instances = Get-MpComputerStatus
+         $isWindowsServer = Get-vlIsWindowsServer
+         $isWindows7 = Get-vlIsWindows7
+         $defenderStatus = [PSCustomObject]@{}
 
-         $defenderStatus = [PSCustomObject]@{
-            AMEngineVersion                 = if ($instances.AMEngineVersion) { $instances.AMEngineVersion } else { "" }
-            AMServiceEnabled                = if ($instances.AMServiceEnabled) { $instances.AMServiceEnabled } else { "" }
-            AMServiceVersion                = if ($instances.AMServiceVersion) { $instances.AMServiceVersion } else { "" }
-            AntispywareEnabled              = if ($instances.AntispywareEnabled) { $instances.AntispywareEnabled } else { "" }
-            AntivirusEnabled                = if ($instances.AntivirusEnabled) { $instances.AntivirusEnabled } else { "" }
-            AntispywareSignatureLastUpdated = if ($instances.AntispywareSignatureLastUpdated) { $instances.AntispywareSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
-            AntispywareSignatureVersion     = if ($instances.AntispywareSignatureVersion) { $instances.AntispywareSignatureVersion } else { "" }
-            AntivirusSignatureLastUpdated   = if ($instances.AntivirusSignatureLastUpdated) { $instances.AntivirusSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
-            QuickScanSignatureVersion       = if ($instances.QuickScanSignatureVersion) { $instances.QuickScanSignatureVersion } else { "" }
+         if ($isWindows7 -ne $true) {
+            $instances = Get-MpComputerStatus
+
+            $defenderStatus = [PSCustomObject]@{
+               AMEngineVersion                 = if ($instances.AMEngineVersion) { $instances.AMEngineVersion } else { "" }
+               AMServiceEnabled                = if ($instances.AMServiceEnabled) { $instances.AMServiceEnabled } else { "" }
+               AMServiceVersion                = if ($instances.AMServiceVersion) { $instances.AMServiceVersion } else { "" }
+               AntispywareEnabled              = if ($instances.AntispywareEnabled) { $instances.AntispywareEnabled } else { "" }
+               AntivirusEnabled                = if ($instances.AntivirusEnabled) { $instances.AntivirusEnabled } else { "" }
+               AntispywareSignatureLastUpdated = if ($instances.AntispywareSignatureLastUpdated) { $instances.AntispywareSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
+               AntispywareSignatureVersion     = if ($instances.AntispywareSignatureVersion) { $instances.AntispywareSignatureVersion } else { "" }
+               AntivirusSignatureLastUpdated   = if ($instances.AntivirusSignatureLastUpdated) { $instances.AntivirusSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
+               QuickScanSignatureVersion       = if ($instances.QuickScanSignatureVersion) { $instances.QuickScanSignatureVersion } else { "" }
+            }
          }
 
-         $isWindowsServer = Get-vlIsWindowsServer
-
          if ($isWindowsServer -eq $false) {
-            $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
+            if ($isWindows7 -eq $true) {
+               $instances = Get-CimInstance -ClassName AntiSpywareProduct -Namespace "root\SecurityCenter2"
+            }
+            else {
+               $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
+            }
+
             $avEnabledFound = $false
 
             foreach ($instance in $instances) {
@@ -84,7 +94,7 @@ function Get-vlAntivirusStatus {
 
                if ($instance.displayName -eq "Windows Defender" -or "{D68DDC3A-831F-4fae-9E44-DA132C1ACF46}" -eq $instance.instanceGuid) {
 
-                  if ($avEnabled -eq $false) {
+                  if ($avEnabled -eq $false -or $isWindows7 -eq $true) {
                      $result += [PSCustomObject]@{
                         Enabled  = $avEnabled
                         Name     = $instance.displayName
@@ -195,7 +205,13 @@ function Get-vlAntivirusCheck {
    Write-Output $output
 }
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+try {
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+catch {
+   $OutputEncoding = [System.Text.Encoding]::UTF8
+}
 
 # Entrypoint of the script call the check function and convert the result to JSON
 Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)

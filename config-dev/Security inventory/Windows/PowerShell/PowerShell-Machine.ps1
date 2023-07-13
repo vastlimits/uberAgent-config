@@ -8,11 +8,9 @@ function Get-vlPowerShellV2Status {
         Performs a check if PowerShell V2 is installed on the system
     .DESCRIPTION
         Performs a check if PowerShell V2 is installed on the system
-    .LINK
-        https://uberagent.com
     .NOTES
         This function requires elevated privilegs
-        https://www.tenforums.com/tutorials/111654-enable-disable-windows-powershell-2-0-windows-10-a.html
+        https://devblogs.microsoft.com/powershell/windows-powershell-2-0-deprecation/
     .OUTPUTS
         A [psobject] containing the status of the PowerShell V2 installation
     .EXAMPLE
@@ -24,12 +22,26 @@ function Get-vlPowerShellV2Status {
 
       try {
          $currentPowerShellVersion = $PSVersionTable.PSVersion.ToString()
+         $powerShellV2Enabled = $null
 
          #check if PowerShell V2 is installed on the system
-         $installationStatus = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2
+         try {
+            $installationStatus = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2
+
+            if ($installationStatus.State -eq "Enabled") {
+               $powerShellV2Enabled = $true
+            }
+            else {
+               $powerShellV2Enabled = $false
+            }
+         }
+         catch {
+            # check if HKEY_LOCAL_MACHINE\Software\Microsoft\PowerShell\1\PowerShellEngine exists
+            $powerShellV2Enabled = Test-Path -Path "HKLM:\Software\Microsoft\PowerShell\1\PowerShellEngine"
+         }
 
          $result = [PSCustomObject]@{
-            PowerShellV2Enabled = ($installationStatus.State -eq "Enabled")
+            PowerShellV2Enabled = $powerShellV2Enabled
             DefaultVersion      = $currentPowerShellVersion
          }
 
@@ -110,18 +122,26 @@ Function Get-vlPowerShellRemotingStatus {
          return New-vlResultObject -result $result -score 10 -riskScore 50
       }
 
-      # Try to open a session to localhost
-      $session = New-PSSession -ComputerName localhost
+      $remotingEnabled = $null
 
-      # Close the session
-      Remove-PSSession $session
+      # Try to open a session to localhost
+      try {
+         $session = New-PSSession -ComputerName localhost
+
+         # Close the session
+         Remove-PSSession $session
+         $remotingEnabled = $true
+      }
+      catch {
+         $remotingEnabled = $false
+      }
 
       # Check if JEA is enabled
       $JEAState = Get-vlJEACheck
 
       # If the session is opened, remoting is enabled
       $result = [PSCustomObject]@{
-         RemotingEnabled = $true
+         RemotingEnabled = $remotingEnabled
          JEAEnabled      = $JEAState
       }
 
@@ -479,12 +499,10 @@ function Get-vlPowerShellCheck {
    $params = if ($global:args) { $global:args } else { "all" }
    $params = $params | ForEach-Object { $_.ToLower() }
 
-   $isWindows7 = Get-vlIsWindows7
-
    $Output = @()
 
    # disable this check for Windows 7 since Get-WindowsOptionalFeature is not available
-   if (($params.Contains("all") -or $params.Contains("PSLMV2")) -and $isWindows7 -eq $false) {
+   if (($params.Contains("all") -or $params.Contains("PSLMV2"))) {
       $powerShellV2 = Get-vlPowerShellV2Status
       $Output += [PSCustomObject]@{
          Name         = "PSLMV2"
@@ -559,7 +577,13 @@ function Get-vlPowerShellCheck {
    Write-Output $output
 }
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+try {
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+catch {
+   $OutputEncoding = [System.Text.Encoding]::UTF8
+}
+
 
 # Entrypoint of the script call the check function and convert the result to JSON
 Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
