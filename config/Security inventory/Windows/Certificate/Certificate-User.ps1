@@ -249,7 +249,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CUTrByWin"
          DisplayName  = "Certificates trusted by Windows - User"
-         Description  = "Checks if there are unknown certificates installed within the CurrentUser store."
+         Description  = "This test relies on the Microsoft maintained Certificate Trust List (CTL) to validate the status of certificates found in the users trusted root certificate store. Any certificate that is not recognized or included in the trusted list is flagged as an unknown certificate."
          Score        = $ctlCheck.Score
          ResultData   = $ctlCheck.Result
          RiskScore    = $ctlCheck.RiskScore
@@ -267,8 +267,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBF0gOmfOIXaqWh
-# lfQ92JM/caeOpJ49Lz3cGO96HGo1o6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDQ+M5JKZmjLIMA
+# x8kS4zOPVqeOq8XegodK2zonURpFqKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -345,17 +345,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgeCoJAi9d7vnr
-# XwRLHqJM2gTSEWx6lKmefB9tlHwYP9cwDQYJKoZIhvcNAQEBBQAEggIACX6sqvn1
-# CA4pav9Dh9JJHlMyGqOtyt7vH91KXGbNZ2qAE3wG188ADBoGIgEIwc07qXCPavQ9
-# byxDjtgTQVbSeKGxlkPyeUdnykYQ3FNxnguhxa/YcwyGc+c6WmlWvEQ/FLeyG65z
-# te2hN1kEIhHZuH9tA72f8IIJk4IUX/e2L2MWvL4V+H0LmHFPuF/yEn3dDRoiX8yB
-# lSciOZqVU5vmSgMk6jxtlF+VSl4hLVKO+Ndhux7piW9NA4sCNcjgZ1/JXOXfkDro
-# GL87tmSFdg/nVcKVmEsyGvyEybXaPJm6sQUWVZP0diPT4FUCN1n8WvnTiQBsnCOK
-# qMu7C1d99YF8j4hhNfZ+1IU2EekWBwXVa8Rl+DtU5ugyN3CPxhnQsQb7cvlgq5Ji
-# bWvmwLhxaXE2x3dfCR/+UsDVTlIs5MI9TxBTHX/a8qcKFQcM3nS0AGbFntwv87O+
-# w9FwLQ7RVCYZkGc5rAxm+VY7H1ylK2HcEK3L0TD6aNBfdH6MLVq6j/huXvk1kG1r
-# +aQ0eqP3zv2ND/yZ4B8KcNyXrVA1xcSSTwDLf9yyC3G7Jx+9BJWBCdTjMG0CA3ZI
-# I7zOP+dbVxRu5HZKc/EWPf+fpKAzCpFNEIN4y8RgfdvgdaJ6OYX3iQ5bgDObZ2V/
-# tconJHW36eZyEFdPSGhxOZ0t9xI1x8Pt0dw=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgQQq0bOACq6jL
+# lvjVfUjZehPXb7wGu/xqePv05+tUeWgwDQYJKoZIhvcNAQEBBQAEggIAFWrXTJYx
+# 3EeDAxfiIzdSoRHlm77riDj1HtoDVrH8ciyZgylOQno5mjOVlbsWTxE52TkKbswt
+# OD/aeIIh/81UoHpgIYSXPhl3KJV6fD8YdTheQGbieENZWWsWioJxphnvIBBvUF+3
+# ZwztWhRi6TdE9FIjZyrKCNY1lmmt0dq3TD0qfAuQHjT3e5p/O74LIpS3KHgv+nRZ
+# qD9WgtdcUDXYB4d9zHs4il/JtcBJdXhyXWaPtTp2n63Zu3pbPQhOuvJptu7tXK2X
+# OiJxOTurGqK9iEUAAwSwfj4TSIF4nGVuKKdip/kSzI34OR4kaErHWe8clKYuW5Vr
+# GMYOOVwDmYIjhHg9EdUnMMA3dmoNHfG7uqixvNXBhLQrSgmyjmFbXOwBC+veBso/
+# 1PGwIFSMoz7ALiTxFFqjVvKoZ0vTjBzEgLOQogxsftiy1eZsW/5cyVwq1Kz0oHgM
+# n4xykZF3aTpRl9VmQNfGu+NT60HRstMV2SZ9QhR+0Ikw9NdLcp+3k7xdwyls9XGF
+# BocYjCFkASBNemQNOrUr/EB3pXBXa213ey3jq724cB/PDzQTahoahKzEgZWBl5+i
+# rZsjzvwqAvDm0H1tbM0diGHQP/1sWmwBq8tmhTMOTdqAPFkNMUR2DEDvdtSp15FD
+# 7rNoqI1qL7Fy+Q9MJHIuddnD2IkvzKvBhkw=
 # SIG # End signature block

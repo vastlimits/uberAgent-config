@@ -24,7 +24,7 @@ function Get-vlNetworkConfigurationSSLTLSUser {
       # 10240 = TLS 1.2 & TLS 1.3
       # 8192  = TLS 1.3
       # 2048  = TLS 1.2
-      $DesiredValues = @(10240,8192,2048)
+      $DesiredValues = @(10240, 8192, 2048)
 
       $SecureProtocols = Get-vlRegValue -Hive "HKCU" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings" -Value SecureProtocols -IncludePolicies $true
 
@@ -75,7 +75,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "UNCSSLTLS"
          DisplayName  = "Network configuration SSL/TLS - User"
-         Description  = "Checks whether only secure protocols are used"
+         Description  = "This test verifies that only newer versions of the Transport Layer Security (TLS 1.2, TLS 1.3) protocol are used. TLS is the successor to SSL. The use of insecure or outdated versions of the protocol, e.g. SSL 3.0, TLS 1.0, can pose significant security risks, including the exposure of sensitive data and vulnerability to various types of attacks, e.g. man-in-the-middle attacks."
          Score        = $SSLTLS.Score
          ResultData   = $SSLTLS.Result
          RiskScore    = $SSLTLS.RiskScore
@@ -95,8 +95,8 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDyLk5QDDFov6Q+
-# MXCvhAcJeBnIRKr/9Qeq6TktM7A45KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCNirVz5+2wp128
+# TcDRAHCwVn+xU4uyk/kdKr6n6EhXFaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -173,17 +173,17 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgO2Tp4qY1M0Rs
-# fv8XYdh1JJEGgcLdMnQJninnHr+dji4wDQYJKoZIhvcNAQEBBQAEggIAFska+c/7
-# 3dShVTg+4dr8FSE+5OO6QuvdLmW0+t83chH76lfuONvk3LEHDGoM3HhDaCeI6O7s
-# pUKpqw/6qpwtwTUATvF+NQQ7INsVQQryvqsek1dkk+USO+RHRncWuBcztNsN3YsC
-# q6XLjm4KhGnNZD5RzuIZDh4xX/jJwQTokcJ8TDe/WG/W7X+2mfNv9vupBxHyOl1x
-# oLbAX1YcVdiOTCP45W2MQyTPS9Bw5gRZyZ3oWeUyrVLnQDz9B9f+XHyVgKtUO+5l
-# Rb2gR6JD+1Uw0Prh9+n87EVUmVlm0VTe9DM51fRi5odh7SAAUnUfEiaieWr6Ctro
-# npywN4Medg80jMtXTw5Ho62GiV13OeWQIMBpX8et43SZKVVb2LMkKxbZPu4HxZYf
-# VS6hXeQM6z+KlQwj5HvN56uhuQAmxOUraWon/5OX6yyPbaTUTKOJxuq5pQ57afY1
-# Y+QTO2vu2nCxj61iE1/9nsj7lA+WVPmz3gpPAIv+BNgQxcksDgLFZ+0k6AoXfa4b
-# rwffXNoM2LDYo3ig/GTsTFUJ3UEX6qXzB7dLDZqNLSGTQaBeDIoEk3ciXBxIYDO2
-# m9fvgV6lcNg4tqKdc/3hTUiO7cUC6dyZeIsD+IQgLHYqAnqMoOuDQCmzxcaIdj+W
-# iTqcF7FZZsbX9fNwmDgGjiF0a2coixF2Klg=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgPLqPy78hd8ql
+# yILCEAnYOAtJaH7IhPu2QJ/DaQL3tJcwDQYJKoZIhvcNAQEBBQAEggIAonw8gkJd
+# t9y2C2OMg9275WzCapxLBPVF/9/SJ8GtyqODj8Ht+ZMcfJlqjBgerSXtPbBKzybc
+# Yd4XM0AXcQ8/eqXWTSwccYQmz2LTbHUW5mcDAHhFwp9ggtsQiUBm5skJ7jNn1fZo
+# d/QPi75hLyk5pQxc3hPCqcRop+BVH4n2NzJ6k6I7SOtSLhwzrx+eYegVTZ0x21AA
+# uxR8BnG2+VCwzAtTbCoPJSAaDNzXUb5zTy9hNs677i1vqhkHO3ndRUbwkgAmHcCM
+# SbRN8v2sbCBq1ON/fiPHLl1s5NyHRSFik8PJJgETLKXgfz1EW6TnD16DiBaphsI/
+# H/sjwxlr0K1Unj7NEBEeEaI0p2uUD8vtgKRfNtHCRkGdLx+WRzX7G76auucyRtxF
+# XkMCoHRlt2c6kHQroKu4mKvoViqhsQeaIp+MUlmpgZVsZwJuVSh4+LcCtJG8jGOK
+# dHOy+kM2Nnu1Xebai7DYeB5T57b4de5t0kRij6AKqexTsP3iRaPJtUzsQ6lWLADB
+# bR/3bKeUB12k6aV+uKKUIiH6YELIVQIc7xBXyOSGz9GKwOlGFnLTnPuNCA6EamUl
+# nuBmG8IMhIkHxmqTAMh5TSuJqXsnDLkm0LoQLRQaeGMV6VksMABGYCseWHjg2MwE
+# 00IzsRPii5xQd5qnNY/xpdpDb43sb6K4oac=
 # SIG # End signature block

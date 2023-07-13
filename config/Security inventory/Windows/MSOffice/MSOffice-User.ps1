@@ -152,7 +152,7 @@ function Get-vlMSOfficeCheck {
       $Output += [PSCustomObject]@{
          Name         = "MSOCUVBA"
          DisplayName  = "MS Office VBA disabled"
-         Description  = "Checks if VBA is disabled in MS Office."
+         Description  = "This test evaluates the current state of Visual Basic for Applications (VBA) in Microsoft Office. VBA is a programming language that can be used to automate tasks in Microsoft Office programs. Attackers often abuse VBA to infiltrate systems by sending malicious Office files as attachments."
          Score        = $vbaDisabled.Score
          ResultData   = $vbaDisabled.Result
          RiskScore    = $vbaDisabled.RiskScore
@@ -172,8 +172,8 @@ Write-Output (Get-vlMSOfficeCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB4oC2aE0nKBhDk
-# n9qq9B15aa6psniWsBqsIjUq1NAA8KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCU+zCkNHpW46it
+# p65s85d/PRE8aousA2fd8QBQI+Q+U6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -250,17 +250,17 @@ Write-Output (Get-vlMSOfficeCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQggoZiGVWDSf4k
-# KliEvDnEorNivPHSgyN7FUmZf+gUFPgwDQYJKoZIhvcNAQEBBQAEggIAYDuzGVuy
-# GSIZnZZD2uL1cgs2eTlMMK4QJGQeLJeMMx4JQU0pSoKVqOuFethQZ8VOYHITJRpK
-# rzBD2lPDJ7GgjXFMjvgBZrxFU+LUj3E2PHUK+gM2FcI9QiWGPRkh/zCg36HrVwsl
-# 5GUBZqSorguNPDGfxDMQArflxZoMRA+84Ju2agqbOabnw3Prx0mAH0XoOY9UBTGK
-# 1EMHNMHLrnoHSCpmUpsLW5FPXaT3B3CXmqT3jSzR9e2z8h36f4wFOmiBNo4ulPad
-# 1k7EfcOQA9hnuoBniqex0hz6oxJBGMOHxEljFg23CpnJ386xJ51jNLZIXlnDB7En
-# aGJVuZNxMeToPKhQbQM4nizUlIivSevzgO68QNcu5ZEe6QwQwM16fe6EV3Svd/Ud
-# XQgAHqhK0uZnYdTotIG3gCAWz0hfHBctinL88R+dvs7vs8jXjISv8udyqc4OaFJi
-# hUVcog3BXy8vGmaHdfou6BV85SOj75wdEz/4/zkM0d9TZ/iaW821npY2QCPwnnfP
-# JJq56WfNGBGvVHOwNkkGrHbDFGz+SHCSSI7nyIvRExS1YC5FXZaQDUdtEqaaEuGE
-# a/6Xa5PMXQ1lLnzxm9kl345abQDEz7Ay1koosx5N9t+tLUyIBevuTQNtzirzxE47
-# nihh4EfKxW9RLC8LxoSnMQi88QNVVXijgzs=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgAlhfgiLoZXKG
+# 53WSL3kxU4xZ/kjzncGhe5nmb9hsNvAwDQYJKoZIhvcNAQEBBQAEggIAuw6mNSAa
+# z/HGh3GoT3/mDRNDOsNKrt81INFgnoau5zTFKL3JuzaDrxI1sPXlPm33KOZqaVU9
+# vgbvcrvdljmn4uy7+NsAKFEpJwWTfTxF4Ep6gYY/WiF0KTtDhwIgF91hMrXxlvdL
+# 49GTlD4h25CEYk8ZeUH+OhvUUFVWB3yWhcBzI7zMpzrJRMBiVMcPihzTSvwDK5KJ
+# INqmL5QVup7G4I49O0aON3xPo9K6g/mNRLymR0JUMo0Gv+Vej+fvEiNQDBIbuW4m
+# pw6eTkSrfqSTNJ0jKNw4CGiJWShlXu7Di/kk7VBdEIaRvvrKt8AwjSzXNEPSesDg
+# 21443VWqT/L5cmikWD7T1EdNjhDiVnE9ye+PHM1qm/C1n4vudjtdLpigOr36QGXd
+# zQ74srhP5imbanhnWiWN3p4fOC5cQEYwTJ/jnz1NUn2cbik3UIw9lzAAu+YQtvgj
+# Xdcw9fIP8BmBsklSAb03BCT0CAfNp1VYZmpteuMnDRtp+0aIXMyBu2TRTsoQlDHL
+# c0oNhZlojcJUlqt99vemMLrwFvUiQT0hSkuShQn1Gl+1ok9V9M/JSJLGHr/M5fdf
+# 0q2sLtfCjC5FabS4MrwrXMqKgZPwR3gooYbksxzY49+ZiLQ1tBTyYUXbrW+m4fZ/
+# o7WNQZPz4deNiwzBahLsrRx5R8hLKQ+VZas=
 # SIG # End signature block

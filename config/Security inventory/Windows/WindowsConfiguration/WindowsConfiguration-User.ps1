@@ -130,7 +130,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCHta"
          DisplayName  = "WindowsConfiguration HTA"
-         Description  = "Checks if HTA execution is enabled for the current user."
+         Description  = "This test validates whether HTA (HTML Application) execution is enabled for the current user. HTA files can be used to execute malicious scripts or actions if not properly controlled."
          Score        = $checkHtaEnabled.Score
          ResultData   = $checkHtaEnabled.Result
          RiskScore    = $checkHtaEnabled.RiskScore
@@ -149,8 +149,8 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDPpLNjOhqvUkfQ
-# 56wHMrFpM9rHSUs7f/NrrBQdVrDwT6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCANkbZCxg5Kz/JN
+# 0DOZP9d+3ToWnkumufdmrG2wqTRKQ6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -227,17 +227,17 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgdR/sN117bNvJ
-# 7UhZwnHPCDAPtp95mSHCW7dGmsYmCrEwDQYJKoZIhvcNAQEBBQAEggIA5LO1Q1Gi
-# QxPw2Aoor/E1jq0bHfiDMtqO6nxha6S0kwT5SMhFgAuj3pszeeAhfDoXR5sCr8UZ
-# 42TZBRmIXuiRpH9uxAPQz7sr6STEI71lrCukD7Kpp5B+HFKeitSfj+ea5K2SnNH0
-# nsfEKNWWQgG7+4xFehXYhWFrmWyJ7r0ZIVD+N0nU+oDsVclMN4wN9b3B5I+j2GPu
-# m7mNaAc6jUwizx22Dnmp8mzFcEFxqoMXGxFxRmBk3DLvpJetdaAziO++1gkARcsJ
-# i5ZzMO4zEvq+fegTCnBKW7EmPScnLAfp/iGn66j1CnyAl7ShWZU5ATtClY1l8Fzy
-# ZyG3NbRwFeGAKc7tToqTMDm1f8QQRcghO6rjb65JCrd6QAyDK+1rwWSSUYRdNkiG
-# 3Mm5EV43JyMckAh8Ffcp17CfSdTtJ+HU2i3SA3zvIb2dV+r/5QdXGbJkRCVF8ORY
-# L+fmwPJh3M99Ha7OfDoVlN1DWpFZ0u5qvBo2bD6xWs5SWJWM6MBlvz4WvPKFvQRt
-# SPSL6zltf99TIMVLbhiQq71yfbYfuT+ZyFh9jAeN1zeygRDU8k1NmRDFXGqJb+9V
-# zhOa/LZnTevxhL/jbV6yVqfxnmAkXmzIICDfG/lW/0Ygqhq43aOcg+5CdbopwbU0
-# Iu0T4WRFuVaHM79lEll22ytn0tTa2vYQzmY=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgmeTmdOwUb8HZ
+# WUTSiDFvFBnqAIiCdUORGGKjxMb/cO0wDQYJKoZIhvcNAQEBBQAEggIACgXhJaZp
+# zvIxZvuJsCXpMGH+oRVPtk8FpSDpBsPhNLY2MOpQJoYy4I6xupZb8UmYa3ERq0mZ
+# GKoPplyOgqpEp/qBw8J+2q+BILqcqoKunr4z7yu1oBVVF2w33n7MF2cq7QJzymkv
+# pSfFK3ubFbyrbU8OMkgi5dewHaxEvjT7ICYFuE4J5Hh8SpNE/nkwelQWn3/ZuUw6
+# e9RudPUlekYp1fvgF6symPMo+Bwns3emymTaBQEHaZMVodhUyEIzakib8s97Wj2Q
+# nnecQlFjaviEWdbM0DpjHW73ZoQHTx8zo866dKXIGFodxd5p8JmZhX7TdN4YTsdW
+# qt5wrRlHkk6+xlC6FrzHburyr5Ej5oBEz92Uz+8C40sYrueO92XcPdaJVq20q4l5
+# OG1Q2y1Am2Ss0v3KS/FHvMg1mWyFbrz488y2LxrhSPgNFdG/9pk8Dd7QvzOy2o4p
+# t3EeDhyzFm+eWIsrG+dWSWoYZMuusww2CzZb4gIWmHaHpEFpV5ZIygsk1U1a2b6t
+# pocHqVQ8GkrRIY2jakEb4Ajrt0OM6A+Arj+O+irNk6MjNZlopcBJ9tUpFr5k1xof
+# vDR+W2skHLn9ZsYmSmW5GandBs9Zb+UMT6Fv2jqpZffHnoA7jXnDKPypeR9Wpsan
+# ELh9f5j5QzizMGKhQL1OxVy5Fh1Hene2ozc=
 # SIG # End signature block

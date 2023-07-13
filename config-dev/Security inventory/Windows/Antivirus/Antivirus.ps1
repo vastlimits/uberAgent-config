@@ -183,7 +183,7 @@ function Get-vlAntivirusCheck {
       $Output += [PSCustomObject]@{
          Name         = "AVState"
          DisplayName  = "Antivirus status"
-         Description  = "Checks if the antivirus is enabled and up to date."
+         Description  = "This test determines whether an antivirus product is installed and its current status. If the test is performed on a Windows server operating system, due to technical limitations, only the Defender status is evaluated. If Windows Defender is enabled, the test will provide additional information, such as the status of the last signature update and the current signature version."
          Score        = $avStatus.Score
          ResultData   = $avStatus.Result
          RiskScore    = $avStatus.RiskScore

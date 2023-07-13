@@ -20,8 +20,20 @@ function Get-vlNetworkConfigurationSMBv1 {
 
    try {
       $riskScore = 100
+      $OSVersion = Get-vlOsVersion
 
-      $SMBv1 = (Get-CimInstance -query "select * from  Win32_OptionalFeature where name = 'SMB1Protocol'").InstallState
+      if ([version]$OSVersion -ge [version]'6.0' -and [version]$OSVersion -lt [version]'6.2') {
+         $SMB1ClientServiceDependency = Get-Service -name LanManWorkstation -RequiredServices -ErrorAction Stop | Where-Object -FilterScript { $_.Name -eq 'MrxSmb10' }
+         if ($SMB1ClientServiceDependency) {
+            $SMBv1 = 1
+         }
+         else {
+            $SMBv1 = 2
+         }
+      }
+      else {
+         $SMBv1 = (Get-CimInstance -query "select * from  Win32_OptionalFeature where name = 'SMB1Protocol'").InstallState
+      }
 
       if ($SMBv1 -eq 2) {
          $result = [PSCustomObject]@{
@@ -283,7 +295,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCSMBv1"
          DisplayName  = "Network Configuration SMBv1"
-         Description  = "Checks whether SMBv1 is enabled."
+         Description  = "This test determines the status of Server Message Block version 1. SMBv1 is a network protocol that provides shared access to files, printers, and serial ports within a network. SMBv1, while still functional, is an outdated version of the protocol and is known to have several security vulnerabilities. Attackers can exploit the vulnerabilities to gain unauthorized access to network resources or execute arbitrary code."
          Score        = $SMBv1.Score
          ResultData   = $SMBv1.Result
          RiskScore    = $SMBv1.RiskScore
@@ -297,7 +309,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCSMBSign"
          DisplayName  = "Network Configuration SMB Signing"
-         Description  = "Checks whether SMB signing is enabled."
+         Description  = "This test determines the configuration of Server Message Block (SMB) Signing. SMB signing means that each SMB message has a signature generated using the session key. Connections not secured with SMB Signing are vulnerable to man-in-the-middle attacks, where attackers can intercept and modify communications between the client and server."
          Score        = $SMBSigning.Score
          ResultData   = $SMBSigning.Result
          RiskScore    = $SMBSigning.RiskScore
@@ -311,7 +323,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCNetBIOS"
          DisplayName  = "Network configuration NetBIOS"
-         Description  = "Checks whether NetBIOS is enabled."
+         Description  = "This test determines the status of NetBIOS over TCP/IP. NetBIOS is an aged network technology that poses security risks such as vulnerability to poisoning attacks."
          Score        = $NetBIOS.Score
          ResultData   = $NetBIOS.Result
          RiskScore    = $NetBIOS.RiskScore
@@ -325,7 +337,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "NCWINS"
          DisplayName  = "Network configuration WINS"
-         Description  = "Checks whether WINS is enabled."
+         Description  = "This test determines the configuration of Windows Internet Name Service (WINS), a legacy computer name registration and resolution service that maps network computer names to IP addresses. WINS is Microsoft's predecessor to DNS for name resolution. WINS can be exploited by attackers to redirect network traffic, or gain unauthorized access to network resources, or execute arbitrary code."
          Score        = $WINS.Score
          ResultData   = $WINS.Result
          RiskScore    = $WINS.RiskScore
@@ -339,7 +351,7 @@ function Get-vlNetworkConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "MNCSSLTLS"
          DisplayName  = "Network configuration SSL/TLS - Machine"
-         Description  = "Checks whether only secure protocols are used"
+         Description  = "This test verifies that only newer versions of the Transport Layer Security (TLS 1.2, TLS 1.3) protocol are used. TLS is the successor to SSL. The use of insecure or outdated versions of the protocol, e.g. SSL 3.0, TLS 1.0, can pose significant security risks, including the exposure of sensitive data and vulnerability to various types of attacks, e.g. man-in-the-middle attacks."
          Score        = $SSLTLS.Score
          ResultData   = $SSLTLS.Result
          RiskScore    = $SSLTLS.RiskScore

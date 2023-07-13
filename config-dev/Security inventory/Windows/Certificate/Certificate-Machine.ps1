@@ -444,7 +444,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMAuCerUp"
          DisplayName  = "Auto certificate update"
-         Description  = "Checks if automatic certificate updating is enabled."
+         Description  = "This test verifies that automatic certificate updating is enabled on the system. When automatic certificate updating is enabled, the system obtains the latest Certificate Revocation List (CRL) and Certificate Trust List (CTL) from the Microsoft Update server. Regularly updating and validating certificates with the latest trust and revocation information is essential to ensure certificate integrity."
          Score        = $autoCertUpdateCheck.Score
          ResultData   = $autoCertUpdateCheck.Result
          RiskScore    = $autoCertUpdateCheck.RiskScore
@@ -457,7 +457,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"
-         Description  = "Checks when the certificates were last synchronized."
+         Description  = "This test determines the last time the Certificate Revocation List (CRL) and Certificate Trust List (CTL) were synchronized with Microsoft servers."
          Score        = $lastSync.Score
          ResultData   = $lastSync.Result
          RiskScore    = $lastSync.RiskScore
@@ -469,8 +469,8 @@ function Get-vlCertificateCheck {
       $ctlCheck = Get-vlGetCTLCheck
       $Output += [PSCustomObject]@{
          Name         = "CMTrByWin"
-         DisplayName  = "Certificates trusted by Windows"
-         Description  = "Checks if there are unknown certificates installed within the trusted root certificate store."
+         DisplayName  = "Certificates trusted by Windows - Machine"
+         Description  = "This test relies on the Microsoft maintained Certificate Trust List (CTL) to validate the status of certificates found in the machine's trusted root certificate store. Any certificate that is not recognized or included in the trusted list is flagged as an unknown certificate."
          Score        = $ctlCheck.Score
          ResultData   = $ctlCheck.Result
          RiskScore    = $ctlCheck.RiskScore

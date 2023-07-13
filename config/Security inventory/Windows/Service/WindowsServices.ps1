@@ -30,8 +30,8 @@ function Get-vlServiceLocations {
             $ServiceName = $PSItem.PSChildName
             if ($ImagePath -inotmatch '^(\\\?\?\\)?\\?SystemRoot.*$|^(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\WINDOWS\\(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\Program Files( \(x86\))?\\.*$|^(\\\?\?\\)?"?C:\\WINDOWS\\Microsoft\.NET\\.*$|^(\\\?\?\\)?"?C:\\ProgramData\\Microsoft\\Windows Defender\\.*$') {
                $result += [PSCustomObject]@{
-                  Service  = $ServiceName
-                  ImagePath     = $ImagePath
+                  Service   = $ServiceName
+                  ImagePath = $ImagePath
                }
             }
 
@@ -90,8 +90,8 @@ function Get-vlServiceDLLLocations {
             if ($ServiceDLL -inotmatch '^C:\\WINDOWS\\system32.*$') {
 
                $result += [PSCustomObject]@{
-                  Service  = $ServiceName
-                  ServiceDLL     = $ServiceDLL
+                  Service    = $ServiceName
+                  ServiceDLL = $ServiceDLL
                }
             }
 
@@ -145,7 +145,7 @@ function Get-vlWindowsServicesCheck {
       $Output += [PSCustomObject]@{
          Name         = "Locations"
          DisplayName  = "Uncommon locations"
-         Description  = "Checks whether services are running in uncommon locations"
+         Description  = "This test evaluates whether services are running in unusual or unexpected locations on the system. Unusual or unexpected locations in this case means outside of folders such as C:\WINDOWS\ or C:\Program Files, which may indicate a potential security issue or a compromise."
          Score        = $ServiceLocations.Score
          ResultData   = $ServiceLocations.Result
          RiskScore    = $ServiceLocations.RiskScore
@@ -159,7 +159,7 @@ function Get-vlWindowsServicesCheck {
       $Output += [PSCustomObject]@{
          Name         = "Service.dll"
          DisplayName  = "Uncommon locations of service.dll"
-         Description  = "Checks whether services use service.dll in uncommon locations"
+         Description  = "This test scans the Windows registry for service DLL files and determines whether a DLL file is located outside the Windows system directory. DLL files are important components used by various services and applications of the Windows operating system. Malicious actors try to execute code and gain persistence by registering their malicious DLL files."
          Score        = $ServiceDLLLocations.Score
          ResultData   = $ServiceDLLLocations.Result
          RiskScore    = $ServiceDLLLocations.RiskScore
@@ -178,8 +178,8 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDbhwZbFvdCTHz1
-# +fdSIBT5jEw50y4HzMct9A6oh/1YkqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCHsC72S1xMNjva
+# TEDzpP2imKdyeKN3tfjYONi3954/XKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -256,17 +256,17 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQggeBW2VLm3Gim
-# Fp+z4tjVhxMzvZbUxse5lyXMT/Dcn/AwDQYJKoZIhvcNAQEBBQAEggIA5rE1RYcy
-# 7cXp59epMkal5/oPIzCTCJHaYlt1kfDdulaft/OG+FVPTW3pa7gc0nNHGUQdN0iK
-# 0ph5AkRjWiU49bQx/aFOFzzoENq29MuTeclXFRlQRghDrEMzw3JWQosZ7ZU7EwKD
-# CZ7oQX86Kqtjnh9vM7Eac2+N2SQtNlEcyZfeUU5aHmSDOeiNN5EumfYtYNycD8EY
-# FXuE+FRcD2egE6q6CnpTG3VcBV2WSeXQ7KpiZebpl9npY7jyTlQpMs6Y07ar9tb4
-# kBthz+8X57b3yJIyHnDpxf4dWh81l0/9mk/gXgixslNcR/ri9EJ7y201tsmf7Go9
-# 9rwSa2LRBjuGCn3fBjB7yO8clfNlIl6A52A+9v9Kmdlhwe8g5wy5Efstd7G6D0Qz
-# oNe6XJns1ptIxETFIvFLX3CAJklpgnOOtJoXtBLQiPt+EW2mrG2Eqbg/P4aMIofh
-# OHzwzwEI5emtuMJQ/0CErbO4+/kyfFqWTRIHOQSd+SmPWoo+BQDktKTaRFNmEHqU
-# QBQL7PyVwEAYYsCq0OJ2A170IUiiDXl5x6nl8w+LnxloIA01j/u9h0cCXR9sRKxR
-# gdAy9YdHMwbgbleEAKO7ITcZ0W7y01bqFnZh9gudVNdHoCFsy5/PvsikMrrsbJuL
-# mTfnekyfHhlNDdxst+46jYJIewRfM4dz0Xk=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgH3+/Q+ipv8qK
+# 87TC7rXZ0eVumQz+E2ZJOOOY7qRVv+gwDQYJKoZIhvcNAQEBBQAEggIAsI+rcZWT
+# yt7VlrjlfJmYw/FlpwrsnazY/z8ZjU5raLwAfcL77kYPdOulzbM8OebhhBbWor/+
+# YYlLOTFxzV/9NOtuwTpKN85MoSj5ahQhbiZy3MvsZtnj1sSaQYQ09zw5bXVMwELg
+# xftnJzfLxtgx5z5mDs9mc5p10dYvAnMchVzhk49QpSXm3TVTviA+E6CtjywTLTDQ
+# fvGSfnb2Cn/RWMJ/cvR+2FLrroBY0eG7Yv8xoad0SfHpYiKfd/ndv/DsjJz1+maI
+# dUQK631qwovfq1rJj2gmwS7SMaWRGK+RaTHr+JzLT3VIskBBmrCivD4yBVC0WdLA
+# afTfB5AefKvLzFP0HU169j2i8Mp5GnfHJsoAYMHRXTxU2FVdUHzZVN67FULBd1wl
+# pK0mf3qlaZU3VFaUsBcQDEK2lf6fonLDVKrgIWRG3301JIPBaOyNrN1W5NwqKh89
+# a5XLGD4Hcx/rh2mOf1vQF4rU8CkFitvkoM/bN1NxRCO5G+3AyFw/CEHCSk0TOki7
+# Q0Jauoc85sIOiLseE0vC+bU7bjMDfRs+yQXLdv8469jJgSwNcguOZs5C0go9bHU/
+# RifsIexmz72gyfuzna8eNpwJy1wB3qAoiey7JX0ixUxNF7Gx9u4o+M6IBxqGDYnN
+# WplSVz+AXhOJgvCgeEWA6H4x1ay3na2U2dg=
 # SIG # End signature block
