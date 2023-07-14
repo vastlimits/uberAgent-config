@@ -371,8 +371,8 @@ function Get-vlCheckSyncTime {
       $score += Get-vlTimeScore -time $lastCTLSyncTime
       $score += Get-vlTimeScore -time $lastCRLSyncTime
 
-      # on windows 7 there is no PRL
-      if ( (Get-vlIsWindows7) -eq $false) {
+      # PRL is available starting with Windows 10
+      if ([version]$OSVersion -ge [version]'10.0') {
          $score += Get-vlTimeScore -time $lastPRLSyncTime
       }
 

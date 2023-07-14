@@ -1,6 +1,36 @@
 #Requires -Version 3.0
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
+if (-not ("WinBioStatus" -as [type])) {
+   Add-Type -TypeDefinition @"
+   public enum WinBioStatus : uint
+   {
+      MULTIPLE = 0x00000001,
+      FACIAL_FEATURES = 0x00000002,
+      VOICE = 0x00000004,
+      FINGERPRINT = 0x00000008,
+      IRIS = 0x00000010,
+      RETINA = 0x00000020,
+      HAND_GEOMETRY = 0x00000040,
+      SIGNATURE_DYNAMICS = 0x00000080,
+      KEYSTROKE_DYNAMICS = 0x00000100,
+      LIP_MOVEMENT = 0x00000200,
+      THERMAL_FACE_IMAGE = 0x00000400,
+      THERMAL_HAND_IMAGE = 0x00000800,
+      GAIT = 0x00001000,
+      SCENT = 0x00002000,
+      DNA = 0x00004000,
+      EAR_SHAPE = 0x00008000,
+      FINGER_GEOMETRY = 0x00010000,
+      PALM_PRINT = 0x00020000,
+      VEIN_PATTERN = 0x00040000,
+      FOOT_PRINT = 0x00080000,
+      OTHER = 0x40000000,
+      PASSWORD = 0x80000000
+   }
+"@
+}
+
 function Get-vlUACState {
    <#
     .SYNOPSIS
@@ -200,31 +230,6 @@ function Get-vlLAPSSettings {
    catch {
       return New-vlErrorObject($_)
    }
-}
-
-[Flags()] enum WinBioStatus {
-   MULTIPLE = 0x00000001;
-   FACIAL_FEATURES = 0x00000002;
-   VOICE = 0x00000004;
-   FINGERPRINT = 0x00000008;
-   IRIS = 0x00000010;
-   RETINA = 0x00000020;
-   HAND_GEOMETRY = 0x00000040;
-   SIGNATURE_DYNAMICS = 0x00000080;
-   KEYSTROKE_DYNAMICS = 0x00000100;
-   LIP_MOVEMENT = 0x00000200;
-   THERMAL_FACE_IMAGE = 0x00000400;
-   THERMAL_HAND_IMAGE = 0x00000800;
-   GAIT = 0x00001000;
-   SCENT = 0x00002000;
-   DNA = 0x00004000;
-   EAR_SHAPE = 0x00008000;
-   FINGER_GEOMETRY = 0x00010000;
-   PALM_PRINT = 0x00020000;
-   VEIN_PATTERN = 0x00040000;
-   FOOT_PRINT = 0x00080000;
-   OTHER = 0x40000000;
-   PASSWORD = 0x80000000;
 }
 
 function Get-vlMachineAvailableFactors () {

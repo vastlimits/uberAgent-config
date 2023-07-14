@@ -2,36 +2,33 @@
 #Requires -Version 3.0
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
-[Flags()] enum FW_PROFILE {
-   Domain = 1
-   Private = 2
-   Public = 4
-}
+if (-not ("FW_IP_PROTOCOL_TCP" -as [type])) {
+   Add-Type -TypeDefinition @"
+   public enum FW_IP_PROTOCOL_TCP
+   {
+      ICMPv4 = 1,
+      TCP = 6,
+      UDP = 17,
+      ICMPv6 = 58
+   }
+"@
 
-[Flags()] enum FW_IP_PROTOCOL_TCP {
-   TCP = 6
-   UDP = 17
-   ICMPv4 = 1
-   ICMPv6 = 58
-   ALL = 256
-}
+   Add-Type -TypeDefinition @"
+   public enum FW_RULE_DIRECTION
+   {
+      IN = 1,
+      OUT = 2
+   }
+"@
 
-[Flags()] enum FW_PROFILES {
-   Domain = 1
-   Private = 2
-   Public = 4
-   All = 2147483647
+   Add-Type -TypeDefinition @"
+   public enum FW_ACTION
+   {
+      BLOCK = 0,
+      ALLOW = 1
+   }
+"@
 }
-[Flags()] enum FW_RULE_DIRECTION {
-   IN = 1
-   OUT = 2
-}
-
-[Flags()] enum FW_ACTION {
-   BLOCK = 0
-   ALLOW = 1
-}
-
 
 # function to check if firewall is enabled
 function Get-vlIsFirewallEnabled {
