@@ -76,6 +76,33 @@ function Get-vlDrives {
    return $driveList
 }
 
+function Get-vlIsBitlockerInstalled {
+   <#
+    .SYNOPSIS
+        Checks if Bitlocker is installed on the system.
+    .DESCRIPTION
+        Checks if Bitlocker is installed on the system.
+    .OUTPUTS
+        PSCustomObject
+        enabled: true if enabled, false if not
+    .EXAMPLE
+        Get-vlIsBitlockerInstalled
+    #>
+
+   try {
+      $installed = Get-BitLockerVolume
+
+      if ($installed) {
+         return $true
+      }
+      else {
+         return $false
+      }
+   }
+   catch {
+      return $false
+   }
+}
 
 function Get-vlBitlockerEnabled {
    <#
@@ -93,50 +120,69 @@ function Get-vlBitlockerEnabled {
    try {
       $riskScore = 80
 
-      # check if bitlocker is enabled using Get-BitLockerVolume
-      $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property  MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage, VolumeType
-      $drives = Get-vlDrives
+      $bitlockerInstalled = Get-vlIsBitlockerInstalled
 
-      # add the properties of drive to the bitlocker object by MountPoint and DriveLetter
-      foreach ($drive in $drives) {
-         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Model -Value $drive.Model
-         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name MediaType -Value $drive.MediaType
-         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Interface -Value $drive.Interface
-      }
+      if ($bitlockerInstalled -eq $true) {
+         # check if bitlocker is enabled using Get-BitLockerVolume
+         $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property  MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage, VolumeType
+         $drives = Get-vlDrives
 
-      if ($bitlockerEnabled) {
-         $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
-      }
-
-      # Initialize variables
-      $allEncrypted = $true
-      $osEncrypted = $false
-
-      foreach ($item in $bitlockerEnabled) {
-         if ($item.Interface -eq "USB") {
-            continue
+         # add the properties of drive to the bitlocker object by MountPoint and DriveLetter
+         foreach ($drive in $drives) {
+            $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Model -Value $drive.Model
+            $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name MediaType -Value $drive.MediaType
+            $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Interface -Value $drive.Interface
          }
 
-         if ($item.ProtectionStatus -ne "On" -or $item.EncryptionPercentage -ne 100) {
-            $allEncrypted = $false
+         if ($bitlockerEnabled) {
+            $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
          }
 
-         if ($item.VolumeType -eq "OperatingSystem" -and $item.ProtectionStatus -eq "On" -and $item.EncryptionPercentage -eq 100) {
-            $osEncrypted = $true
-         }
-      }
+         # Initialize variables
+         $allEncrypted = $true
+         $osEncrypted = $false
 
-      if ($allEncrypted) {
-         $score = 10
-      }
-      elseif ($osEncrypted) {
-         $score = 5
+         foreach ($item in $bitlockerEnabled) {
+            if ($item.Interface -eq "USB") {
+               continue
+            }
+
+            if ($item.ProtectionStatus -ne "On" -or $item.EncryptionPercentage -ne 100) {
+               $allEncrypted = $false
+            }
+
+            if ($item.VolumeType -eq "OperatingSystem" -and $item.ProtectionStatus -eq "On" -and $item.EncryptionPercentage -eq 100) {
+               $osEncrypted = $true
+            }
+         }
+
+         if ($allEncrypted) {
+            $score = 10
+         }
+         elseif ($osEncrypted) {
+            $score = 5
+         }
+         else {
+            $score = 0
+         }
+
+         return New-vlResultObject -result $bitlockerEnabled -score $score -riskScore $riskScore
       }
       else {
-         $score = 0
-      }
+         $isWindowsServer = Get-vlIsWindowsServer
 
-      return New-vlResultObject -result $bitlockerEnabled -score $score -riskScore $riskScore
+         $bitlockerStatus = [PSCustomObject]@{
+            Status = "Bitlocker is not installed on this system."
+         }
+
+         $score = 0
+
+         if ($isWindowsServer -eq $true) {
+            $score = 8
+         }
+
+         return New-vlResultObject -result $bitlockerStatus -score $score -riskScore $riskScore
+      }
    }
    catch {
       if ($_.Exception -is [System.Management.Automation.CommandNotFoundException]) {
@@ -363,6 +409,12 @@ function Get-WindowsConfigurationCheck {
    return $output
 }
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+try {
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+catch {
+   $OutputEncoding = [System.Text.Encoding]::UTF8
+}
+
 
 Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
