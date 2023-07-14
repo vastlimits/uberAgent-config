@@ -1,6 +1,36 @@
 #Requires -Version 3.0
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
+if (-not ("WinBioStatus" -as [type])) {
+   Add-Type -TypeDefinition @"
+   public enum WinBioStatus : uint
+   {
+      MULTIPLE = 0x00000001,
+      FACIAL_FEATURES = 0x00000002,
+      VOICE = 0x00000004,
+      FINGERPRINT = 0x00000008,
+      IRIS = 0x00000010,
+      RETINA = 0x00000020,
+      HAND_GEOMETRY = 0x00000040,
+      SIGNATURE_DYNAMICS = 0x00000080,
+      KEYSTROKE_DYNAMICS = 0x00000100,
+      LIP_MOVEMENT = 0x00000200,
+      THERMAL_FACE_IMAGE = 0x00000400,
+      THERMAL_HAND_IMAGE = 0x00000800,
+      GAIT = 0x00001000,
+      SCENT = 0x00002000,
+      DNA = 0x00004000,
+      EAR_SHAPE = 0x00008000,
+      FINGER_GEOMETRY = 0x00010000,
+      PALM_PRINT = 0x00020000,
+      VEIN_PATTERN = 0x00040000,
+      FOOT_PRINT = 0x00080000,
+      OTHER = 0x40000000,
+      PASSWORD = 0x80000000
+   }
+"@
+}
+
 function Get-vlUACState {
    <#
     .SYNOPSIS
@@ -82,29 +112,40 @@ function Get-vlLAPSEventLog {
          $EndTime = $temp
       }
 
-      # Search the Event Logs for each Event ID
-      Get-WinEvent -LogName $logName | Where-Object { ($_.Level -eq 2 -or $_.Level -eq 3) -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
-         # only keep: TimeCreated, Id, Message
-         $winEvent = [PSCustomObject]@{
-            TimeCreated = Get-vlTimeString -time $_.TimeCreated
-            Id          = $_.Id
-            Message     = $_.Message
+      try {
+         # Search the Event Logs for each Event ID
+         Get-WinEvent -LogName $logName -ErrorAction Stop | Where-Object { ($_.Level -eq 2 -or $_.Level -eq 3) -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
+            # only keep: TimeCreated, Id, Message
+            $winEvent = [PSCustomObject]@{
+               TimeCreated = Get-vlTimeString -time $_.TimeCreated
+               Id          = $_.Id
+               Message     = $_.Message
+            }
+
+            # add the event to the errors array if the event id is 2 (error)
+            if ($_.Level -eq 2) {
+               $errors += $winEvent
+            }
+
+            # add the event to the warnings array if the event id is 3 (warning)
+            if ($_.Level -eq 3) {
+               $warnings += $winEvent
+            }
          }
 
-         # add the event to the errors array if the event id is 2 (error)
-         if ($_.Level -eq 2) {
-            $errors += $winEvent
-         }
-
-         # add the event to the warnings array if the event id is 3 (warning)
-         if ($_.Level -eq 3) {
-            $warnings += $winEvent
-         }
+         # filter $errors and $warnings for unique events. Only keep latest event for each event id
+         $errors = $errors | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
+         $warnings = $warnings | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
       }
+      catch {
+         # if the log does not exist, return an empty result
+         $result = [PSCustomObject]@{
+            Errors   = $errors
+            Warnings = $warnings
+         }
 
-      # filter $errors and $warnings for unique events. Only keep latest event for each event id
-      $errors = $errors | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
-      $warnings = $warnings | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
+         return $result
+      }
 
       $result = [PSCustomObject]@{
          Errors   = $errors
@@ -189,31 +230,6 @@ function Get-vlLAPSSettings {
    catch {
       return New-vlErrorObject($_)
    }
-}
-
-[Flags()] enum WinBioStatus {
-   MULTIPLE = 0x00000001;
-   FACIAL_FEATURES = 0x00000002;
-   VOICE = 0x00000004;
-   FINGERPRINT = 0x00000008;
-   IRIS = 0x00000010;
-   RETINA = 0x00000020;
-   HAND_GEOMETRY = 0x00000040;
-   SIGNATURE_DYNAMICS = 0x00000080;
-   KEYSTROKE_DYNAMICS = 0x00000100;
-   LIP_MOVEMENT = 0x00000200;
-   THERMAL_FACE_IMAGE = 0x00000400;
-   THERMAL_HAND_IMAGE = 0x00000800;
-   GAIT = 0x00001000;
-   SCENT = 0x00002000;
-   DNA = 0x00004000;
-   EAR_SHAPE = 0x00008000;
-   FINGER_GEOMETRY = 0x00010000;
-   PALM_PRINT = 0x00020000;
-   VEIN_PATTERN = 0x00040000;
-   FOOT_PRINT = 0x00080000;
-   OTHER = 0x40000000;
-   PASSWORD = 0x80000000;
 }
 
 function Get-vlMachineAvailableFactors () {
@@ -369,7 +385,13 @@ function Get-vlLocalUsersAndGroupsCheck {
    return $output
 }
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+try {
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+catch {
+   $OutputEncoding = [System.Text.Encoding]::UTF8
+}
+
 
 # Entrypoint of the script call the check function and convert the result to JSON
 Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
@@ -377,8 +399,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA3ul1HbTA412zN
-# hXcRdV7iySruTuVS7hkSAIgACQmrs6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAp+ykpzlaKgN6k
+# Jo48v1fspr4cjJxTc8nAPLj9ViORCaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -455,17 +477,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgyLdd4e5UTxuD
-# UaoMgonXcaNxjlELst01Y3wAd7leWe0wDQYJKoZIhvcNAQEBBQAEggIAwz1gpDbK
-# 0wqJl5JXkhrOgzczx8RWld1eS6ghgJtjJaOKx+sdC2eukyrTde/Aafn1hxI6d8Os
-# 9BKTQUygeFMyduyqNrVYjZuzadN/c1wyp3h28cU6v3o2PLvG0ySdKIUkb0gx+Oq9
-# E7BadC//ZGuEPkLkKEMY13eYIieZ53iibuY3atfvrbAu2xatHbY6Np0Ft5jiCAjv
-# MrKSB+K+FeVm58kwVFBDGF1xfGRLQH0IuDSczX+A0f4aB6mmxCyLpOnswz+nI2XR
-# qur2CvQDO43UZ003vvSglnDa4pCB2fWtMclXX2DopFqqFDFWfbCUouKA/X1v9fwW
-# kDbp3UQO4G/O6h47FDVc98+CYPLu82bbU3ds6MPhxG6tMJ+F8A1vUXUy8/EZ40bL
-# xyO4G9lAjf+eYVYh6SSebuE+OWzDUd3baPR5yCqfNh5t+a6XrI3MS8HhhLuodGBk
-# UB1lUEUEf2thPArr1hEEiqUUsm8CBVao4mO6Q6YWpnGTAEwQRs+rcweQKh4R5hmc
-# lOVEbINVZKrRXhkhg1o+pQqPZaKZ4vH2d3bhyqPmZeGYD+QmYxVuGsXpvRh83+ps
-# nXMjIabsMWj1PfZXJVFxtQX5KlizZKjvJsHJ1Z2U8r2aX+9snTXBXR+yJJj4G6Wj
-# BCKRI5JAjGVtQe2k94/IeyvaVQNFdt5c+jA=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgJL6kJvgz9drL
+# 5J6S87Eaddeeoo24ffv+mIyWSbcZ9yUwDQYJKoZIhvcNAQEBBQAEggIALTtzca4f
+# 3wZPeknw056GtC8S0JHYWrdeAMR+OTqfZ3jJ9r0tdimpewEKDJCPGU9KR1nVoHpI
+# WoGQJH0cMMm28lsWJkpwP6oNw7xW+LDQZiPGrS+uZxpDZLAlwJ4MlBUquSLVVBiq
+# dgCriBDpZMxwKDsEgsQ6qZsviJ8/zdMhyDcRAjnJhaaBSTQNeIE9t/IzW7NmI4DD
+# V3sK7yQHutAJbQC97hwSJZ6DUamLafMVzLjcljv5rQr+AH8h6uEQg/TMxEAdKjxt
+# DEF1dLK7pTyQIn8H6YrdBhnM33BgR32YYKnHXMA7rdN5/5GvNyuOll6/+pUWsQJb
+# TpleBS8W/a7Yxwk27038g68exQiK7c0Hql9y1MAIxa+TqHG1Mn3pYoM21JW3zn6w
+# yL4fpjB4q7EPI+KyVvPYVX7qKMjAhodXoI3gH3WfgoIxPHHdvwF/rhEkb86EAGma
+# 1Hf1ytj6dG6PxXODVV9a5d9GQzxZ9khamTB3ega2qQOvMFyNpWFE7288nIOpPZTA
+# Ro13U+GZo8gHyel4VhoN8K/0AzMQcX6PIQNuFE5O8ynmi76PZRa8bbpiQ9oS0U84
+# iy1bHCvD17e0LaAmDBrdoXjYoj5p6LyITpxQM8ilSyS4smFqd66993YXCNLS3HPX
+# G0Ep3TGtHbtWIcdsFTqpUqz2dcK4o7SYuNc=
 # SIG # End signature block

@@ -76,6 +76,33 @@ function Get-vlDrives {
    return $driveList
 }
 
+function Get-vlIsBitlockerInstalled {
+   <#
+    .SYNOPSIS
+        Checks if Bitlocker is installed on the system.
+    .DESCRIPTION
+        Checks if Bitlocker is installed on the system.
+    .OUTPUTS
+        PSCustomObject
+        enabled: true if enabled, false if not
+    .EXAMPLE
+        Get-vlIsBitlockerInstalled
+    #>
+
+   try {
+      $installed = Get-BitLockerVolume
+
+      if ($installed) {
+         return $true
+      }
+      else {
+         return $false
+      }
+   }
+   catch {
+      return $false
+   }
+}
 
 function Get-vlBitlockerEnabled {
    <#
@@ -93,50 +120,69 @@ function Get-vlBitlockerEnabled {
    try {
       $riskScore = 80
 
-      # check if bitlocker is enabled using Get-BitLockerVolume
-      $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property  MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage, VolumeType
-      $drives = Get-vlDrives
+      $bitlockerInstalled = Get-vlIsBitlockerInstalled
 
-      # add the properties of drive to the bitlocker object by MountPoint and DriveLetter
-      foreach ($drive in $drives) {
-         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Model -Value $drive.Model
-         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name MediaType -Value $drive.MediaType
-         $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Interface -Value $drive.Interface
-      }
+      if ($bitlockerInstalled -eq $true) {
+         # check if bitlocker is enabled using Get-BitLockerVolume
+         $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property  MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage, VolumeType
+         $drives = Get-vlDrives
 
-      if ($bitlockerEnabled) {
-         $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
-      }
-
-      # Initialize variables
-      $allEncrypted = $true
-      $osEncrypted = $false
-
-      foreach ($item in $bitlockerEnabled) {
-         if ($item.Interface -eq "USB") {
-            continue
+         # add the properties of drive to the bitlocker object by MountPoint and DriveLetter
+         foreach ($drive in $drives) {
+            $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Model -Value $drive.Model
+            $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name MediaType -Value $drive.MediaType
+            $bitlockerEnabled | Where-Object { $_.MountPoint -eq $drive.DriveLetter } | Add-Member -MemberType NoteProperty -Name Interface -Value $drive.Interface
          }
 
-         if ($item.ProtectionStatus -ne "On" -or $item.EncryptionPercentage -ne 100) {
-            $allEncrypted = $false
+         if ($bitlockerEnabled) {
+            $bitlockerEnabled = Convert-vlEnumToString $bitlockerEnabled
          }
 
-         if ($item.VolumeType -eq "OperatingSystem" -and $item.ProtectionStatus -eq "On" -and $item.EncryptionPercentage -eq 100) {
-            $osEncrypted = $true
-         }
-      }
+         # Initialize variables
+         $allEncrypted = $true
+         $osEncrypted = $false
 
-      if ($allEncrypted) {
-         $score = 10
-      }
-      elseif ($osEncrypted) {
-         $score = 5
+         foreach ($item in $bitlockerEnabled) {
+            if ($item.Interface -eq "USB") {
+               continue
+            }
+
+            if ($item.ProtectionStatus -ne "On" -or $item.EncryptionPercentage -ne 100) {
+               $allEncrypted = $false
+            }
+
+            if ($item.VolumeType -eq "OperatingSystem" -and $item.ProtectionStatus -eq "On" -and $item.EncryptionPercentage -eq 100) {
+               $osEncrypted = $true
+            }
+         }
+
+         if ($allEncrypted) {
+            $score = 10
+         }
+         elseif ($osEncrypted) {
+            $score = 5
+         }
+         else {
+            $score = 0
+         }
+
+         return New-vlResultObject -result $bitlockerEnabled -score $score -riskScore $riskScore
       }
       else {
-         $score = 0
-      }
+         $isWindowsServer = Get-vlIsWindowsServer
 
-      return New-vlResultObject -result $bitlockerEnabled -score $score -riskScore $riskScore
+         $bitlockerStatus = [PSCustomObject]@{
+            Status = "Bitlocker is not installed on this system."
+         }
+
+         $score = 0
+
+         if ($isWindowsServer -eq $true) {
+            $score = 8
+         }
+
+         return New-vlResultObject -result $bitlockerStatus -score $score -riskScore $riskScore
+      }
    }
    catch {
       if ($_.Exception -is [System.Management.Automation.CommandNotFoundException]) {
@@ -363,15 +409,21 @@ function Get-WindowsConfigurationCheck {
    return $output
 }
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+try {
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+catch {
+   $OutputEncoding = [System.Text.Encoding]::UTF8
+}
+
 
 Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCWfFd/Io5RTrpC
-# pdW+r86y9pBiIgKR0H8BMJkAJBjniKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB53iJVDNWP/QyB
+# 02EeNLoNdto91+4/EhYvl3hbO6JWHaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -448,17 +500,17 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgstCxPUtrj1uV
-# 7kVOPWJHDwMSrAAoWpjCCZLeHl3HFUIwDQYJKoZIhvcNAQEBBQAEggIAFtnUxe/x
-# Hvljg1/pCcb/qG+RCLJ3nxng5GPL5JHE/2MvE6SG3dEs5oj1WAC1YCEC7x5DLPeI
-# 7jcPDGG2LSFUjlOK9ovqXibeDP5HgSwjCsQH7DSXJr3JwH0MREEM5CHz2X6M/YVF
-# bkS8xuEZGpRWFyepWbrl5M6QbZx27BJJkAASvGCKk/GsEMjzDSEc88EP9AWyJTIm
-# 3ZyNAp1MZKDFzpRqyNBJ3l1F2f7axD8zHPNVHRYshyrDVJEXc6op9Kuw6mha15xf
-# hJ0f2K1Awy728MkvuHc1VzP+oQdDBkBDl5PL9rX9xzpzhRseQd966uO6eIZT/jf3
-# iO5lcHIhj99eqJiwmfEDpJS3Ct+g6Z723RUdbsYqPpLyvVHK9pRRbOgoeWmLD57+
-# T7tXzFsJS1A0whVrAxdDH8+1zi/9/SaVvjZ4nD2o6jD9vTECMZHXyyNYLzYW8sht
-# RQORvMjNoH3eV5RBudamrjUacXklvHEaBjr2jbazlpZsQ0WjTeOOhWnNyyksJwjk
-# VoiWHjt/VsHiPyemRhTyGZMpvzQbFmD8T/aTdemcOPVvu7wbnqcXu4kfuAl9kCds
-# WxhBLJJv745fstxjofpRmnc7jkHsV0g3ry1bnId5kk8s3qrSjITRrQJarfxNW2m1
-# mO9Nl46E73B7H+GL9BLjyswkGcnl//Dz5uA=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg/1fplX6L6DP8
+# oyv5+nNSXBertR+bOLQ1+Vs4Sc6Ep58wDQYJKoZIhvcNAQEBBQAEggIAzmIKADWU
+# GCOsru/s4VEOTjbUlXZuyk6iCFMFLlXsNkkb70D0dJObRGqwEE5xwKygJ/J4FaPa
+# YNr69evmegMfeV9U41lF2aVwtSjqGZMJJvWgA8KUixDL06B6h0Kn+EwjFReGBevB
+# UpcBMMTL3jYhhiAF4xG4y8BV4aO0AdZQWG0sVnyREKHoEBmv1EEd6aTzH/dee1Aq
+# 3Vov0R01jgMVrncNmuaqELJ0wqIV/K8ryajBkbg3VYUln8vh0GBGvnRoNZ8XHftm
+# jKdKuukT1LOWLVZvzF+YQyrOMcKkaOyWk/O2NWJCGINySt6wzay3W9gOHVEsgs71
+# NG9U4clVYGipflcFiEaOBaBXvmC1CmE5Y3gOBl27dpXDCSUmhneh+k+eJy+6unx9
+# 1KrZ1GxluZRi0PWo3Ml59oJLWSMv3YrUVVeDGwmSWalMQ+tv5rAuNYL+b4ep3SwX
+# 6E11d6OwF5pMA/FwPnn/MeI3YGuuQU+YgR2f0moza5K+IGJVHJ63dq6LzPe9G/Ln
+# gcQPMEeXIZzprtmtcT1oGH2+Dhh1HlBnWrTZLnm00sqY5h9hZ3UIyN5RIu75GhP5
+# hk0GV/802+wW72B1fjBYZ0WnoF5uyoWGLn0D+WNf+CnwDZqGdYBLQJNi2dzqxkg5
+# SBhI9YMTaMtRG61OBUd9ob0zzQ0+yn0Kz94=
 # SIG # End signature block

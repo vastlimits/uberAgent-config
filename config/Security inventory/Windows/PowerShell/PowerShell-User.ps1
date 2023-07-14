@@ -133,7 +133,13 @@ function Get-vlPowerShellCheck {
    Write-Output $output
 }
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+try {
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+catch {
+   $OutputEncoding = [System.Text.Encoding]::UTF8
+}
+
 
 # Entrypoint of the script call the check function and convert the result to JSON
 Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
@@ -141,8 +147,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBwVxeLGlrtCv2l
-# gPjln8oy/LtKcwaL9+EcUHsC36kHuaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBgsGMexBk/I5wJ
+# ZpNKgG9mbT/oMiEvjCTSh5ZTkrdjK6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -219,17 +225,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg+W9K1ga01fK7
-# V5TWhMlrkUl7ifHg/sXCqfCtXdRG+rYwDQYJKoZIhvcNAQEBBQAEggIADXHl6svX
-# +YIhYTpYd1Ny5y7A3Dy7FtOcMAWObUyTmrdmtEqumRRLIJlTBytFa2vYtEOsrEHJ
-# lYql0ZJnfxDpo2r/TVms2LZ1tB1OkNkbmH4HlcHsGqkK8QjhrMKT01yZkb5SxGbe
-# EE11/u/SDnKAFFr4jrtxffh19v3nTWe3zqrhfIUhYDiJF6/aFIHZyV+LyVXNuD+J
-# v57g94XTIbwNvF96McElAoS5SnLzggy11s7zOscyzeLTEZCu90IBpp/MiKoHp3tb
-# pDdNyeKWqFMTE3ycY5qEpm3wEbY9/1YZlXs9iue6pCyio1sYgep9P+3C79HhA3zn
-# 7roOWPJb42O/+lv/tbh47Gr9QkkuCp1Z/vZh83kJYXPTQ6vHS/L+p5gAr7SH95D5
-# HIDnR7DgTEtnifQ4FWHIBvIj18X4h3+6Z+Ul3ir7+11CnrC2kMX/AWg9Rg8qf8ad
-# aUOsQad0ljGiL5/tiLpFC0C1Goy3fkI1K2/SHADLwkT4SPE3r3W05nqmnvE64KUV
-# t8fwtZKJLJw6x827G3Wd1jxoPF0HENfKzj4jO/wovgqdZ3DuuyktsMBAH+jd/I4i
-# yHnQh6Cm2vgxhTMfjxHUir8j12ItJl40gfWC0spa0t8uLTRzkJma3GSR8ZR0xtm7
-# xc1znvg6EH6ZUXwFSNh/fCeFWznmLhU+F/w=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgGEOkgnFsql+t
+# kHkGmjMDU1vTHMHk3NbhkXYXSWeE3GQwDQYJKoZIhvcNAQEBBQAEggIAcIYqYMWE
+# SHQ37Mri4WBfo7bjC7R//k0C+7rSK/RnWpKPHoquFgs8I2ux3WNxp/tE3dGMXxRv
+# SiVyl5rnPRwL3eC7tGloor/dOoj0HklYcnQZB2VPxGpLNBHcCzzhwCS28wbgERYe
+# zvRFxWPUNr7xIM12AcGGII9qDHmii7bo4VXEFgNJzAb99shS9UN6wTSh+OKIMial
+# ORG3bcbdESOMqbicKcqHT019z13f5ekD/Ou8b6VAbp08xqmBQzyStSYW7UwtnBtD
+# qVhU8OH2BZZO7U117szC9+wyF+pITgMg1Ox/Rw4hzO5/xlwmtq662W+bgbnGWY5n
+# pshcbHORFfVmaV8o5eLRkXdNmYPWbCBZUgexmw/261gSGKByWRUNyjUDvuvtF9DD
+# OK3i3Vd0xJA7iF6DDqFhWV+sSit96Ro+zwyR40FBejSE04inBGOZGWq6kTURibsV
+# 57wvdo9qTtl1Hej9gDervFn/sRiIH3iLPAR5nVUs8Ik8FsRPIfQRdo26B/HniGH8
+# 2SW+NYFNvwuINjhOY34YxznFFyDVC9LIIn0MwMQztZ70nVN0URBzN7wYjCUTu1Rb
+# 2UTMQURPgP/zWTAaUpyNI0FPd4iV1+gqr2wnqGLKCm1RIBtK0yvbfy21J0Aq2Y3a
+# sAorfskiUlyNP/PwxMg/l99A4GEwS61G1TE=
 # SIG # End signature block

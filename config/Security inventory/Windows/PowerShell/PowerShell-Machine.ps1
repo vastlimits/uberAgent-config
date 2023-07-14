@@ -8,11 +8,9 @@ function Get-vlPowerShellV2Status {
         Performs a check if PowerShell V2 is installed on the system
     .DESCRIPTION
         Performs a check if PowerShell V2 is installed on the system
-    .LINK
-        https://uberagent.com
     .NOTES
         This function requires elevated privilegs
-        https://www.tenforums.com/tutorials/111654-enable-disable-windows-powershell-2-0-windows-10-a.html
+        https://devblogs.microsoft.com/powershell/windows-powershell-2-0-deprecation/
     .OUTPUTS
         A [psobject] containing the status of the PowerShell V2 installation
     .EXAMPLE
@@ -24,12 +22,26 @@ function Get-vlPowerShellV2Status {
 
       try {
          $currentPowerShellVersion = $PSVersionTable.PSVersion.ToString()
+         $powerShellV2Enabled = $null
 
          #check if PowerShell V2 is installed on the system
-         $installationStatus = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2
+         try {
+            $installationStatus = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2
+
+            if ($installationStatus.State -eq "Enabled") {
+               $powerShellV2Enabled = $true
+            }
+            else {
+               $powerShellV2Enabled = $false
+            }
+         }
+         catch {
+            # check if HKEY_LOCAL_MACHINE\Software\Microsoft\PowerShell\1\PowerShellEngine exists
+            $powerShellV2Enabled = Test-Path -Path "HKLM:\Software\Microsoft\PowerShell\1\PowerShellEngine"
+         }
 
          $result = [PSCustomObject]@{
-            PowerShellV2Enabled = ($installationStatus.State -eq "Enabled")
+            PowerShellV2Enabled = $powerShellV2Enabled
             DefaultVersion      = $currentPowerShellVersion
          }
 
@@ -110,18 +122,26 @@ Function Get-vlPowerShellRemotingStatus {
          return New-vlResultObject -result $result -score 10 -riskScore 50
       }
 
-      # Try to open a session to localhost
-      $session = New-PSSession -ComputerName localhost
+      $remotingEnabled = $null
 
-      # Close the session
-      Remove-PSSession $session
+      # Try to open a session to localhost
+      try {
+         $session = New-PSSession -ComputerName localhost
+
+         # Close the session
+         Remove-PSSession $session
+         $remotingEnabled = $true
+      }
+      catch {
+         $remotingEnabled = $false
+      }
 
       # Check if JEA is enabled
       $JEAState = Get-vlJEACheck
 
       # If the session is opened, remoting is enabled
       $result = [PSCustomObject]@{
-         RemotingEnabled = $true
+         RemotingEnabled = $remotingEnabled
          JEAEnabled      = $JEAState
       }
 
@@ -481,7 +501,8 @@ function Get-vlPowerShellCheck {
 
    $Output = @()
 
-   if ($params.Contains("all") -or $params.Contains("PSLMV2")) {
+   # disable this check for Windows 7 since Get-WindowsOptionalFeature is not available
+   if (($params.Contains("all") -or $params.Contains("PSLMV2"))) {
       $powerShellV2 = Get-vlPowerShellV2Status
       $Output += [PSCustomObject]@{
          Name         = "PSLMV2"
@@ -556,7 +577,13 @@ function Get-vlPowerShellCheck {
    Write-Output $output
 }
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+try {
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+catch {
+   $OutputEncoding = [System.Text.Encoding]::UTF8
+}
+
 
 # Entrypoint of the script call the check function and convert the result to JSON
 Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
@@ -564,8 +591,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD1X1qx9Bp9/HOV
-# qyOGw+nCmmESr7EJKTObc6tz/zoWY6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCALnBKLYkUxhFLt
+# oCR+Ymjg8Xz98oMDbj4v7WwBq48BHKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -642,17 +669,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgsf1Z+Puz9Wvz
-# NjFk6TXQ+3oCoHJpclJwc5UfCGG8gA8wDQYJKoZIhvcNAQEBBQAEggIAjwm1gt2F
-# K1rxHW/X+iHCSuwBs6fiWNMe3V1xWPVOnYr/as7VCwuY0AmG5Gghg/i5hm3ZsKIt
-# mVxS0fHyWVhs2AXiDEYU15eTk0NmcDPu0jycX4BtFNYm5ET76SV6CdSVOkjUt2Yp
-# 48m3micLz43uOUEcVChso0Vd1jxdQw5ltpeZw1juJPNLVWPFYRSn3S1Ubm3NIRk3
-# U6Y+HyBIDJjxxLIgS/C5cCyZwworSR0vCgJXA6enUeDbVQMgZLLNVQXMk5iBPpbr
-# eR3NLmlX2UtYJXt4E9zkwCvtTI7+IFiRnm0TTk2QNtDZNz1DOSCAOOGshEyEqiit
-# SzDAVqQVh1PRouNSvM29PlNDwtNx7DsXYt2reGmeN5MgnPEwa/oe1s7tSMttYVlf
-# mVBI9eByHegO12MhUbfCfgwzcVecaiLZwnvGwuwCcLO5yOharOLknbGGyd0bt57T
-# z1SsCKpeU81z9HMubzATXm0T5Czr9pZjx3qhaV0nh+9a555vsmKoHBBbpbMH1Vfc
-# xqXz4wVw1tI1PLIOH0BY61/Fgg8fAryWSX7yQsajaXVcYJZgdiR0dOmqBUCum0FO
-# aZrI1DkW2nVIgsBmqzsywbyEVB9wsEPprxb1heUsorJ67Rjoy5arAj3+R0z4cY0T
-# XQl7UEMvGZLiMoZ9oEvCNseMkM3ypo2byIQ=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgB5GiVF/4T8eP
+# zlFDjy6Ad30zRXMZ+GN1W5qKiEJ18fcwDQYJKoZIhvcNAQEBBQAEggIAqu+D8eFD
+# 0chEfn6my2e/mNLy4s2hNAk9YgoHwnfMMiD6PrzCSRqBlrNVU7sF7Mbhyb7s1It1
+# v3MXUuhKjnZX81OnkSUjifHDrijLhiaHPdCl7MIBNTbpqCsSLPuZj1QD7wzr5JyC
+# FABMNPKa4J82Vf+sqDumhUpG1FEr9rDBEhXD9+Kv7KkHewrLsDBe89O6bofKnNA2
+# 6nkjPzTJ6/KSeiWhh2+PNcGwJ2KkS8qghPErUtyXZMGD9SzX7jM5fxUhY4Xvb8+M
+# Pt5t00j0YZlJgHRdthA4CzJDWzH5eS0tyf1gh9xpdNU9rnZfJOzu4cyqNOcjeE7/
+# 49YWVF4WHbCHF22oeZ/V+iObcTkrkEDbQPC8Qa/bPwI2qpCTQ8hHecYC0MwWC353
+# gDnII1mO0EB2JQtFgBzWhcSY5/au9Ns/iarhwE7EzIO8fbtjMxk8qcG4XT/N1zNS
+# ihgD2e8ta0A4EyemAs/egasVOLZJbVjFzIpQMclSCBEEEKBGt3hnpImKKm+TIney
+# eH5xQQlaM1jLaV+OihuYOEHyReSZbzaAJSm7kO9meQLq8sLA7rjqyUrTpI8hfi9L
+# uhxlPwkhozIClkOVc0dItVxyNqGxMqLvluaBwO+kQuFnySdXuLqGOUAuJZa8Zlc9
+# pIjWzXkIcKtIEvI9o4JgC227iZycELafz1I=
 # SIG # End signature block

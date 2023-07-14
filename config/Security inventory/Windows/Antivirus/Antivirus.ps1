@@ -4,27 +4,41 @@
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
 #https://mcpforlife.com/2020/04/14/how-to-resolve-this-state-value-of-av-providers/
-[Flags()] enum ProductState {
-   Off = 0x0000
-   On = 0x1000
-   Snoozed = 0x2000
-   Expired = 0x3000
-}
+if (-not ("AV_ProductState" -as [type])) {
+   Add-Type -TypeDefinition @"
+   public enum AV_ProductState
+   {
+      Off = 0x0000,
+      On = 0x1000,
+      Snoozed = 0x2000,
+      Expired = 0x3000
+   }
+"@
 
-[Flags()] enum SignatureStatus {
-   UpToDate = 0x00
-   OutOfDate = 0x10
-}
+   Add-Type -TypeDefinition @"
+   public enum AV_SignatureStatus
+   {
+      UpToDate = 0x00,
+      OutOfDate = 0x10
+   }
+"@
 
-[Flags()] enum ProductOwner {
-   NonMs = 0x000
-   Windows = 0x100
-}
+   Add-Type -TypeDefinition @"
+   public enum AV_ProductOwner
+   {
+      NonMs = 0x000,
+      Windows = 0x100
+   }
+"@
 
-[Flags()] enum ProductFlags {
-   SignatureStatus = 0x000000F0
-   ProductOwner = 0x00000F00
-   ProductState = 0x0000F000
+   Add-Type -TypeDefinition @"
+   public enum AV_ProductFlags
+   {
+      SignatureStatus = 0x000000F0,
+      ProductOwner = 0x00000F00,
+      ProductState = 0x0000F000
+   }
+"@
 }
 
 function Get-vlAntivirusStatus {
@@ -48,29 +62,39 @@ function Get-vlAntivirusStatus {
          $score = 0
          $riskScore = 100
 
-         $instances = Get-MpComputerStatus
+         $isWindowsServer = Get-vlIsWindowsServer
+         $isWindows7 = Get-vlIsWindows7
+         $defenderStatus = [PSCustomObject]@{}
 
-         $defenderStatus = [PSCustomObject]@{
-            AMEngineVersion                 = if ($instances.AMEngineVersion) { $instances.AMEngineVersion } else { "" }
-            AMServiceEnabled                = if ($instances.AMServiceEnabled) { $instances.AMServiceEnabled } else { "" }
-            AMServiceVersion                = if ($instances.AMServiceVersion) { $instances.AMServiceVersion } else { "" }
-            AntispywareEnabled              = if ($instances.AntispywareEnabled) { $instances.AntispywareEnabled } else { "" }
-            AntivirusEnabled                = if ($instances.AntivirusEnabled) { $instances.AntivirusEnabled } else { "" }
-            AntispywareSignatureLastUpdated = if ($instances.AntispywareSignatureLastUpdated) { $instances.AntispywareSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
-            AntispywareSignatureVersion     = if ($instances.AntispywareSignatureVersion) { $instances.AntispywareSignatureVersion } else { "" }
-            AntivirusSignatureLastUpdated   = if ($instances.AntivirusSignatureLastUpdated) { $instances.AntivirusSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
-            QuickScanSignatureVersion       = if ($instances.QuickScanSignatureVersion) { $instances.QuickScanSignatureVersion } else { "" }
+         if ($isWindows7 -ne $true) {
+            $instances = Get-MpComputerStatus
+
+            $defenderStatus = [PSCustomObject]@{
+               AMEngineVersion                 = if ($instances.AMEngineVersion) { $instances.AMEngineVersion } else { "" }
+               AMServiceEnabled                = if ($instances.AMServiceEnabled) { $instances.AMServiceEnabled } else { "" }
+               AMServiceVersion                = if ($instances.AMServiceVersion) { $instances.AMServiceVersion } else { "" }
+               AntispywareEnabled              = if ($instances.AntispywareEnabled) { $instances.AntispywareEnabled } else { "" }
+               AntivirusEnabled                = if ($instances.AntivirusEnabled) { $instances.AntivirusEnabled } else { "" }
+               AntispywareSignatureLastUpdated = if ($instances.AntispywareSignatureLastUpdated) { $instances.AntispywareSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
+               AntispywareSignatureVersion     = if ($instances.AntispywareSignatureVersion) { $instances.AntispywareSignatureVersion } else { "" }
+               AntivirusSignatureLastUpdated   = if ($instances.AntivirusSignatureLastUpdated) { $instances.AntivirusSignatureLastUpdated.ToString("yyyy-MM-ddTHH:mm:ss") } else { "" }
+               QuickScanSignatureVersion       = if ($instances.QuickScanSignatureVersion) { $instances.QuickScanSignatureVersion } else { "" }
+            }
          }
 
-         $isWindowsServer = Get-vlIsWindowsServer
-
          if ($isWindowsServer -eq $false) {
-            $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
+            if ($isWindows7 -eq $true) {
+               $instances = Get-CimInstance -ClassName AntiSpywareProduct -Namespace "root\SecurityCenter2"
+            }
+            else {
+               $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
+            }
+
             $avEnabledFound = $false
 
             foreach ($instance in $instances) {
-               $avEnabled = $([ProductState]::On.value__ -eq $($instance.productState -band [ProductFlags]::ProductState) )
-               $avUp2Date = $([SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [ProductFlags]::SignatureStatus) )
+               $avEnabled = $([AV_ProductState]::On.value__ -eq $($instance.productState -band [AV_ProductFlags]::ProductState) )
+               $avUp2Date = $([AV_SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [AV_ProductFlags]::SignatureStatus) )
 
                if ($avEnabled) {
                   $avEnabledFound = $true
@@ -84,7 +108,7 @@ function Get-vlAntivirusStatus {
 
                if ($instance.displayName -eq "Windows Defender" -or "{D68DDC3A-831F-4fae-9E44-DA132C1ACF46}" -eq $instance.instanceGuid) {
 
-                  if ($avEnabled -eq $false) {
+                  if ($avEnabled -eq $false -or $isWindows7 -eq $true) {
                      $result += [PSCustomObject]@{
                         Enabled  = $avEnabled
                         Name     = $instance.displayName
@@ -195,7 +219,13 @@ function Get-vlAntivirusCheck {
    Write-Output $output
 }
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+try {
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+catch {
+   $OutputEncoding = [System.Text.Encoding]::UTF8
+}
 
 # Entrypoint of the script call the check function and convert the result to JSON
 Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
@@ -203,8 +233,8 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBpVWKdcmD+QPyd
-# Kmx1fEeSaS/QLWlqXAwj1lz3dbEzraCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCATfPA2zVJxNEZe
+# 71dSqCZ3sSZfGyOA7VV0yYaOr21pHaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -281,17 +311,17 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgm55oNsX7mUsl
-# Se267/q8LQQN2Uw0xgE62Z6WdSqvJaAwDQYJKoZIhvcNAQEBBQAEggIAFT7Y3oKD
-# kOJlAEpSuHbSsRCxiYtJpmxocmcIqzn0xjD8Ue3dxpynSkuAs0kmJRgweXDK/R7I
-# 8otFOhjxLz/AsSuAacEDkgoHn2RyBGaGLxTGy1a0zoVsaU/xfRS08zx/3W7ge1PR
-# xgzXqsEPP5bgkk+hQAw31ZUzyGH7ZTeuEmFXuIx46va9BG4EhfseWJHScyYzB0AV
-# sKpQW18RFRErkn648/KlWxyD8t5OKE39SrK1bmLF3BObyaJZEoc/YdX6/Eo7sLmy
-# aM+GcBAzhWAThqJ8hpyzGmDnZX91pKlBPEHIBDgwC3EubQVahekdJzh3GrBk5gde
-# oZsrmmHL0IvkcBrv/5juJQUG3JrGCwqPwO26bCSgf5XW/HhFXxn8ux6Hy8dCmYis
-# PDz4QWhTLJP2L5SCOwXLROaz5cEx2NvVuu4f52b4jbAff8ILV8okaqt8BcAgf6Le
-# ETo7iT4yRfVgjF8uOGmqhNAzcxoZ+/SjO/1c/NseyGlhhVfJPBUQshH8rYawqkDB
-# aZNN7w9/BzdLVFfpQ98C+Op2f0NILgODaD0M078F7+EVX/NEiMZg4yusCssoKbnL
-# M9vrEUBhGtIDJU7zCySQ/F7/AZoorF9P8F0robcn+Ue2nLzgVDGrinHwrPfGpti2
-# VyNlc0x+7JF1mmfnYCTebw9PJ8Tj+sO+ztw=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg5fe8e1CtNdnj
+# OwUrU8nj/qWJ+qmr8Zh/QA9XnVO4hEwwDQYJKoZIhvcNAQEBBQAEggIA365PQVyp
+# 1os2a56hjUSj2ppYGL719aYIRHt/JM0GEo7wR3HlMrZ6sViT5yn2kpZ7S8B/PS3y
+# v2iWdES6KO4piuxzXdl9em/FYynzXvkqFuIpYvQNi3nHnzs7R/HZjwSkcKo04kc1
+# Am6zamfGab1G1SQiwZ6Q0HSYrUslPsf+WZzpThfMJrZgQY4pS0RH+Bxjw1IKaRfK
+# +TE5HCgSwn753ykO1egen3Cj93Rpr7dnl+VITJJSksm7smTvmNr/fwU0cEw3ZdFe
+# adAmUrIX0bLkg6qVEW6HuPd4b0o70JGpdhbbTc3r+LiZQs/VA336MRq0yHn1eL/c
+# KMplRGyx6fnPgOnLURPsepTZnxke2UE7hGyx2+/H/7SgV11XmLF8b1wWtI6stfjz
+# HrtZpJM2dKipy5YU+JCCeyX3ENwL+nd0VSXQ+mmE2ujGpDOiiJ7GigsHr/0Y1MZc
+# G6rUd0/0hxPJSqyHkhBDkSeVlHdgwkLdhL8EU3o4bDTbE5Uf2Qpp+/couRaO8gfx
+# ku8Jyaxjhk7dbNQwq99OlMfyNQu+SO6KucWc1JPEqBMbXn40Ac/TxIdRkrj/n0u2
+# d+UjiSNWnYM7ScE5LaPUTUObciWajsCWZ2So6SKlHVzc+PPa0iCdWCrjvKqrCN9b
+# 4UbQsT40Lc9Rqe3c7slTSCbIsp4whVKRd+k=
 # SIG # End signature block

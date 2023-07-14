@@ -371,8 +371,8 @@ function Get-vlCheckSyncTime {
       $score += Get-vlTimeScore -time $lastCTLSyncTime
       $score += Get-vlTimeScore -time $lastCRLSyncTime
 
-      # on windows 7 there is no PRL
-      if ( (Get-vlIsWindows7) -eq $false) {
+      # PRL is available starting with Windows 10
+      if ([version]$OSVersion -ge [version]'10.0') {
          $score += Get-vlTimeScore -time $lastPRLSyncTime
       }
 
@@ -482,15 +482,21 @@ function Get-vlCertificateCheck {
    return $output
 }
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+try {
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+catch {
+   $OutputEncoding = [System.Text.Encoding]::UTF8
+}
+
 
 Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCvCXvnJm2I4jjQ
-# Dq1KywAjs+hFpw/I4YhDgYXo+1CwE6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCB5dCoSzTNg9De
+# TqS5huOYQ/jBJ/yFBDUl7VYmIz+IPqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -567,17 +573,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgOQzlV3pUTBc/
-# 7MQ4EUwk3uBygLXKTjfHH69Dtx/GdpEwDQYJKoZIhvcNAQEBBQAEggIA3fWsIzf5
-# 9wMxd05PdDgjmUSA5HoXZrbTHKk5iEP5HE8V1lrjrSuCrjbd6VWVJRyyou+zy2Wp
-# fszXibrSm1dY7I1B24WnPs2NjNW6sURKpQGNegxfUQREdvaCqpEX1WFoBHnGqv47
-# EEIrWe5dwsEG+j8R6+/ffRtzrYt8STM2hZmoEixRXp86rK0+Q/pnRTNGSqphMEK4
-# W5Pg3jHc8nLhtQiuz0TYSzKkQWCMQL6G4RJmD2RPQV0yfCDPoiSkLtvQkp0q7ZmV
-# 47A0WaGwPo6Zgql1Rx9LdMIlXqDYGJUwP3sLMu3mdtsu2wOQ3PHge8fZsjPkQK5y
-# xeccPcIZHbZ+EJ0B0kjEDoSkh+rQyjggslFowMQrzwhy7iyM+j0qtlRGuzcWboTL
-# dFeA9FY7foAaYluhV+Vp2qP1Tnm5/X53AwmPXkM7YXa4PGknZ6aQ2BwT+rvsIPRi
-# hVcc9dXGAOD1vDNFGCE1WdonJt0V3c1qSX80gtfqpEl0eJ3E9L//D4HRYuJNAGr2
-# uVQ6kuhvis434oMLSqoVUW1kGy1CdMn4cNZQ9QV0psHd07xIL1i3zhlU4nYLIn6W
-# oN9lP5uLDTJrEfbJcRDVtGdlJgMJ8TAs1FMOo8/DqgpmT/oHC5Qt8VBmtaeOtIYh
-# oZTp5xwwSyZ32s8ciQwJjl++1Tut+953z8Y=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgykg/Jkow7t8I
+# sniW0wbXY78kOtNQKEs3PJgjwFTahQswDQYJKoZIhvcNAQEBBQAEggIAeOk2d9jn
+# FdbLGRKI95Vrqbfv+yavRYFfBDaIJVHsN8H4+V1j6gcuDfldVrvVliLZ3HqXgK7W
+# nJQad+ATyasMbTGChLGEHbCz+mYo2V+6cxwggPddcZ1HKK57EN+wiiXFIeK3+qKC
+# LNe8GEUINI9riEgXdUOD9Cw71+FYpQ59dl3Cm4tbf4ukVJnWW3fH+vobK/MjccWq
+# Ji0rifRb2geDFuiJLdMisP6cjSRnzx/I3S0a7gOMtPCfR6IUbUB2NdFnTPvUjFvZ
+# YIlHfi/umQ6h0V3Ff4y6Vcta3EYcJY6449w8YjgSWljwiHaf1iqivhOzIIsN8E/+
+# Py3Cs7xfShl+OCs5V8x8DFtn+GsGd8FAWC7jt9/Z0knjGK4pGmBFJkf4GZOW8QPq
+# ESZsJVJUaU58bReHi1cmTYXfGtS7YwVOZ9xenf8gdyUHS/POYo6HcE3JtIeqcFuz
+# +DBacdYG5MLs6HXACNswm9KpPVJpJHqM2FcIkt4Q02Gfdfw7aeYUVulsym57hrib
+# j90V5OFOm89uX0+QnRtDDFdG9VthuFIEbMIDubWcKFtrX4nj0j/R7VIzWRNL4ccz
+# dWTGsbSyqwMc44SN64L/zDUJ3Gs2efxdjA35BMZo0T/XX/VitJhuGX05tyutagC9
+# tvrfn+R7n7j0BWhwLHPUbwwSxcZw+/ZxkSk=
 # SIG # End signature block
