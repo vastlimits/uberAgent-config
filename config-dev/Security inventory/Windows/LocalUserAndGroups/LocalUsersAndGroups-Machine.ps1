@@ -1,6 +1,36 @@
 #Requires -Version 3.0
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
+if (-not ("WinBioStatus" -as [type])) {
+   Add-Type -TypeDefinition @"
+   public enum WinBioStatus : uint
+   {
+      MULTIPLE = 0x00000001,
+      FACIAL_FEATURES = 0x00000002,
+      VOICE = 0x00000004,
+      FINGERPRINT = 0x00000008,
+      IRIS = 0x00000010,
+      RETINA = 0x00000020,
+      HAND_GEOMETRY = 0x00000040,
+      SIGNATURE_DYNAMICS = 0x00000080,
+      KEYSTROKE_DYNAMICS = 0x00000100,
+      LIP_MOVEMENT = 0x00000200,
+      THERMAL_FACE_IMAGE = 0x00000400,
+      THERMAL_HAND_IMAGE = 0x00000800,
+      GAIT = 0x00001000,
+      SCENT = 0x00002000,
+      DNA = 0x00004000,
+      EAR_SHAPE = 0x00008000,
+      FINGER_GEOMETRY = 0x00010000,
+      PALM_PRINT = 0x00020000,
+      VEIN_PATTERN = 0x00040000,
+      FOOT_PRINT = 0x00080000,
+      OTHER = 0x40000000,
+      PASSWORD = 0x80000000
+   }
+"@
+}
+
 function Get-vlUACState {
    <#
     .SYNOPSIS
@@ -82,29 +112,40 @@ function Get-vlLAPSEventLog {
          $EndTime = $temp
       }
 
-      # Search the Event Logs for each Event ID
-      Get-WinEvent -LogName $logName | Where-Object { ($_.Level -eq 2 -or $_.Level -eq 3) -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
-         # only keep: TimeCreated, Id, Message
-         $winEvent = [PSCustomObject]@{
-            TimeCreated = Get-vlTimeString -time $_.TimeCreated
-            Id          = $_.Id
-            Message     = $_.Message
+      try {
+         # Search the Event Logs for each Event ID
+         Get-WinEvent -LogName $logName -ErrorAction Stop | Where-Object { ($_.Level -eq 2 -or $_.Level -eq 3) -and $_.TimeCreated -ge $StartTime -and $_.TimeCreated -le $EndTime } | ForEach-Object {
+            # only keep: TimeCreated, Id, Message
+            $winEvent = [PSCustomObject]@{
+               TimeCreated = Get-vlTimeString -time $_.TimeCreated
+               Id          = $_.Id
+               Message     = $_.Message
+            }
+
+            # add the event to the errors array if the event id is 2 (error)
+            if ($_.Level -eq 2) {
+               $errors += $winEvent
+            }
+
+            # add the event to the warnings array if the event id is 3 (warning)
+            if ($_.Level -eq 3) {
+               $warnings += $winEvent
+            }
          }
 
-         # add the event to the errors array if the event id is 2 (error)
-         if ($_.Level -eq 2) {
-            $errors += $winEvent
-         }
-
-         # add the event to the warnings array if the event id is 3 (warning)
-         if ($_.Level -eq 3) {
-            $warnings += $winEvent
-         }
+         # filter $errors and $warnings for unique events. Only keep latest event for each event id
+         $errors = $errors | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
+         $warnings = $warnings | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
       }
+      catch {
+         # if the log does not exist, return an empty result
+         $result = [PSCustomObject]@{
+            Errors   = $errors
+            Warnings = $warnings
+         }
 
-      # filter $errors and $warnings for unique events. Only keep latest event for each event id
-      $errors = $errors | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
-      $warnings = $warnings | Group-Object -Property Id | ForEach-Object { $_.Group | Sort-Object -Property TimeCreated -Descending | Select-Object -First 1 }
+         return $result
+      }
 
       $result = [PSCustomObject]@{
          Errors   = $errors
@@ -189,31 +230,6 @@ function Get-vlLAPSSettings {
    catch {
       return New-vlErrorObject($_)
    }
-}
-
-[Flags()] enum WinBioStatus {
-   MULTIPLE = 0x00000001;
-   FACIAL_FEATURES = 0x00000002;
-   VOICE = 0x00000004;
-   FINGERPRINT = 0x00000008;
-   IRIS = 0x00000010;
-   RETINA = 0x00000020;
-   HAND_GEOMETRY = 0x00000040;
-   SIGNATURE_DYNAMICS = 0x00000080;
-   KEYSTROKE_DYNAMICS = 0x00000100;
-   LIP_MOVEMENT = 0x00000200;
-   THERMAL_FACE_IMAGE = 0x00000400;
-   THERMAL_HAND_IMAGE = 0x00000800;
-   GAIT = 0x00001000;
-   SCENT = 0x00002000;
-   DNA = 0x00004000;
-   EAR_SHAPE = 0x00008000;
-   FINGER_GEOMETRY = 0x00010000;
-   PALM_PRINT = 0x00020000;
-   VEIN_PATTERN = 0x00040000;
-   FOOT_PRINT = 0x00080000;
-   OTHER = 0x40000000;
-   PASSWORD = 0x80000000;
 }
 
 function Get-vlMachineAvailableFactors () {
@@ -369,7 +385,13 @@ function Get-vlLocalUsersAndGroupsCheck {
    return $output
 }
 
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+try {
+   [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+}
+catch {
+   $OutputEncoding = [System.Text.Encoding]::UTF8
+}
+
 
 # Entrypoint of the script call the check function and convert the result to JSON
 Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
