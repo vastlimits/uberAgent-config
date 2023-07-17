@@ -2,33 +2,30 @@
 #Requires -Version 3.0
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
-if (-not ("FW_IP_PROTOCOL_TCP" -as [type])) {
-   Add-Type -TypeDefinition @"
-   public enum FW_IP_PROTOCOL_TCP
-   {
-      ICMPv4 = 1,
-      TCP = 6,
-      UDP = 17,
-      ICMPv6 = 58
-   }
-"@
-
-   Add-Type -TypeDefinition @"
-   public enum FW_RULE_DIRECTION
-   {
-      IN = 1,
-      OUT = 2
-   }
-"@
-
-   Add-Type -TypeDefinition @"
-   public enum FW_ACTION
-   {
-      BLOCK = 0,
-      ALLOW = 1
-   }
-"@
+$FW_IP_PROTOCOL_TCP = @{
+   ICMPv4 = 1
+   TCP    = 6
+   UDP    = 17
+   ICMPv6 = 58
+   ALL    = 256
 }
+
+$FW_RULE_DIRECTION = @{
+   IN  = 1
+   OUT = 2
+}
+
+$FW_ACTION = @{
+   BLOCK = 0
+   ALLOW = 1
+}
+
+$FW_PROFILES = @{
+   Domain  = 1
+   Private = 2
+   Public  = 4
+}
+
 
 # function to check if firewall is enabled
 function Get-vlIsFirewallEnabled {
@@ -199,17 +196,24 @@ function Get-vlOpenFirewallPorts {
 
          # Iteriere über die Regeln
          foreach ($rule in $rules) {
-            if ($rule.Direction -eq [FW_RULE_DIRECTION]::IN -and $rule.Action -eq [FW_ACTION]::ALLOW -and $rule.Enabled -eq $true -and ($rule.Grouping -eq "" -or $null -eq $rule.Grouping) ) {
+            if ($rule.Direction -eq $FW_RULE_DIRECTION["IN"] -and $rule.Action -eq $FW_ACTION["ALLOW"] -and $rule.Enabled -eq $true -and ($rule.Grouping -eq "" -or $null -eq $rule.Grouping) ) {
 
                $parsedProfile = ""
                $parsedProtocol = ""
 
                if ($null -ne $rule.Profiles) {
-                  $parsedProfile = [ENUM]::Parse([FW_PROFILES], $rule.Profiles)
+                  $parsedProfile = Get-vlHashTableKeys -hashTable $FW_PROFILES -value $rule.Profiles
+
+                  if ($parsedProfile.length -eq 3) {
+                     $parsedProfile = "Any"
+                  }
+                  else {
+                     $parsedProfile = $parsedProfile -join ", "
+                  }
                }
 
                if ($null -ne $rule.Profiles) {
-                  $parsedProtocol = [ENUM]::Parse([FW_IP_PROTOCOL_TCP], $rule.Protocol)
+                  $parsedProtocol = Get-vlHashTableKey -hashTable $FW_IP_PROTOCOL_TCP -value $rule.Protocol
                }
 
                $output += [PSCustomObject]@{
