@@ -376,6 +376,55 @@ function Get-vlRegSubkeys {
    }
 }
 
+function Get-vlHashTableKey {
+   <#
+    .SYNOPSIS
+        Retrieves the key from a hashtable corresponding to a specified value.
+    .DESCRIPTION
+        This function takes as input a hashtable and a value. It searches the hashtable for entries where the value matches the provided value.
+        It returns the key(s) of matching entries.
+    .PARAMETERS
+        - hashTable: The hashtable to search.
+        - value: The value to search for in the hashtable.
+    .OUTPUTS
+        Returns the key(s) from the hashtable where the value matches the input value. If no match is found, returns $null. If multiple matches are found, returns all matching keys.
+    .EXAMPLE
+        $parsedProfile = Get-vlHashTableKey -hashTable $FW_PROFILES -value $rule.Profiles
+    #>
+
+   param(
+      [Hashtable]$hashTable,
+      [Object]$value
+   )
+
+   $hashTable.GetEnumerator() | Where-Object { $_.Value -eq $value } | ForEach-Object { $_.Name }
+}
+
+
+function Get-vlHashTableKeys {
+   <#
+    .SYNOPSIS
+        Returns the key names from a hashtable that correspond to the bits set in a given flag value.
+    .DESCRIPTION
+        This function takes a hashtable and a flag value as input. It uses bitwise operations to check which bits are set in the flag value.
+        For each set bit, it finds the corresponding key in the hashtable and returns these keys.
+    .PARAMETERS
+        - hashTable: A hashtable where each value is a power of 2, corresponding to a bit position in a flag.
+        - value: The flag value to check. This should be an integer where each set bit corresponds to a key in the hashtable.
+    .OUTPUTS
+        Returns a list of key names from the hashtable that correspond to the bits set in the flag value.
+    .EXAMPLE
+        $parsedProfile = Get-vlHashTableKeys -hashTable $FW_PROFILES -value $rule.Profiles
+    #>
+
+   param(
+      [Hashtable]$hashTable,
+      [Object]$value
+   )
+
+   $hashTable.GetEnumerator() | Where-Object { ($value -band $_.Value) -ne 0 } | ForEach-Object { $_.Name }
+}
+
 
 function Get-vlTimeScore($time) {
    <#

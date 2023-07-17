@@ -4,42 +4,24 @@
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
 #https://mcpforlife.com/2020/04/14/how-to-resolve-this-state-value-of-av-providers/
-if (-not ("AV_ProductState" -as [type])) {
-   Add-Type -TypeDefinition @"
-   public enum AV_ProductState
-   {
-      Off = 0x0000,
-      On = 0x1000,
-      Snoozed = 0x2000,
-      Expired = 0x3000
-   }
-"@
-
-   Add-Type -TypeDefinition @"
-   public enum AV_SignatureStatus
-   {
-      UpToDate = 0x00,
-      OutOfDate = 0x10
-   }
-"@
-
-   Add-Type -TypeDefinition @"
-   public enum AV_ProductOwner
-   {
-      NonMs = 0x000,
-      Windows = 0x100
-   }
-"@
-
-   Add-Type -TypeDefinition @"
-   public enum AV_ProductFlags
-   {
-      SignatureStatus = 0x000000F0,
-      ProductOwner = 0x00000F00,
-      ProductState = 0x0000F000
-   }
-"@
+$AV_ProductState = @{
+   Off     = 0x0000
+   On      = 0x1000
+   Snoozed = 0x2000
+   Expired = 0x3000
 }
+
+$AV_SignatureStatus = @{
+   UpToDate  = 0x00
+   OutOfDate = 0x10
+}
+
+$AV_ProductFlags = @{
+   SignatureStatus = 0x000000F0
+   ProductOwner    = 0x00000F00
+   ProductState    = 0x0000F000
+}
+
 
 function Get-vlAntivirusStatus {
    <#
@@ -93,8 +75,8 @@ function Get-vlAntivirusStatus {
             $avEnabledFound = $false
 
             foreach ($instance in $instances) {
-               $avEnabled = $([AV_ProductState]::On.value__ -eq $($instance.productState -band [AV_ProductFlags]::ProductState) )
-               $avUp2Date = $([AV_SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [AV_ProductFlags]::SignatureStatus) )
+               $avEnabled = $($AV_ProductState["On"] -eq $($instance.productState -band $AV_ProductFlags["ProductState"]) )
+               $avUp2Date = $($AV_SignatureStatus["UpToDate"] -eq $($instance.productState -band $AV_ProductFlags["SignatureStatus"]) )
 
                if ($avEnabled) {
                   $avEnabledFound = $true
