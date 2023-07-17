@@ -4,42 +4,24 @@
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
 #https://mcpforlife.com/2020/04/14/how-to-resolve-this-state-value-of-av-providers/
-if (-not ("AV_ProductState" -as [type])) {
-   Add-Type -TypeDefinition @"
-   public enum AV_ProductState
-   {
-      Off = 0x0000,
-      On = 0x1000,
-      Snoozed = 0x2000,
-      Expired = 0x3000
-   }
-"@
-
-   Add-Type -TypeDefinition @"
-   public enum AV_SignatureStatus
-   {
-      UpToDate = 0x00,
-      OutOfDate = 0x10
-   }
-"@
-
-   Add-Type -TypeDefinition @"
-   public enum AV_ProductOwner
-   {
-      NonMs = 0x000,
-      Windows = 0x100
-   }
-"@
-
-   Add-Type -TypeDefinition @"
-   public enum AV_ProductFlags
-   {
-      SignatureStatus = 0x000000F0,
-      ProductOwner = 0x00000F00,
-      ProductState = 0x0000F000
-   }
-"@
+$AV_ProductState = @{
+   Off     = 0x0000
+   On      = 0x1000
+   Snoozed = 0x2000
+   Expired = 0x3000
 }
+
+$AV_SignatureStatus = @{
+   UpToDate  = 0x00
+   OutOfDate = 0x10
+}
+
+$AV_ProductFlags = @{
+   SignatureStatus = 0x000000F0
+   ProductOwner    = 0x00000F00
+   ProductState    = 0x0000F000
+}
+
 
 function Get-vlAntivirusStatus {
    <#
@@ -93,8 +75,8 @@ function Get-vlAntivirusStatus {
             $avEnabledFound = $false
 
             foreach ($instance in $instances) {
-               $avEnabled = $([AV_ProductState]::On.value__ -eq $($instance.productState -band [AV_ProductFlags]::ProductState) )
-               $avUp2Date = $([AV_SignatureStatus]::UpToDate.value__ -eq $($instance.productState -band [AV_ProductFlags]::SignatureStatus) )
+               $avEnabled = $($AV_ProductState["On"] -eq $($instance.productState -band $AV_ProductFlags["ProductState"]) )
+               $avUp2Date = $($AV_SignatureStatus["UpToDate"] -eq $($instance.productState -band $AV_ProductFlags["SignatureStatus"]) )
 
                if ($avEnabled) {
                   $avEnabledFound = $true
@@ -233,8 +215,8 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCATfPA2zVJxNEZe
-# 71dSqCZ3sSZfGyOA7VV0yYaOr21pHaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBDfLqxgIrHoHo+
+# ZzFfxEN2uOwbkRKoLGjSxUKpUDj886CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -311,17 +293,17 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg5fe8e1CtNdnj
-# OwUrU8nj/qWJ+qmr8Zh/QA9XnVO4hEwwDQYJKoZIhvcNAQEBBQAEggIA365PQVyp
-# 1os2a56hjUSj2ppYGL719aYIRHt/JM0GEo7wR3HlMrZ6sViT5yn2kpZ7S8B/PS3y
-# v2iWdES6KO4piuxzXdl9em/FYynzXvkqFuIpYvQNi3nHnzs7R/HZjwSkcKo04kc1
-# Am6zamfGab1G1SQiwZ6Q0HSYrUslPsf+WZzpThfMJrZgQY4pS0RH+Bxjw1IKaRfK
-# +TE5HCgSwn753ykO1egen3Cj93Rpr7dnl+VITJJSksm7smTvmNr/fwU0cEw3ZdFe
-# adAmUrIX0bLkg6qVEW6HuPd4b0o70JGpdhbbTc3r+LiZQs/VA336MRq0yHn1eL/c
-# KMplRGyx6fnPgOnLURPsepTZnxke2UE7hGyx2+/H/7SgV11XmLF8b1wWtI6stfjz
-# HrtZpJM2dKipy5YU+JCCeyX3ENwL+nd0VSXQ+mmE2ujGpDOiiJ7GigsHr/0Y1MZc
-# G6rUd0/0hxPJSqyHkhBDkSeVlHdgwkLdhL8EU3o4bDTbE5Uf2Qpp+/couRaO8gfx
-# ku8Jyaxjhk7dbNQwq99OlMfyNQu+SO6KucWc1JPEqBMbXn40Ac/TxIdRkrj/n0u2
-# d+UjiSNWnYM7ScE5LaPUTUObciWajsCWZ2So6SKlHVzc+PPa0iCdWCrjvKqrCN9b
-# 4UbQsT40Lc9Rqe3c7slTSCbIsp4whVKRd+k=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgszNxsUHI8Rym
+# X4kyQ11ShiBG0jByP+VdfZpPAk9wZi4wDQYJKoZIhvcNAQEBBQAEggIAJHOJ/kVZ
+# hYCUgltq5eRIqEOpLgebY965mtB9ibnI/KmRZTmRnEt1Y6uMybHiEAIKWwRwBlcX
+# kd1OsDVIdeToPLx/5sBELLsPtafaxv7b/fDpsVwJ625jdxvj3Z3e3Yt8aiEj9vjH
+# t1bHqDYFRWf704+OwN5px9YedQbwl2Gv/vjuqsDVdTss0Cn5N9GKD0N/NQdpcRk8
+# rlpB4GD6Zl8leHklHsWfW14mgBJ/Ib8GkMtMKIsd7Hxyzg7GS7SNv2hLwleOkT1q
+# zNNUwJw52jz6Mkl74+tDZg8tf3H0SEXR9Hek+3YgqiCpc3kdDuJ2Q79uyOF5srPU
+# zimhQyMYzIYarY081HFKyTxTUp359qhU7lSnPc9PXzca/H1ZgwIwxQGnw3745hmd
+# t/qfcsGwcYVSR8NT5z9INNbF6hzUgVdLFCLRtQSrL0vKTXW6blC5Gd+qSHJfOHkF
+# wlIipnu6zlvscAzzIb+4kTEsb4+S6081N84lbpo4biiQTywaDVrNadTpcLFRY1jY
+# dIt4QZNMVvn8Dzy5z5gssN8fpgCkdobCCPoo91dv45bsgiEFJ3QSauNUMtZ3k7gp
+# Pl584CIMdqa/ktj8jZuLx4XZzD9OLZtgzyYQZkeVU18qiXJQ/TBV3l5P72w8ZhwJ
+# +CLg+o8zB1EquphIF6o7XVVy6iM/KTHuULU=
 # SIG # End signature block

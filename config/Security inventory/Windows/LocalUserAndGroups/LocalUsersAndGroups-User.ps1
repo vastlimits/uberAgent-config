@@ -1,35 +1,29 @@
 #Requires -Version 3.0
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
-
-if (-not ("WinBioStatus" -as [type])) {
-   Add-Type -TypeDefinition @"
-   public enum WinBioStatus : uint
-   {
-      MULTIPLE = 0x00000001,
-      FACIAL_FEATURES = 0x00000002,
-      VOICE = 0x00000004,
-      FINGERPRINT = 0x00000008,
-      IRIS = 0x00000010,
-      RETINA = 0x00000020,
-      HAND_GEOMETRY = 0x00000040,
-      SIGNATURE_DYNAMICS = 0x00000080,
-      KEYSTROKE_DYNAMICS = 0x00000100,
-      LIP_MOVEMENT = 0x00000200,
-      THERMAL_FACE_IMAGE = 0x00000400,
-      THERMAL_HAND_IMAGE = 0x00000800,
-      GAIT = 0x00001000,
-      SCENT = 0x00002000,
-      DNA = 0x00004000,
-      EAR_SHAPE = 0x00008000,
-      FINGER_GEOMETRY = 0x00010000,
-      PALM_PRINT = 0x00020000,
-      VEIN_PATTERN = 0x00040000,
-      FOOT_PRINT = 0x00080000,
-      OTHER = 0x40000000,
-      PASSWORD = 0x80000000
-   }
-"@
+$WinBioStatus = @{
+   MULTIPLE           = 0x00000001
+   FACIAL_FEATURES    = 0x00000002
+   VOICE              = 0x00000004
+   FINGERPRINT        = 0x00000008
+   IRIS               = 0x00000010
+   RETINA             = 0x00000020
+   HAND_GEOMETRY      = 0x00000040
+   SIGNATURE_DYNAMICS = 0x00000080
+   KEYSTROKE_DYNAMICS = 0x00000100
+   LIP_MOVEMENT       = 0x00000200
+   THERMAL_FACE_IMAGE = 0x00000400
+   THERMAL_HAND_IMAGE = 0x00000800
+   GAIT               = 0x00001000
+   SCENT              = 0x00002000
+   DNA                = 0x00004000
+   EAR_SHAPE          = 0x00008000
+   FINGER_GEOMETRY    = 0x00010000
+   PALM_PRINT         = 0x00020000
+   VEIN_PATTERN       = 0x00040000
+   FOOT_PRINT         = 0x00080000
+   OTHER              = 0x40000000
+   PASSWORD           = 0x80000000
 }
 
 function Get-vlIsLocalAdmin {
@@ -119,11 +113,10 @@ function Get-vlGetUserEnrolledFactors() {
 
    $enroledFactors = Get-vlRegValue -Hive "HKLM" -Path ("SOFTWARE\Microsoft\Windows\CurrentVersion\WinBio\AccountInfo\" + $currentUserSID) -Value "EnrolledFactors"
 
-   # iterate over [WinBioStatus].GetEnumNames() and check if the bit is set. If bit is set, save matching enum names in array $enroleFactors
    $enroledFac = @()
-   foreach ($factor in [WinBioStatus].GetEnumNames()) {
-      if ($enroledFactors -band [WinBioStatus]::$factor) {
-         $enroledFac += $factor
+   foreach ($factor in $WinBioStatus.GetEnumerator()) {
+      if ($enroledFactors -band $factor.value) {
+         $enroledFac += $factor.key
       }
    }
 
@@ -291,8 +284,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDA+VtVuHqYzR5U
-# bJ9RroKVDME8cvSdoyP8Zk6a2VhAFaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCf7R811az70DL3
+# EfvJlgE2nQmHG7he+Tq9Bwql1yeni6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -369,17 +362,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgN/SacpALQ6qX
-# Q9MpDwot8yj2t8ekY0csLVARwgkUrTAwDQYJKoZIhvcNAQEBBQAEggIABxd3v28b
-# rPaXWFDQWoayJkPS9TQMhrEzgR6Bb2qpmJ/GmFegVAY7vtPoZIcJYMEiME6BWor0
-# mZ6gDYkoVADM8psNm9YMJKBgxnahAN1fLq+c3r1QrNkDBdpdGrh3oDZ74R4XsXyI
-# wkC7i3Oi8Cq3PSMDWO/sDTK3FzSVJso+0OKBU5W1Kx0QcHQ8epLN08PQEG84RSkq
-# Vi8h2LGMMfL+O/3k45A0wLXQeyJnWr/T3/zRvL33UHpRotVAUuHsu770hOoshYMY
-# HOIM3vgNNV7CoN/vP+nkLsu+3ZJZhIBpOfBU+2qhxg37900LMFLQ1L1ITGNzBros
-# /kiZCn93bNY/ojESkbyffkxwFJ0Rv/4REhj+mtr2ps/9XqY7Dfp+t9edMbW1TQgo
-# OaVjpeyN/Wqkp2IOkeDN3BhQTjuzg9AO1nWxUnt9BYK8U8pW3D1BmP+/I3geO11h
-# mYt9GdX/FIooRD4hdb2PMB28iQxsgZRDDBOp1GCzt045ULmxWSo3UhLhAox41eTJ
-# gEY4znzXR/sVx9EbRqBMaTefdX/QOcugF/08j/v2AhLTawZ4KZONms7AcarrP/8R
-# YU7NlLl78rFhrp16Dz93mEw3ECyXkvZjD5cfnVeILSnFvOBzutuGeUwRRa2O1x+I
-# f+8GhyUFuGS0OXRbkIGv7HdBim4LqKcRixM=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg/+OKgMuh2zUE
+# uVwaVIC4oOrJDAFzslpoZEUG5P2BPh0wDQYJKoZIhvcNAQEBBQAEggIABB92Dqpt
+# PA1Soh1O38D1Me37dd6GB2YF5fgrkdVMJ2goHIK2KCoBGjKlyqJV2gnRIJlRv13h
+# i2yYIst65qhS84qdW2637fOxyLNbyrFa/sLyg/XOPjgN0mxMF2WK1RfREYXScIdM
+# KBqUw6BhBnKLf6L8wxMcOzVYDZrz4aKlY6DNOAJqFUuZc7a4GMhHIt7UHRaWa01n
+# gJP9u9er8aqG6Zq2a5jB3N+ZtNsm/As/Iw37CmkaodLltjOZfUGbAhJ4Wg8XHQuI
+# SrCxC3itp+10iqcCAhWj9luInnc5BDVHyYZkfLHPFaqg0TCxPhpyc917qP04m8tH
+# iwf3T8r2uxEDDwYl5RFZi10O573sL+amRArcqVjGZ62s0hL7VOb3qwJjBkNpPMD0
+# Ln2PezV5t7P6PBVhHU/l1CTCHfnzCr8POSQMu0oIusKSRPZzTAayOBfMDVzYJV/9
+# azK+FBJCOKwRVkXNX6xhSCk/gfN3pE06Car8+ydy9K+VprLk3fpsxGv7BAH58WRN
+# 0lZcl5a0Lsr5bo4dnDseYwISSc0eRfnI15ErehKvpGgecmkJdoUI40RlkPAGUilu
+# 6INjya8U6rEnSCz/WyqR13WPXh6jGmCx7C8ZFTSG44+nTJilkY7rBnvh/dAUreE0
+# zfpXAusc3GxekZVXQMJn1bP4YmEIMJ941dI=
 # SIG # End signature block

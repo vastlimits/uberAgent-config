@@ -2,33 +2,30 @@
 #Requires -Version 3.0
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
-if (-not ("FW_IP_PROTOCOL_TCP" -as [type])) {
-   Add-Type -TypeDefinition @"
-   public enum FW_IP_PROTOCOL_TCP
-   {
-      ICMPv4 = 1,
-      TCP = 6,
-      UDP = 17,
-      ICMPv6 = 58
-   }
-"@
-
-   Add-Type -TypeDefinition @"
-   public enum FW_RULE_DIRECTION
-   {
-      IN = 1,
-      OUT = 2
-   }
-"@
-
-   Add-Type -TypeDefinition @"
-   public enum FW_ACTION
-   {
-      BLOCK = 0,
-      ALLOW = 1
-   }
-"@
+$FW_PROTOCOL = @{
+   ICMPv4 = 1
+   TCP    = 6
+   UDP    = 17
+   ICMPv6 = 58
+   ALL    = 256
 }
+
+$FW_RULE_DIRECTION = @{
+   IN  = 1
+   OUT = 2
+}
+
+$FW_ACTION = @{
+   BLOCK = 0
+   ALLOW = 1
+}
+
+$FW_PROFILES = @{
+   Domain  = 1
+   Private = 2
+   Public  = 4
+}
+
 
 # function to check if firewall is enabled
 function Get-vlIsFirewallEnabled {
@@ -199,17 +196,24 @@ function Get-vlOpenFirewallPorts {
 
          # Iteriere über die Regeln
          foreach ($rule in $rules) {
-            if ($rule.Direction -eq [FW_RULE_DIRECTION]::IN -and $rule.Action -eq [FW_ACTION]::ALLOW -and $rule.Enabled -eq $true -and ($rule.Grouping -eq "" -or $null -eq $rule.Grouping) ) {
+            if ($rule.Direction -eq $FW_RULE_DIRECTION["IN"] -and $rule.Action -eq $FW_ACTION["ALLOW"] -and $rule.Enabled -eq $true -and ($rule.Grouping -eq "" -or $null -eq $rule.Grouping) ) {
 
                $parsedProfile = ""
                $parsedProtocol = ""
 
                if ($null -ne $rule.Profiles) {
-                  $parsedProfile = [ENUM]::Parse([FW_PROFILES], $rule.Profiles)
+                  $parsedProfile = Get-vlHashTableKeys -hashTable $FW_PROFILES -value $rule.Profiles
+
+                  if ($parsedProfile.length -eq 3) {
+                     $parsedProfile = "Any"
+                  }
+                  else {
+                     $parsedProfile = $parsedProfile -join ", "
+                  }
                }
 
                if ($null -ne $rule.Profiles) {
-                  $parsedProtocol = [ENUM]::Parse([FW_IP_PROTOCOL_TCP], $rule.Protocol)
+                  $parsedProtocol = Get-vlHashTableKey -hashTable $FW_PROTOCOL -value $rule.Protocol
                }
 
                $output += [PSCustomObject]@{
@@ -337,8 +341,8 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCbMyRXpkyJ3RLx
-# NgrOSpiNSyY9hTTm/4I2vMJW+fHxDKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCArccBAIXPV4rsw
+# t6qJT8cd/Jizb0B+EoJ0XbGJmDHusaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -415,17 +419,17 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgYXKx+CJ6Trb5
-# 7Pp/3sU7C6ZZkpW29KmuzNzz4pW7NZUwDQYJKoZIhvcNAQEBBQAEggIAE4dbufyH
-# LlPmHdJqU3NJWU/qJfqLfecG+1o964PtWIf4WXpo/0tUuYMl6PJrXNAi5ju+VDOl
-# 3kPFiVh9jxesXppcbzOAHZzNlvcVmAG3MJScKQpgHD4dFwp2/WubXNH+zekp5J3y
-# HJCUX2hLhKHEAFA0lL5V32b929iMCykXjeFgZ/RVfxBivUDPpkYH/8EHR/K3hQOk
-# z149XElmvC0x5YYLBayyyJxrPQrLYFFWjYAIqP238cRFcIzg9H3CzMKAGyOUFojD
-# J79TNTqBeIxslGXPr8WpncVKtWvjva5RnMbQ4EyhkM1UvYSDbmOQUvPlQV+jiVlP
-# LRTDcgfi/FVsCA40NUFmFKoHiarZY5MoDdVnLkRxkB5dGcYc0y39UIBrSlZxZW7w
-# CXQW2P9Qo0vxXBN/Mn9b7fEhXmjXVx1OMBbN8k5+hLj2WEBZ3r1NU+W6Rg34vCIl
-# wyQe07w5UvkmbpiS1Ide5ObV9bAoAjHiuEe6tRk6dETdKRIRFryntvS/8XLUUxRq
-# fe25Uro/cV/BIaKzLUQaf/X3Zl3kH9BPHsBZYVUDdP8hG5xcXFx3j31CpKLCFonr
-# dInwtyTqBwXCF8J85f6kswyZfa1g6vAzi39XvbtgqR331vEmwiRm48gqqX7x0BoV
-# If5Pw/osx1MT57UvLzfHz+hccnzk2cjsF0Y=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgDjQWSIHT+rmF
+# NEYWvk5xaiMwIg0bzx09oAT43fhBlkowDQYJKoZIhvcNAQEBBQAEggIAEaJnv4ec
+# AGzib25vrzLSNOn8ro9N5u7G2EVgP8fJAiklVGETVNm9p9uD5bXng/a/LN0NhY6T
+# fYwYwCxmesgkNB42MKIDrtymyB8hn0gqum2UidAt+97MbsOm22zLUN1pXy0Y0fvi
+# ItAhLjDvZkSzUmrvCEhZVbyIwM043TNAe4FUiAc/cF4oSa4VRi7BhVpxu+mfuWPs
+# EMYR7jhUWhTJ3L5q/MA2DCveDmRBhKtqgdSi6tzg/6zm+mqZpJGc5eQlsCzWFvgs
+# CJvx7kIDBoK0hy6fQqFrGgfqRbrDdsoaa7P2VxTa2G0tHQlNbARWbAzdZMLzj/eA
+# gOR1iDn3m/II68O2eJl3Yxo2unOf5v06CQRVSFWaRRDTqX4hZy0zC07A5iRQWEI5
+# PctwSIhrLsdxZSLUjSdHojpEjzhXzZG1pdmOBB23ENtkVyxl0KBNJxGs3N1YQjdo
+# CoOtztnJ9sqcYOvsUjGFyxxzKvjhotnXuMtgKduV8AAO0k82HpjOPntHw8MhexZ2
+# vPzw7avvauR3RuO39C0WjXTTiVHDfwyQphfYbG3KTO4vqk3jTCrG8i1xEp7XYZLg
+# ZklRjLWhmxfPIALSB7ZMo3Ng9D6XyqIt/iEhrPqXsStJkFsjxK3Itrb4UX6O7OQO
+# DekWdfW3PeEm0OaE083bHgcTf4sq4lpnTso=
 # SIG # End signature block

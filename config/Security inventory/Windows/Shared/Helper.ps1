@@ -376,6 +376,55 @@ function Get-vlRegSubkeys {
    }
 }
 
+function Get-vlHashTableKey {
+   <#
+    .SYNOPSIS
+        Retrieves the key from a hashtable corresponding to a specified value.
+    .DESCRIPTION
+        This function takes as input a hashtable and a value. It searches the hashtable for entries where the value matches the provided value.
+        It returns the key(s) of matching entries.
+    .PARAMETERS
+        - hashTable: The hashtable to search.
+        - value: The value to search for in the hashtable.
+    .OUTPUTS
+        Returns the key(s) from the hashtable where the value matches the input value. If no match is found, returns $null. If multiple matches are found, returns all matching keys.
+    .EXAMPLE
+        $parsedProfile = Get-vlHashTableKey -hashTable $FW_PROFILES -value $rule.Profiles
+    #>
+
+   param(
+      [Hashtable]$hashTable,
+      [Object]$value
+   )
+
+   $hashTable.GetEnumerator() | Where-Object { $_.Value -eq $value } | ForEach-Object { $_.Name }
+}
+
+
+function Get-vlHashTableKeys {
+   <#
+    .SYNOPSIS
+        Returns the key names from a hashtable that correspond to the bits set in a given flag value.
+    .DESCRIPTION
+        This function takes a hashtable and a flag value as input. It uses bitwise operations to check which bits are set in the flag value.
+        For each set bit, it finds the corresponding key in the hashtable and returns these keys.
+    .PARAMETERS
+        - hashTable: A hashtable where each value is a power of 2, corresponding to a bit position in a flag.
+        - value: The flag value to check. This should be an integer where each set bit corresponds to a key in the hashtable.
+    .OUTPUTS
+        Returns a list of key names from the hashtable that correspond to the bits set in the flag value.
+    .EXAMPLE
+        $parsedProfile = Get-vlHashTableKeys -hashTable $FW_PROFILES -value $rule.Profiles
+    #>
+
+   param(
+      [Hashtable]$hashTable,
+      [Object]$value
+   )
+
+   $hashTable.GetEnumerator() | Where-Object { ($value -band $_.Value) -ne 0 } | ForEach-Object { $_.Name }
+}
+
 
 function Get-vlTimeScore($time) {
    <#
@@ -647,8 +696,8 @@ function Write-vlTimerElapsedTime {
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDG9kZJBZWVzr24
-# P0NwMzX4glCxRqIc1ZmKF+9yCxbplqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDenR0W0BZOxDIs
+# 1DOSSUEKttmTDVkWCBKu/49O5SuVYKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -725,17 +774,17 @@ function Write-vlTimerElapsedTime {
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgKM9LyvplaWbQ
-# ak3yn3XxZsdBwY6vUhh1UdvW7RzdtdEwDQYJKoZIhvcNAQEBBQAEggIATEtEItse
-# JCgdbOm8nVUujAOue8zy9ibSqarSCG67s35VGAeaHU27ULEhg6d9KxKj3poDmBQv
-# YNz5EVGzzykFvJiZUxnp8F8NTACf08oNsPPWA2Npj0qzV+cv7G4Vh6u8u9eWBKIe
-# onnCDC+RFXJfQkh97+i9xPrM0jHx63db3U5Qvr3vl6CH4a2+J4/cgstZk+m5pkMz
-# O1BFN9cdBbJiPkYD5pg+YDozRZ67INiAA3ldNdFbqj3nfzDsYPWNOP3VcxkFyNWa
-# eSAYaLznwX07hy9sytSnG7EhgKf1yjaRzwY2L9/wmfVUfZmhiLSlqC8F/z1XCirW
-# TpCWdwv882/99UdeuFQs01/MQFBMkbbIQOA7d9eXLr4lN8HR/S7QKLKj/ra2v78j
-# gVmKqTPHrpr9mahm8bGkaFZx35VZLoDjcimOJ4RxlfzIL702107GVa1vsCIY29yz
-# LuOfEw8iEB5xzENJgq8uJeTqcWd+0o3gP81tLRl1b1e40yr81KC4mK0vzn9Z5VPl
-# v1WHWypxKEgnZZxeBjr1DWu0ZLOKbeR4iSoKu0JKkibpI9mqnuGkmewOcCFj9tAy
-# 04OIFsjRzP/ePmVLn4fUe1fMCUY//z+oaq0OZqErCn5ZFdtVgKrpyod+Ee0hOHYh
-# c7lCouio6eOIf9ICMHENoyEE4Gzn2wfkGYg=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgRx1hFBbc6ZR5
+# z3mWte2mtixnB3ju7a2MlZIuWoXyesowDQYJKoZIhvcNAQEBBQAEggIA3yRYiDqb
+# tDTCBbYZMHIm2dw05aJ2vITeh9o0q7Dj54nldHHcIRnEYdeIHlQesb6d83N7xRT7
+# AazuHaPqNoiLkrph9epgdeXMR3G+cvjCPrW+Im3aXsfTVP+MDxaNxxh3qMnNkuJG
+# 5yWsDmN5z5XNN861DUaWLijSKXFJAJ2D7yHEaxndcG/BXlh0n0nQC8nAGvKiZywY
+# gntVE32HYOREjijxe6Urw3s9LNFlrdqLI+20S0DYaSisAiXQNnJUSll/RkDFkYa1
+# Vpsqik4+iNuQYIZVDnd5AkdNUcPr2ygJ7U1qPE88LXVyG5C048wD4nkycqPRPps/
+# /NqixXwTOxppvhXuM0hSrX/wiPh7hiO2IdCPYkZxCQxdo28/R7uNyqWoS3sUombo
+# eNXAkODJ7WLSuwI92eg2j7k7R6pBJeSgJsvTjOYis1sCBzSaZoLSvSKLCLLl0SZ/
+# uFiS5CxgcRiZMsuGfNQ5VexH9H2SZT4lIbMlrLekOzd3zIc8uUCRlxYOVysNZWiI
+# Pd/18lTEyH+DROWywATpxbSkoFKxxH28qjaCJ8MI13k44w18dWti4ahUePXJxi68
+# 7vQ7PMyAQzlktFq2mQtc5WYwmQfB3+Pofx29OAMsrPE2Nxyjw0F3K8xjRfKsHID0
+# +8A+573uIiOqEFbmgz4wnYXW/NQ8o3mp5+k=
 # SIG # End signature block
