@@ -2,7 +2,7 @@
 #Requires -Version 3.0
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
-$FW_IP_PROTOCOL_TCP = @{
+$FW_PROTOCOL = @{
    ICMPv4 = 1
    TCP    = 6
    UDP    = 17
@@ -213,7 +213,7 @@ function Get-vlOpenFirewallPorts {
                }
 
                if ($null -ne $rule.Profiles) {
-                  $parsedProtocol = Get-vlHashTableKey -hashTable $FW_IP_PROTOCOL_TCP -value $rule.Protocol
+                  $parsedProtocol = Get-vlHashTableKey -hashTable $FW_PROTOCOL -value $rule.Protocol
                }
 
                $output += [PSCustomObject]@{
