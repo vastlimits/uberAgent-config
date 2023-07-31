@@ -145,7 +145,7 @@ function Get-vlWindowsServicesCheck {
       $Output += [PSCustomObject]@{
          Name         = "Locations"
          DisplayName  = "Uncommon locations"
-         Description  = "This test evaluates whether services are running in unusual or unexpected locations on the system. Unusual or unexpected locations in this case means outside of folders such as C:\WINDOWS\ or C:\Program Files, which may indicate a potential security issue or a compromise."
+         Description  = "This test evaluates whether services are running in unusual or unexpected locations on the system. Unusual or unexpected locations in this case means outside of folders such as C:\Windows\System32 or C:\Program Files, which may indicate a potential security issue or a compromise."
          Score        = $ServiceLocations.Score
          ResultData   = $ServiceLocations.Result
          RiskScore    = $ServiceLocations.RiskScore
@@ -184,8 +184,8 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAK3vtv47htdVDD
-# ZQPJC0UIagB/Dqfq1ds0wa3+gRoUQ6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAOgnXwIgXwhDtv
+# vUk5gWlmeY34Sgc2Ii+aqM56Tno00qCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -262,17 +262,17 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgpgkDwu3DH8al
-# wy6qG2D/semGIMvtztq8zw77i/c+cqwwDQYJKoZIhvcNAQEBBQAEggIAvq1/GvTP
-# vMaTaVO1UpDJKoJOTkkRj5PJLsi7yaV0X3Pz0889rjqDGGMaaiY5CZmgarWwPCeu
-# PxIpwx75vClADe4thADFpbEUo85i5ClARO5Jya+lsDr1zvW1owVCks3YFPrrMgCN
-# s98dgRTkYrLgPGpjtLFneUZ00Ni2WpAh0J8W4zvLBiw4D1ConBo0Eqw0QW+6HfSO
-# +8l+2of8va/sn+lPKCjlKh0yrI1lx7KB/Rus5syTY3fDUCd0UW53svqvAB9geilg
-# OjNf9NDD2rfln4/fiwzgB52T0dtXyWm1DRAoYBo+PL15DjAJR5qJLZ4xEPnXArk7
-# 4x44+omXyGgkqG7d9LANTeWzxJgzltchqDqBONTQROYknPx0wRsqMsOkQ5hQCwY+
-# eFKynD+hs5GSuWMq5BRxyG0kYmziert38yNxuJf/uwpFsMdMWVTEikzEtQwlUEv0
-# LcR1FohHpJzKz2jUTwVywNL6PNsNraRuS9RDuyChFnZ2qJ2wnttmgovFy1d1FAGy
-# KRNofOqmqnI/GAbjFZXZIkyqC9Px/ji8WiUgxHILctndk/cLx6feqQMXJiC+tQ5S
-# 3NBhybA2JHakV9uWhkJEWS8mEfySc8c6TjP9luOf8ewRFz1m4WmosQAgUtK536ZS
-# rTPdIi4g5LSNoRTXWRLohtVUHmk+BYXD4rI=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgLERyvqwB17M7
+# n+8byYxyHn4i2hxBv4RKnV9ShNcbIGswDQYJKoZIhvcNAQEBBQAEggIA0YCIglwN
+# 70XBLRl08aOES1F9WwFyCzxBKjjNfycgruyAcIWyGSUgvEGlz784t+lA29M2ieck
+# EX9y+eKI8q95HMxyx1wZHEm/EVbSAENE88rvSizieGSTE9o4IGLBFCUoC6n7oRgR
+# e4c3EoRYjkf/wQP6ZNLOeYu1iz/qS4qecq8HxMLsQd2CGz/MktVPmISSgGUUfYJ7
+# tCpg3FZsr6tuvgBKXF6ZWW/u7D55yYYEs+AW9NPGzrwf1oEFKwRfzadWckqrmmi5
+# JmnfFcVQbBgbvGb4dTDxliW3n0lo8xS/ZJorLTZFt+oVRJ7lUWSjF1rHf3qfrg1x
+# 3jmp52pG6+5yq5U6nOot2GMH7jWCkrEtJU++vuILcErEZtVVWy/4yHa466qSKOS0
+# /rHIArOWNHjvXGMsDT7MT1bzUq4rk9r3Fiv5Wpz/bxytze6xPXclF3SIDuqdaSZr
+# u9rU4ag5Z5A6u8SHK8xe0M3v4eJ6qHUW6GdaLME2yHjNP+V6nrmdQrd198uGL1PA
+# /2weez31g2Jb2UTfBzOe6TLqO50X2WEhd/k+BQ1rF0macl15Y/LTP/McWzA1OMGO
+# hKyrw628om/UddDz6BddiU/PNxdGxUoEUUGybmo+CCdG2FOzvBQ1V+doRkgsYynt
+# SsMrrmav/7ztEJNf+vnk7YER/lGkrD5XjYk=
 # SIG # End signature block
