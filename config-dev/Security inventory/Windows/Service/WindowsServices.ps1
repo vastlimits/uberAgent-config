@@ -145,7 +145,7 @@ function Get-vlWindowsServicesCheck {
       $Output += [PSCustomObject]@{
          Name         = "Locations"
          DisplayName  = "Uncommon locations"
-         Description  = "This test evaluates whether services are running in unusual or unexpected locations on the system. Unusual or unexpected locations in this case means outside of folders such as C:\WINDOWS\ or C:\Program Files, which may indicate a potential security issue or a compromise."
+         Description  = "This test evaluates whether services are running in unusual or unexpected locations on the system. Unusual or unexpected locations in this case means outside of folders such as C:\Windows\System32 or C:\Program Files, which may indicate a potential security issue or a compromise."
          Score        = $ServiceLocations.Score
          ResultData   = $ServiceLocations.Result
          RiskScore    = $ServiceLocations.RiskScore
