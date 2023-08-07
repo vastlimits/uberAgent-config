@@ -28,7 +28,7 @@ function Get-vlServiceLocations {
          Get-vlRegSubkeys -Hive HKLM -Path 'SYSTEM\CurrentControlSet\Services' | Where-Object { $_.ImagePath } | ForEach-Object -process {
             $ImagePath = $PSItem.ImagePath
             $ServiceName = $PSItem.PSChildName
-            if ($ImagePath -inotmatch '^(\\\?\?\\)?\\?SystemRoot.*$|^(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\WINDOWS\\(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\Program Files( \(x86\))?\\.*$|^(\\\?\?\\)?"?C:\\WINDOWS\\Microsoft\.NET\\.*$|^(\\\?\?\\)?"?C:\\ProgramData\\Microsoft\\Windows Defender\\.*$') {
+            if ($ImagePath -inotmatch '^(\\\?\?\\)?\\?SystemRoot.*$|^(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\WINDOWS\\(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\Program Files( \(x86\))?\\.*$|^(\\\?\?\\)?"?C:\\WINDOWS\\Microsoft\.NET\\.*$|^(\\\?\?\\)?"?C:\\ProgramData\\Microsoft\\Windows Defender\\.*$' -AND $ServiceName -inotmatch '^ehRecvr$|^ehSched$') {
                $result += [PSCustomObject]@{
                   Service   = $ServiceName
                   ImagePath = $ImagePath
@@ -87,7 +87,7 @@ function Get-vlServiceDLLLocations {
 
             $ServiceDLL = $PSItem.ServiceDLL
             $ServiceName = ($PSItem.PSParentPath).split('\\')[-1]
-            if ($ServiceDLL -inotmatch '^C:\\WINDOWS\\system32.*$') {
+            if ($ServiceDLL -inotmatch '^C:\\WINDOWS\\system32.*$' -AND $ServiceName -inotmatch '^AzureAttestService$|^WinDefend$|^WinHttpAutoProxySvc$') {
 
                $result += [PSCustomObject]@{
                   Service    = $ServiceName
