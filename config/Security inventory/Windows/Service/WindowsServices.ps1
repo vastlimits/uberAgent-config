@@ -28,7 +28,7 @@ function Get-vlServiceLocations {
          Get-vlRegSubkeys -Hive HKLM -Path 'SYSTEM\CurrentControlSet\Services' | Where-Object { $_.ImagePath } | ForEach-Object -process {
             $ImagePath = $PSItem.ImagePath
             $ServiceName = $PSItem.PSChildName
-            if ($ImagePath -inotmatch '^(\\\?\?\\)?\\?SystemRoot.*$|^(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\WINDOWS\\(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\Program Files( \(x86\))?\\.*$|^(\\\?\?\\)?"?C:\\WINDOWS\\Microsoft\.NET\\.*$|^(\\\?\?\\)?"?C:\\ProgramData\\Microsoft\\Windows Defender\\.*$') {
+            if ($ImagePath -inotmatch '^(\\\?\?\\)?\\?SystemRoot.*$|^(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\WINDOWS\\(system32|syswow64|servicing).*$|^(\\\?\?\\)?"?C:\\Program Files( \(x86\))?\\.*$|^(\\\?\?\\)?"?C:\\WINDOWS\\Microsoft\.NET\\.*$|^(\\\?\?\\)?"?C:\\ProgramData\\Microsoft\\Windows Defender\\.*$' -AND $ServiceName -inotmatch '^ehRecvr$|^ehSched$') {
                $result += [PSCustomObject]@{
                   Service   = $ServiceName
                   ImagePath = $ImagePath
@@ -87,7 +87,7 @@ function Get-vlServiceDLLLocations {
 
             $ServiceDLL = $PSItem.ServiceDLL
             $ServiceName = ($PSItem.PSParentPath).split('\\')[-1]
-            if ($ServiceDLL -inotmatch '^C:\\WINDOWS\\system32.*$') {
+            if ($ServiceDLL -inotmatch '^C:\\WINDOWS\\system32.*$' -AND $ServiceName -inotmatch '^AzureAttestService$|^WinDefend$|^WinHttpAutoProxySvc$') {
 
                $result += [PSCustomObject]@{
                   Service    = $ServiceName
@@ -184,8 +184,8 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAOgnXwIgXwhDtv
-# vUk5gWlmeY34Sgc2Ii+aqM56Tno00qCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCh51J3LV8/Deok
+# 6MKGWVfczh4lRGsI0g9VBjHwrbdpfqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -262,17 +262,17 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgLERyvqwB17M7
-# n+8byYxyHn4i2hxBv4RKnV9ShNcbIGswDQYJKoZIhvcNAQEBBQAEggIA0YCIglwN
-# 70XBLRl08aOES1F9WwFyCzxBKjjNfycgruyAcIWyGSUgvEGlz784t+lA29M2ieck
-# EX9y+eKI8q95HMxyx1wZHEm/EVbSAENE88rvSizieGSTE9o4IGLBFCUoC6n7oRgR
-# e4c3EoRYjkf/wQP6ZNLOeYu1iz/qS4qecq8HxMLsQd2CGz/MktVPmISSgGUUfYJ7
-# tCpg3FZsr6tuvgBKXF6ZWW/u7D55yYYEs+AW9NPGzrwf1oEFKwRfzadWckqrmmi5
-# JmnfFcVQbBgbvGb4dTDxliW3n0lo8xS/ZJorLTZFt+oVRJ7lUWSjF1rHf3qfrg1x
-# 3jmp52pG6+5yq5U6nOot2GMH7jWCkrEtJU++vuILcErEZtVVWy/4yHa466qSKOS0
-# /rHIArOWNHjvXGMsDT7MT1bzUq4rk9r3Fiv5Wpz/bxytze6xPXclF3SIDuqdaSZr
-# u9rU4ag5Z5A6u8SHK8xe0M3v4eJ6qHUW6GdaLME2yHjNP+V6nrmdQrd198uGL1PA
-# /2weez31g2Jb2UTfBzOe6TLqO50X2WEhd/k+BQ1rF0macl15Y/LTP/McWzA1OMGO
-# hKyrw628om/UddDz6BddiU/PNxdGxUoEUUGybmo+CCdG2FOzvBQ1V+doRkgsYynt
-# SsMrrmav/7ztEJNf+vnk7YER/lGkrD5XjYk=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgt4llQPnbQGm6
+# NkYBz5eKuX1fEcFL6ah9gEnvjTN6gsEwDQYJKoZIhvcNAQEBBQAEggIAKgEposeh
+# 3wqxwEfeevi7cof++8ZLZ0UR7H70DQ/sjnAJ3XJffmZdX+1loSUmZYCjWRMoCnb7
+# Sv6Y2dyN65QUsiziN3faQV4DAIQmvNYmJKxQJQNn7RMC5+1p1s+taCPMmUxWth3j
+# rAjyE2gZALaCwNt+i/FtZ6jO0DB+02zaGO4qJk7ggMiXFAjjXAcDxQ3d+bRA67ju
+# VCuFyRSJulUhadxCw1v4+z0RYaj3ODkIIYfTgdDdRr5Jo0XrxeYIi6qDgOqoc4ON
+# fexRzq3OogQ9pmK/sb6FzPRH9f0D0ECDeCs0WY4G/Vechq99nj/ncwg8l9H4Rzt2
+# kraX33mrGoZcvEnj5O+GHFE+udeTxB3af/xpe9lBhQfT3Z2+Te4o2jbg02Muyq27
+# QuzlGgfqxD5C2K8jeo9zk80i18NNPJ0kYOxT89+Dfnl5FuV0stXLpXkIzMWKhs/j
+# 6dZtQGyyn04BSf7KURDFZVdr4Ti5DDPzLIrYIRkdqLAw88cFV3uMYIJ4uxNT7Va4
+# Js0etcUu3rcL1Q3aNr7InPVXMVvgmm7QIzgTmcRwvQPQaVyY4mcGRp5GDZF0JN0h
+# rnntYQXYq8HgZ5laChQPV3ZEHriZ3JzHXTzIQYmuTIZ4PkA/yqBDPBVkiVnSZY5T
+# t5NuOiCtdHNOH+mT45X+xwKNMHwn32sM+58=
 # SIG # End signature block
