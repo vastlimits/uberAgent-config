@@ -95,7 +95,7 @@ function Get-vlNetworkConfigurationSMBSigning {
             $result = [PSCustomObject]@{
                state = "Enabled"
             }
-            # SMB signing is enabled but not required
+            # SMB signing is enabled but not required. This is as bad as *NotRequired*, because the server side must be configured correctly. But, the referenced article in .NOTES suggests enforcing the signing on the client.
             return New-vlResultObject -result $result -score 2 -riskScore $riskScore
          }
          else {
@@ -376,8 +376,8 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBne3VOINyNcfet
-# zDfQ3h+1fqMeCCJTiCY4tFDfLcfeXKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAcQXqEEOAWSdWR
+# V54y5L7b6tbVxyoIpnhOBSqOLuIcf6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -454,17 +454,17 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg+wp910MOV82X
-# d378NdbPhLBA0/tfXQrDQIi6ln8wdhcwDQYJKoZIhvcNAQEBBQAEggIAOLvwzqyL
-# RmzXDb1+LQ32WGN7T0wsu+K4B42/CinPGGFr5tVOwCM+RDYBuXjn82BeRG1f3yt4
-# lbUEQIfXJGro3sT50DqsbXO4s0bmvk9+YTtN5VHgkMl3fDz+rKXYlHTsOY7oDHbo
-# MrWZ7dlwt8fFYfRHuO4jU9g9hNAmirBS3EF6mexsRzxEVhIs8GsjOfPBm+XBogPY
-# HIVnsnxzj8r7BasiTxLVf0xFsUlN50MCa1lS7oTPMJQ3AM+hS+9RNTezxWIMyvqh
-# N4jiqpAVcKvEHakg0uTHETGBml9ZkYpg6JyDByuG3X7bUKBWOKpx1qdmBbW/7+8r
-# ijmmRCsCD9/oirj9Ga7C2MNeLqe/kVV+B0MxQF7opszz9k7umcDzm11+qt8qPFYI
-# 419IHMquczsFyqj1Vq5meLMlq/+h6H6Ub7oeTDMd8o+MF6FBV0ogN3njVsT3LTBp
-# lXXDI4M5AHCJRH7skAtxtvKen+pM/xCCT3mB0aks7+cLuUAOWDtvZ/ZeUNIi+PUQ
-# JFxX2DpVcMtVxkCSJ2Z2bBxtkud97wRBJYp/G49Xd9Ix+oEa2aBarhrr2WmUg/Au
-# ovhX+t6j+WYKTHeVT7836TxN4CfOLrWkduX0boeOAFFPuXNSr3b3TcUQBSbEMkWI
-# HH/xts/s1RcRruyIKPYoXQc9zTCiHFgZqk4=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgzwqiCNkmdH+n
+# fQp+EaUQF/7n3VP7V6nGixQn2MI0vIcwDQYJKoZIhvcNAQEBBQAEggIAphov/SCj
+# oeCfyM+zrmBvvCX1TUBJACPV0l3gaOiuH+9SYCl2so9DZj1GzSZFCSQTzCEXdJgl
+# Vov6SO6JCJlqHrCdjkTD64p9scIznjH//9x3gFQtPZEgaO+SJKCwpLIkFimC273R
+# A0k/J/+KAZnUnjlNoMGt0vLCbtPZ6czWtHnPCHjE5ZntJkcxaQXDWCkYY4ThxVXe
+# eToR5Ej1AbR1+tVsRuYtsJXQz15miuYoelu4AhkYLmRQOdZTluyJcRcTX9bJXdZS
+# pXUDsK+5/X4JQK6I00CbPc9Jr0gl3o4AlMcHN+gc0T1JRrSFuqKgk3PlIIRfoIiu
+# TsClzLQaqxQ5YAm6cjwZEFc7c+euCKTBvw6OF9BDOI4bux7kE3l7kOutyjunpV2C
+# nt+zQ6r/rRfAUFo+o36oqZeWKIzkOiF07lHSp6nmaNNYkeqalMBAoHGP8WOXCcx1
+# HtlbnU0VOTVYX9+247OAckF4klj1G/+sCsZyi7yW4KyWYzG9QqRg/XvviTWZQy5P
+# 8m4Ey5d6tHGpUqX2zLDtcFqBEohjc6BzO6XEo2xCgCWJTb6c8ojCMkgXvlFbr361
+# aYF3rhBnfT/9xHwPKm2rmmFfFSCGNHwVCKEM498am1D6ZeR/c9fwgtEMpby1Y1j7
+# x1nJB3DizXx5e/t049qy5NgQh6Q704JULM8=
 # SIG # End signature block
