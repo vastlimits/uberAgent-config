@@ -95,7 +95,7 @@ function Get-vlNetworkConfigurationSMBSigning {
             $result = [PSCustomObject]@{
                state = "Enabled"
             }
-            # SMB signing is enabled but not required
+            # SMB signing is enabled but not required. This is as bad as *NotRequired*, because the server side must be configured correctly. But, the referenced article in .NOTES suggests enforcing the signing on the client.
             return New-vlResultObject -result $result -score 2 -riskScore $riskScore
          }
          else {
