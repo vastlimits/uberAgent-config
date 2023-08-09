@@ -216,14 +216,14 @@ function Get-COMHijacking {
 
       if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
          $result = [PSCustomObject]@{
-            isDefault = $false
+            isDefault = $true
          }
 
          return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
-            isDefault = $true
+            isDefault = $false
          }
          return New-vlResultObject -result $result -score 0 -riskScore $riskScore
       }
@@ -254,14 +254,14 @@ function Get-vlTimeProviderHijacking {
 
       if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
          $result = [PSCustomObject]@{
-            isDefault = $false
+            isDefault = $true
          }
 
          return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
-            isDefault = $true
+            isDefault = $false
          }
          return New-vlResultObject -result $result -score 0 -riskScore $riskScore
       }
