@@ -376,6 +376,59 @@ function Get-vlRegSubkeys {
    }
 }
 
+function Get-vlRegistryKeyValues {
+   <#
+    .SYNOPSIS
+        Retrieves all ValueNames and their associated Values from a specified registry key.
+    .DESCRIPTION
+        This function fetches all ValueNames and their corresponding Values from a provided registry path. It allows querying different hives like HKLM, HKU, and HKCU.
+    .PARAMETER Hive
+        The registry hive to query from. Acceptable values are "HKLM", "HKU", and "HKCU".
+    .PARAMETER Path
+        Specifies the path to the desired registry key.
+    .OUTPUTS
+        System.Object. Outputs a custom object for each Value in the specified registry key which contains the ValueName and its associated Value.
+    .EXAMPLE
+        Get-vlRegistryKeyValues -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+        This example queries the "SOFTWARE\Microsoft\Windows NT\CurrentVersion" key in the HKLM hive and returns all its ValueNames and Values.
+#>
+
+   param (
+      [Parameter(Mandatory = $true)]
+      [ValidateSet('HKLM', 'HKU', 'HKCU')]
+      [string]$Hive,
+
+      [Parameter(Mandatory = $true)]
+      [ValidateNotNullOrEmpty()]
+      [string]$Path
+   )
+
+   try {
+      if ($Path.StartsWith("\")) {
+         $Path = $Path.Substring(1)
+      }
+
+      $RegistryPath = $Hive + ":\" + $Path
+
+      # Check if the Registry Key exists
+      if (-not (Test-Path $RegistryPath)) {
+         return [Object]@()
+      }
+
+      # Get ValueNames and Values from the Registry Key
+      $key = Get-Item -Path $RegistryPath
+      $outputObject = @{}
+      $key.GetValueNames() | ForEach-Object {
+         $outputObject[$_] = $key.GetValue($_)
+      }
+
+      return [PSCustomObject]$outputObject
+   }
+   catch {
+      return [Object]@()
+   }
+}
+
 function Get-vlHashTableKey {
    <#
     .SYNOPSIS

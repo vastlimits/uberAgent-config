@@ -165,17 +165,10 @@ function Get-vlLAPSSettings {
         Function that returns the LAPS settings.
     .DESCRIPTION
         Function that returns the LAPS settings.
-        This check is using the registry key HKLM:\Software\Policies\Microsoft Services\AdmPwd
     .LINK
-        https://uberagent.com
+        https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-management-policy-settings
     .OUTPUTS
-        If the LAPS is enabled, the script will return a vlResultObject with the following properties:
-            LAPSEnabled
-            LAPSAdminAccountName
-            LAPSPasswordComplexity
-            LAPSPasswordLength
-            LAPSPasswordExpirationProtectionEnabled
-        If the LAPS is disabled, the script will return a vlResultObject with the LAPSEnabled property set to false.
+        If the LAPS is enabled, the script will return a vlResultObject indicating the LAPS settings.
     .EXAMPLE
         Get-vlLAPSSettings
     #>
@@ -183,44 +176,70 @@ function Get-vlLAPSSettings {
    $riskScore = 40
 
    try {
-      $hkey = "Software\Policies\Microsoft Services\AdmPwd"
-      $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey -Value "AdmPwdEnabled"
+      <#
+      https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-management-policy-settings
 
-      if ($null -ne $AdmPwdEnabled) {
-         $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
+      LAPS CSP	HKLM\Software\Microsoft\Policies\LAPS
+      LAPS Group Policy	HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\LAPS
+      LAPS Local Configuration	HKLM\Software\Microsoft\Windows\CurrentVersion\LAPS\Config
+      Legacy Microsoft LAPS	HKLM\Software\Policies\Microsoft Services\AdmPwd
 
-         $lapsAdminAccountName = Get-vlRegValue -Hive "HKLM" -Path $hkey "AdminAccountName"
-         $lapsPasswordComplexity = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"
-         $lapsPasswordLength = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordLength"
-         $lapsExpirationProtectionEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey "PwdExpirationProtectionEnabled"
+      Windows LAPS queries all known registry key policy roots, starting at the top and moving down.
+      If no settings are found under a root, that root is skipped and the query proceeds to the next root.
+      When a root that has at least one explicitly defined setting is found, that root is used as the active policy.
+      If the chosen root is missing any settings, the settings are assigned their default values.
+      #>
 
-         $lapsSettings =
-         [PSCustomObject]@{
-            LAPSEnabled                             = $AdmPwdEnabled -eq 1
-            LAPSAdminAccountName                    = $lapsAdminAccountName
-            LAPSPasswordComplexity                  = $lapsPasswordComplexity
-            LAPSPasswordLength                      = $lapsPasswordLength
-            LAPSPasswordExpirationProtectionEnabled = $lapsExpirationProtectionEnabled -eq 1
-            LAPSEventLog                            = $eventLog
-         }
-
-         if ($eventLog.Errors.Count -gt 0) {
-            return New-vlResultObject -result $lapsSettings -score 8 -riskScore $riskScore
-         }
-         elseif ($eventLog.Warnings.Count -gt 0) {
-            return New-vlResultObject -result $lapsSettings -score 9 -riskScore $riskScore
-         }
-
-         return New-vlResultObject -result $lapsSettings -score 10 -riskScore $riskScore
-      }
-      else {
-         $lapsSettings =
-         [PSCustomObject]@{
-            LAPSEnabled = $false
-         }
-         return New-vlResultObject -result $lapsSettings -score 6 -riskScore $riskScore
+      $hkeys = @{
+         'LAPS CSP'                 = 'Software\Microsoft\Policies\LAPS'
+         'LAPS Group Policy'        = 'Software\Microsoft\Windows\CurrentVersion\Policies\LAPS'
+         'LAPS Local Configuration' = 'Software\Microsoft\Windows\CurrentVersion\LAPS\Config'
+         'Legacy Microsoft LAPS'    = 'Software\Policies\Microsoft Services\AdmPwd'
       }
 
+      $complexityArray = @(
+         'Large letters.',
+         'Large letters + small letters.',
+         'Large letters + small letters + numbers.',
+         'Large letters + small letters + numbers + special characters.'
+      )
+
+      foreach ($hkey in $hkeys.GetEnumerator()) {
+
+         # check if $hkey exists and contains any values
+         $lapsRegSettings = Get-vlRegistryKeyValues -Hive "HKLM" -Path $hkey.Value
+
+         if ($null -ne $lapsRegSettings -and $lapsRegSettings.PSObject.Properties.Count -ge 0) {
+            $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
+
+            $lapsSettings = [PSCustomObject]@{
+               Mode               = $hkey.Key
+               Enabled            = $true
+               PasswordComplexity = if ( $lapsRegSettings.PSObject.Properties.Name -contains "PasswordComplexity" -and $lapsRegSettings.PasswordComplexity -ge 1 -and $lapsRegSettings.PasswordComplexity -le 4) { $complexityArray[$lapsRegSettings.PasswordComplexity - 1] } else { $null }
+               PasswordLength     = if ( $lapsRegSettings.PSObject.Properties.Name -contains "PasswordLength") { $lapsRegSettings.PasswordLength } else { $null }
+               EventLog           = $eventLog
+            }
+
+            if ($hkey.Key -eq "Legacy Microsoft LAPS") {
+               $lapsSettings.Enabled = if ( $lapsRegSettings.PSObject.Properties.Name -contains "AdmPwdEnabled") { $lapsRegSettings.AdmPwdEnabled -eq 1 } else { $false }
+            }
+
+            if ($eventLog.Errors.Count -gt 0) {
+               return New-vlResultObject -result $lapsSettings -score 8 -riskScore $riskScore
+            }
+            elseif ($eventLog.Warnings.Count -gt 0) {
+               return New-vlResultObject -result $lapsSettings -score 9 -riskScore $riskScore
+            }
+
+            return New-vlResultObject -result $lapsSettings -score 10 -riskScore $riskScore
+         }
+      }
+
+      $lapsSettings =
+      [PSCustomObject]@{
+         Enabled = $false
+      }
+      return New-vlResultObject -result $lapsSettings -score 6 -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject($_)

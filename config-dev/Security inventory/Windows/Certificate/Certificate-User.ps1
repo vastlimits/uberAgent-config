@@ -196,8 +196,11 @@ function Get-vlGetCTLCheck {
          CurrentUser = $currentUser.Name
       }
 
-      if ($result.Unknown.Count -gt 0) {
+      if ($null -ne $result.Unknown -and $result.Unknown.Count -gt 0) {
          $score -= 5
+      }
+      else {
+         $result.Unknown = @()
       }
 
       return New-vlResultObject -result $result -score $score -riskScore $riskScore

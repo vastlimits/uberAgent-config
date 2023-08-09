@@ -220,7 +220,7 @@ function Get-vlPowerShellExecutionPolicy {
             $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
-         $LMrisk = 80
+         $LMrisk = 70
          $LMLevel = 2
 
          # Level 0: Unrestricted
@@ -233,40 +233,25 @@ function Get-vlPowerShellExecutionPolicy {
          switch ($result.ExecutionPolicy) {
             "Unrestricted" {
                $LMLevel = 2
-               $LMrisk = 80
             }
             "Bypass" {
                $LMLevel = 2
-               $LMrisk = 80
             }
             "RemoteSigned" {
                $LMLevel = 6
-               $LMrisk = 40
             }
             "AllSigned" {
                $LMLevel = 8
-               $LMrisk = 20
             }
             "Restricted" {
                $LMLevel = 10
-               $LMrisk = 20
             }
             "Undefined" {
                $LMLevel = 10
-               $LMrisk = 20
             }
          }
 
-         if ($highestPolicy -eq "MachinePolicy") {
-            return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
-         }
-         elseif ($highestPolicy -eq "UserPolicy") {
-            return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
-         }
-         elseif ($highestPolicy -eq "CurrentUser") {
-            return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
-         }
-         elseif ($highestPolicy -eq "LocalMachine") {
+         if ($active_policy -ne "Undefined") {
             return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
          }
 
@@ -279,10 +264,10 @@ function Get-vlPowerShellExecutionPolicy {
 
          # If the execution policy in all scopes is Undefined, the effective execution policy is Restricted for Windows clients and RemoteSigned for Windows Server.
          if ($osInfo.ProductType -eq 1) {
-            return New-vlResultObject -result $result -score 10 -riskScore 0
+            return New-vlResultObject -result $result -score 10 -riskScore $LMrisk
          }
          else {
-            return New-vlResultObject -result $result -score 6 -riskScore 40
+            return New-vlResultObject -result $result -score 6 -riskScore $LMrisk
          }
       }
       catch {

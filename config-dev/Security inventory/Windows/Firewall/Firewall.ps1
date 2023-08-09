@@ -184,7 +184,7 @@ function Get-vlOpenFirewallPorts {
    $riskScore = 70
 
    try {
-      $isWindows7 = Get-vlIsWindows7
+      $isWindows7 = ((Get-vlIsWindows7) -eq $false)
 
       if ($isWindows7 -eq $true) {
          $fwPolicy2 = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID("HNetCfg.FwPolicy2"))
@@ -220,8 +220,8 @@ function Get-vlOpenFirewallPorts {
                   Name            = if ($null -ne $rule.Name) { $rule.Name } else { "" }
                   DisplayName     = if ($null -ne $rule.Description) { $rule.Description } else { "" }
                   ApplicationName = if ($null -ne $rule.ApplicationName) { $rule.ApplicationName } else { "" }
-                  LocalPorts      = if ($null -ne $rule.LocalPorts) { $rule.LocalPorts } else { "" }
-                  RemotePorts     = if ($null -ne $rule.RemotePorts) { $rule.RemotePorts } else { "" }
+                  LocalPorts      = if ($null -ne $rule.LocalPorts) { if ($rule.LocalPorts -eq "*") { "Any" } else { $rule.LocalPorts } } else { "" }
+                  RemotePorts     = if ($null -ne $rule.RemotePorts) { if ($rule.RemotePorts -eq "*") { "Any" } else { $rule.RemotePorts } } else { "" }
                   Protocol        = if ($null -ne $rule.Protocol) { Convert-vlEnumToString $parsedProtocol } else { "" }
                   Profile         = if ($null -ne $parsedProfile) { Convert-vlEnumToString $parsedProfile } else { "" }
                }
