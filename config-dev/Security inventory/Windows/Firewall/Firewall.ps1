@@ -184,7 +184,7 @@ function Get-vlOpenFirewallPorts {
    $riskScore = 70
 
    try {
-      $isWindows7 = ((Get-vlIsWindows7) -eq $false)
+      $isWindows7 = Get-vlIsWindows7
 
       if ($isWindows7 -eq $true) {
          $fwPolicy2 = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID("HNetCfg.FwPolicy2"))
