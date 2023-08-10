@@ -418,7 +418,7 @@ function Get-vlRegistryKeyValues {
       # Get value names and values from the Registry Key
       $key = Get-Item -Path $RegistryPath
       $outputObject = @{}
-      $key.Getvalue names() | ForEach-Object {
+      $key.GetValueNames() | ForEach-Object {
          $outputObject[$_] = $key.GetValue($_)
       }
 
