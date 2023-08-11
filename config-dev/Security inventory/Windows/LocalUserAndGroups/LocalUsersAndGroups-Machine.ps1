@@ -198,10 +198,10 @@ function Get-vlLAPSSettings {
       }
 
       $complexityArray = @(
-         'Large letters.',
-         'Large letters + small letters.',
-         'Large letters + small letters + numbers.',
-         'Large letters + small letters + numbers + special characters.'
+         'A-Z',
+         'A-Z + a-z',
+         'A-Z + a-z + 0-9',
+         'A-Z + a-z + 0-9 + special chars'
       )
 
       foreach ($hkey in $hkeys.GetEnumerator()) {
