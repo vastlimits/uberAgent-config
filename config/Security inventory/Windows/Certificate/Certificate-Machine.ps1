@@ -334,8 +334,11 @@ function Get-vlGetCTLCheck {
          Unknown = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts
       }
 
-      if ($result.Unknown.Count -gt 0) {
+      if ($null -ne $result.Unknown -and $result.Unknown.Count -gt 0) {
          $score -= 5
+      }
+      else {
+         $result.Unknown = @()
       }
 
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
@@ -362,6 +365,8 @@ function Get-vlCheckSyncTime {
    $riskScore = 50
 
    try {
+      $OSVersion = Get-vlOsVersion
+
       $lastCTLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "LastSyncTime" # Gets the last time the AuthRoot.stl file was synced
       $lastCRLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "DisallowedCertLastSyncTime" # Gets the last time the CRL file was synced
       $lastPRLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "PinRulesLastSyncTime" # Gets the last time the PinRules file was synced
@@ -371,16 +376,16 @@ function Get-vlCheckSyncTime {
       $score += Get-vlTimeScore -time $lastCTLSyncTime
       $score += Get-vlTimeScore -time $lastCRLSyncTime
 
-      # PRL is available starting with Windows 10
-      if ([version]$OSVersion -ge [version]'10.0') {
-         $score += Get-vlTimeScore -time $lastPRLSyncTime
-      }
-
       # Create the result object
       $result = [PSCustomObject]@{
          CTL = Get-vlTimeString -time $lastCTLSyncTime
          CRL = Get-vlTimeString -time $lastCRLSyncTime
-         PRL = Get-vlTimeString -time $lastPRLSyncTime
+      }
+
+      # PRL is available starting with Windows 10
+      if ([version]$OSVersion -ge [version]'10.0') {
+         $score += Get-vlTimeScore -time $lastPRLSyncTime
+         $result | Add-Member -Type NoteProperty -Name "PRL" -Value (Get-vlTimeString -time $lastPRLSyncTime)
       }
 
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
@@ -457,7 +462,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"
-         Description  = "This test determines the last time the Certificate Revocation List (CRL) and Certificate Trust List (CTL) were synchronized with Microsoft servers."
+         Description  = "This test determines the last time the Certificate Revocation List (CRL) and Certificate Trust List (CTL) were synchronized with Microsoft servers. It also checks the status of enterprise certificate pinning on Windows 10 and above, and the result shows the timestamp of the last update of the PinRules List (PRL)."
          Score        = $lastSync.Score
          ResultData   = $lastSync.Result
          RiskScore    = $lastSync.RiskScore
@@ -495,8 +500,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCB5dCoSzTNg9De
-# TqS5huOYQ/jBJ/yFBDUl7VYmIz+IPqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBIZtMPIdfidHqC
+# NMxMH5cPKcJdE7KMFRbZwm9MGqwl56CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -573,17 +578,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgykg/Jkow7t8I
-# sniW0wbXY78kOtNQKEs3PJgjwFTahQswDQYJKoZIhvcNAQEBBQAEggIAeOk2d9jn
-# FdbLGRKI95Vrqbfv+yavRYFfBDaIJVHsN8H4+V1j6gcuDfldVrvVliLZ3HqXgK7W
-# nJQad+ATyasMbTGChLGEHbCz+mYo2V+6cxwggPddcZ1HKK57EN+wiiXFIeK3+qKC
-# LNe8GEUINI9riEgXdUOD9Cw71+FYpQ59dl3Cm4tbf4ukVJnWW3fH+vobK/MjccWq
-# Ji0rifRb2geDFuiJLdMisP6cjSRnzx/I3S0a7gOMtPCfR6IUbUB2NdFnTPvUjFvZ
-# YIlHfi/umQ6h0V3Ff4y6Vcta3EYcJY6449w8YjgSWljwiHaf1iqivhOzIIsN8E/+
-# Py3Cs7xfShl+OCs5V8x8DFtn+GsGd8FAWC7jt9/Z0knjGK4pGmBFJkf4GZOW8QPq
-# ESZsJVJUaU58bReHi1cmTYXfGtS7YwVOZ9xenf8gdyUHS/POYo6HcE3JtIeqcFuz
-# +DBacdYG5MLs6HXACNswm9KpPVJpJHqM2FcIkt4Q02Gfdfw7aeYUVulsym57hrib
-# j90V5OFOm89uX0+QnRtDDFdG9VthuFIEbMIDubWcKFtrX4nj0j/R7VIzWRNL4ccz
-# dWTGsbSyqwMc44SN64L/zDUJ3Gs2efxdjA35BMZo0T/XX/VitJhuGX05tyutagC9
-# tvrfn+R7n7j0BWhwLHPUbwwSxcZw+/ZxkSk=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg4usGFMQO4Dhp
+# E8xLBwQtzueU3v8c7S5TXdZYXZqDU+wwDQYJKoZIhvcNAQEBBQAEggIABsCJsfjY
+# gcqjHeWrm9ZXmZy/HIH/5JklM5JOxnRoAal+aeFZNzI1BjhKY6ZJ786pjkzZU5PN
+# 3+01Jb4+B8mnQce5MfLldKda10INwONSeFTvwAzdvl5EnH+NeNBqMlvxo+ZtAg/f
+# TdK7JuOJ0C0Urhj0n65tr/cTGMI1zTiBrrpnNLsSCX7JFsZgoh1u59hg6rVURFSi
+# YZ7/ai7K3tKBnAToOfokh9uH5rNu29KwLP0LoVu9YSvGGnW5xm7cKeAIK2vJD9tk
+# 10lrAnLc/D3T8ECUU6OcMG/q53oeABNCFsWhPYXlUhMY+zc2UI0HrVF3U5pqvdWk
+# s3L92feql/rwwD7AG1OLC+2U/Ox5aUp0EsYT7JjbyZpofJSA8gIzL6DuT5BBr8qa
+# 5QKNPIdPrX8/SBQOOU8xkYdFrKhU0lzVpALmPks9cKLdNL+rt0KXz5QfyDX3ZR+K
+# KQmfMz35bq8xQ1mLxb4G2Qh9NVougn9JwY6c84oZtjti3YIZjwbTNaFTKiciUfNG
+# 87cWYq5vLlfzIAjMtMYemHn4UKz6Q7f7DoX+ILt0xZQ+yge8j+mbUNWTD9ioFWJQ
+# XPZxiwx4vIBT4/mM7bEghMgNrp++MCWbBbiQmr90yLFo4aaDHuLpQKOOegHTJin0
+# BGuPzP4FCEY3PiTJTRoQZ4A6OSyQlfw6qRs=
 # SIG # End signature block

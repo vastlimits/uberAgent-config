@@ -376,6 +376,59 @@ function Get-vlRegSubkeys {
    }
 }
 
+function Get-vlRegistryKeyValues {
+   <#
+    .SYNOPSIS
+        Retrieves all value names and their associated values from a specified registry key.
+    .DESCRIPTION
+        This function fetches all value names and their corresponding values from a provided registry path. It allows querying different hives like HKLM, HKU, and HKCU.
+    .PARAMETER Hive
+        The registry hive to query from. Acceptable values are "HKLM", "HKU", and "HKCU".
+    .PARAMETER Path
+        Specifies the path to the desired registry key.
+    .OUTPUTS
+        System.Object. Outputs a custom object for each Value in the specified registry key which contains the ValueName and its associated Value.
+    .EXAMPLE
+        Get-vlRegistryKeyValues -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion"
+        This example queries the "SOFTWARE\Microsoft\Windows NT\CurrentVersion" key in the HKLM hive and returns all its value names and values.
+#>
+
+   param (
+      [Parameter(Mandatory = $true)]
+      [ValidateSet('HKLM', 'HKU', 'HKCU')]
+      [string]$Hive,
+
+      [Parameter(Mandatory = $true)]
+      [ValidateNotNullOrEmpty()]
+      [string]$Path
+   )
+
+   try {
+      if ($Path.StartsWith("\")) {
+         $Path = $Path.Substring(1)
+      }
+
+      $RegistryPath = $Hive + ":\" + $Path
+
+      # Check if the Registry Key exists
+      if (-not (Test-Path $RegistryPath)) {
+         return [Object]@()
+      }
+
+      # Get value names and values from the Registry Key
+      $key = Get-Item -Path $RegistryPath
+      $outputObject = @{}
+      $key.GetValueNames() | ForEach-Object {
+         $outputObject[$_] = $key.GetValue($_)
+      }
+
+      return [PSCustomObject]$outputObject
+   }
+   catch {
+      return [Object]@()
+   }
+}
+
 function Get-vlHashTableKey {
    <#
     .SYNOPSIS
@@ -696,8 +749,8 @@ function Write-vlTimerElapsedTime {
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDenR0W0BZOxDIs
-# 1DOSSUEKttmTDVkWCBKu/49O5SuVYKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD5cyCDXU8yEZq+
+# XZ3k4vKMm/MAEOyiUUQHR/TpgaOMr6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -774,17 +827,17 @@ function Write-vlTimerElapsedTime {
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgRx1hFBbc6ZR5
-# z3mWte2mtixnB3ju7a2MlZIuWoXyesowDQYJKoZIhvcNAQEBBQAEggIA3yRYiDqb
-# tDTCBbYZMHIm2dw05aJ2vITeh9o0q7Dj54nldHHcIRnEYdeIHlQesb6d83N7xRT7
-# AazuHaPqNoiLkrph9epgdeXMR3G+cvjCPrW+Im3aXsfTVP+MDxaNxxh3qMnNkuJG
-# 5yWsDmN5z5XNN861DUaWLijSKXFJAJ2D7yHEaxndcG/BXlh0n0nQC8nAGvKiZywY
-# gntVE32HYOREjijxe6Urw3s9LNFlrdqLI+20S0DYaSisAiXQNnJUSll/RkDFkYa1
-# Vpsqik4+iNuQYIZVDnd5AkdNUcPr2ygJ7U1qPE88LXVyG5C048wD4nkycqPRPps/
-# /NqixXwTOxppvhXuM0hSrX/wiPh7hiO2IdCPYkZxCQxdo28/R7uNyqWoS3sUombo
-# eNXAkODJ7WLSuwI92eg2j7k7R6pBJeSgJsvTjOYis1sCBzSaZoLSvSKLCLLl0SZ/
-# uFiS5CxgcRiZMsuGfNQ5VexH9H2SZT4lIbMlrLekOzd3zIc8uUCRlxYOVysNZWiI
-# Pd/18lTEyH+DROWywATpxbSkoFKxxH28qjaCJ8MI13k44w18dWti4ahUePXJxi68
-# 7vQ7PMyAQzlktFq2mQtc5WYwmQfB3+Pofx29OAMsrPE2Nxyjw0F3K8xjRfKsHID0
-# +8A+573uIiOqEFbmgz4wnYXW/NQ8o3mp5+k=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgJGXSokngQRmt
+# e+rgssUiUFTBfgQ68G7xI8tI1/4J3L4wDQYJKoZIhvcNAQEBBQAEggIAxicY/6x1
+# dT8lkLPzJuHml5BbGCRXewg63gY8+hZL2ByWgK1r/eUQAdLkUs21Ktm2qrt0r+46
+# nohpRoYbq+9vPZ4K7jpcjbUsBbmuGnx/cyabrYzyjMGTYKnaD9j+O0bkP7sW/oQ3
+# dDtpVPz35tTq85Q7rKE8BO9jMlUFnCsDtff7Bhz62xTXw4GO7PMdJEvSJ6x+mI9B
+# 1WGTB1SYG1zc1UD64oL0yCpEhSTmlj8YqpPMSkfqrrQL0JLuSs0wwRhIBbHx6fK9
+# GFSplTItVICikCbbBrQY5G6vA1hLgRjju4YfhW4wEJVMOy3XviKPVg5LW+uH7Idq
+# k8sVc6b1Y86nsKuS9sr+kKdPZe8MtsUuQMj/9BRJcK+j3txWcXKxMKdJm1Yy91Gs
+# Ep2Aeh8QpcbCe4hwcPaELUKlv7qMUklSvGhfuxEdxCyoAi4c0XI9NVVWlVK0u5uJ
+# oh2w6Llp3XJLuTvXx+iYuvrTkH0L8lcLaCukUgIWTdn/Ass5JzZxwJFXcjnnk4xo
+# DbBVs3+ZstACLo1kysqmIrj4/XhbIzGyO4+92rNp+YfO+eeO2ENCqBaWosOuhtl6
+# 4QqnEpHOzTOYMYE316pmL+BJ05T8h48XlXzD+MVMjKuqAWNeEx/63HhRNOJy12B6
+# Xg51mS97eSZaChRcc5AEOA01chWLrdNjzGs=
 # SIG # End signature block

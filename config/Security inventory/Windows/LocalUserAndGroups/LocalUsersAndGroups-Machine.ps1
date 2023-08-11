@@ -165,17 +165,10 @@ function Get-vlLAPSSettings {
         Function that returns the LAPS settings.
     .DESCRIPTION
         Function that returns the LAPS settings.
-        This check is using the registry key HKLM:\Software\Policies\Microsoft Services\AdmPwd
     .LINK
-        https://uberagent.com
+        https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-management-policy-settings
     .OUTPUTS
-        If the LAPS is enabled, the script will return a vlResultObject with the following properties:
-            LAPSEnabled
-            LAPSAdminAccountName
-            LAPSPasswordComplexity
-            LAPSPasswordLength
-            LAPSPasswordExpirationProtectionEnabled
-        If the LAPS is disabled, the script will return a vlResultObject with the LAPSEnabled property set to false.
+        If the LAPS is enabled, the script will return a vlResultObject indicating the LAPS settings.
     .EXAMPLE
         Get-vlLAPSSettings
     #>
@@ -183,44 +176,70 @@ function Get-vlLAPSSettings {
    $riskScore = 40
 
    try {
-      $hkey = "Software\Policies\Microsoft Services\AdmPwd"
-      $AdmPwdEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey -Value "AdmPwdEnabled"
+      <#
+      https://learn.microsoft.com/en-us/windows-server/identity/laps/laps-management-policy-settings
 
-      if ($null -ne $AdmPwdEnabled) {
-         $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
+      LAPS CSP	HKLM\Software\Microsoft\Policies\LAPS
+      LAPS Group Policy	HKLM\Software\Microsoft\Windows\CurrentVersion\Policies\LAPS
+      LAPS Local Configuration	HKLM\Software\Microsoft\Windows\CurrentVersion\LAPS\Config
+      Legacy Microsoft LAPS	HKLM\Software\Policies\Microsoft Services\AdmPwd
 
-         $lapsAdminAccountName = Get-vlRegValue -Hive "HKLM" -Path $hkey "AdminAccountName"
-         $lapsPasswordComplexity = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordComplexity"
-         $lapsPasswordLength = Get-vlRegValue -Hive "HKLM" -Path $hkey "PasswordLength"
-         $lapsExpirationProtectionEnabled = Get-vlRegValue -Hive "HKLM" -Path $hkey "PwdExpirationProtectionEnabled"
+      Windows LAPS queries all known registry key policy roots, starting at the top and moving down.
+      If no settings are found under a root, that root is skipped and the query proceeds to the next root.
+      When a root that has at least one explicitly defined setting is found, that root is used as the active policy.
+      If the chosen root is missing any settings, the settings are assigned their default values.
+      #>
 
-         $lapsSettings =
-         [PSCustomObject]@{
-            LAPSEnabled                             = $AdmPwdEnabled -eq 1
-            LAPSAdminAccountName                    = $lapsAdminAccountName
-            LAPSPasswordComplexity                  = $lapsPasswordComplexity
-            LAPSPasswordLength                      = $lapsPasswordLength
-            LAPSPasswordExpirationProtectionEnabled = $lapsExpirationProtectionEnabled -eq 1
-            LAPSEventLog                            = $eventLog
-         }
-
-         if ($eventLog.Errors.Count -gt 0) {
-            return New-vlResultObject -result $lapsSettings -score 8 -riskScore $riskScore
-         }
-         elseif ($eventLog.Warnings.Count -gt 0) {
-            return New-vlResultObject -result $lapsSettings -score 9 -riskScore $riskScore
-         }
-
-         return New-vlResultObject -result $lapsSettings -score 10 -riskScore $riskScore
-      }
-      else {
-         $lapsSettings =
-         [PSCustomObject]@{
-            LAPSEnabled = $false
-         }
-         return New-vlResultObject -result $lapsSettings -score 6 -riskScore $riskScore
+      $hkeys = @{
+         'LAPS CSP'                 = 'Software\Microsoft\Policies\LAPS'
+         'LAPS Group Policy'        = 'Software\Microsoft\Windows\CurrentVersion\Policies\LAPS'
+         'LAPS Local Configuration' = 'Software\Microsoft\Windows\CurrentVersion\LAPS\Config'
+         'Legacy Microsoft LAPS'    = 'Software\Policies\Microsoft Services\AdmPwd'
       }
 
+      $complexityArray = @(
+         'A-Z',
+         'A-Z + a-z',
+         'A-Z + a-z + 0-9',
+         'A-Z + a-z + 0-9 + special chars'
+      )
+
+      foreach ($hkey in $hkeys.GetEnumerator()) {
+
+         # check if $hkey exists and contains any values
+         $lapsRegSettings = Get-vlRegistryKeyValues -Hive "HKLM" -Path $hkey.Value
+
+         if ($null -ne $lapsRegSettings -and $lapsRegSettings.PSObject.Properties.Count -ge 0) {
+            $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
+
+            $lapsSettings = [PSCustomObject]@{
+               Mode               = $hkey.Key
+               Enabled            = $true
+               PasswordComplexity = if ( $lapsRegSettings.PSObject.Properties.Name -contains "PasswordComplexity" -and $lapsRegSettings.PasswordComplexity -ge 1 -and $lapsRegSettings.PasswordComplexity -le 4) { $complexityArray[$lapsRegSettings.PasswordComplexity - 1] } else { $null }
+               PasswordLength     = if ( $lapsRegSettings.PSObject.Properties.Name -contains "PasswordLength") { $lapsRegSettings.PasswordLength } else { $null }
+               EventLog           = $eventLog
+            }
+
+            if ($hkey.Key -eq "Legacy Microsoft LAPS") {
+               $lapsSettings.Enabled = if ( $lapsRegSettings.PSObject.Properties.Name -contains "AdmPwdEnabled") { $lapsRegSettings.AdmPwdEnabled -eq 1 } else { $false }
+            }
+
+            if ($eventLog.Errors.Count -gt 0) {
+               return New-vlResultObject -result $lapsSettings -score 8 -riskScore $riskScore
+            }
+            elseif ($eventLog.Warnings.Count -gt 0) {
+               return New-vlResultObject -result $lapsSettings -score 9 -riskScore $riskScore
+            }
+
+            return New-vlResultObject -result $lapsSettings -score 10 -riskScore $riskScore
+         }
+      }
+
+      $lapsSettings =
+      [PSCustomObject]@{
+         Enabled = $false
+      }
+      return New-vlResultObject -result $lapsSettings -score 6 -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject($_)
@@ -392,8 +411,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCoLx4pZ2cSoKVn
-# EHWQ42QPcB1oNkcoJ40SJiPKJ79y7qCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC9R+LD7nVLL5iP
+# dUCsqAGp23FFBr2oVZMJ66AKlQ03b6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -470,17 +489,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgVTqlYm1RqCJQ
-# p35B9NoX5LF3GlR8bZpwnUSrDL9O86cwDQYJKoZIhvcNAQEBBQAEggIAHvKXeUPq
-# mdgxOF7nMDQN9jSx8Fn0w+a+xilsOBh0+Vt8Ec6++9VW1dR/tvozwZdlYc2J/m35
-# OBgCrrzkdjCyLcfBnIkx6BXzvt/ymFQyRDSwXYdy7MzeeDnxyGN7EfkW1wit6tSG
-# aRp0GpfBWzAuvHiZ7eFU/7d9d77nneAig3+UzUkwbd2QhRqaoZFUQ4lDbOa2gyrO
-# 3CI9dx0ZiDhXFUp3wJVjYQj1aJPxWk1mIpumKrAIHWOy0wveS8iyFAxaBJsigAi5
-# yB/OEQMo7BmCCfJD4ImzyAjq5ELDwSO+IbSj91p/ss82vfg6VIvgeAlbFzN4AT1X
-# 7fPuBm1k8+HZTlArMsEtz0awKsKXjCoaUOeY0Tw8jbs15mhLBYsiN1KOWbn8vntD
-# P0USvJ8CdApivv8puFAo6IzfIH5fhj2gjfjivK7JVTqHi6ZR6zTuDhtFupuqq6on
-# hy3ML4gws5Z78ayVaASm5D0JkOS8E4LnLmdtMuCGtgPW08cK13Fe8xTTI6DPw+3z
-# wQNxFBpxHVGrDSOVBFfwkRfgA1S70ctzvcUGg8WbKoFda9tcxXom+xceXdQ85AK3
-# auuU0lQcmt4bRDQaoSJasarTl1RGn1uCbspo0gOvdOvciSGag/W1ipvDoYpk7ttR
-# A9mDHyBruBPAV6vnzRNF25H0+m+MKqsu51o=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgJUHIqeQEjIEW
+# 2/EVIoaQBV29zvKKb7rYEM2KFYz1tXUwDQYJKoZIhvcNAQEBBQAEggIAwJe5vbA5
+# erAP6cXCIraH9p6tvFtM+92G1g37+IRllalFJgYVQniNRCyzRqENR0UzIDRrC1WC
+# FjR3ZzlWyyPu7EuIUD8J8b1o+tBA0uhr9tGUgzSMKKY24Jz+QDxKwJkAaeSdPKPG
+# WkEhi0vhgN+ueJccNR35O99RwgYAij8jIHZRHZbkgFQrRCZo+kaOFsOUeRJXXfI1
+# aLacay5LL/zFMpQ4JZnMk0X6jjl9u5Lg8rM5j/7xlQWkC7llOsJTRkSKE3EwWqwC
+# A9GMvuldLKh24Rj6nVsRHvHojMtqO1ed3aH1aXCZTN0kOcTdid6MRWXzTSQMSAfD
+# ddwvhXeQg/k7lxo3+seqGyv0jDD0tcChAbfHawlg0UkL5RTOZY04VV7oSnvuLahC
+# oy4zu3ubWX3ZkSGC2lxxsCFfZOK9LG1W030SEsuhLh+q6rzzie6ENIkcEV84EI24
+# o1Kdl9Lq8HHQ9vsSywSssqsE45n6jWp6flpZzlZtelHgK7xKPElTRek8BL4lppKW
+# tyblVXt4T+18t0og7/a8tWgBFD1eUcuRf03zUZ4Ei/uSHCfmK05MtS0c8wXoccBp
+# Zmg00lKsD2lYfSzrFwA9f401FrGcU6REDzLvNARI2Zd8Y5tgX4uirsLVxFXyxaLF
+# xbE4LyUnBTbrTfp+i/0qPmW2nZywzwtSbi0=
 # SIG # End signature block

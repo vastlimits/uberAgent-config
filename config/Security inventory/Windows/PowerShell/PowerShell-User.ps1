@@ -24,7 +24,7 @@ function Get-vlPowerShellExecutionPolicy {
             ExecutionPolicy = $active_policy.ToString()
          }
 
-         $CUrisk = 80
+         $CUrisk = 70
          $CULevel = 2
 
          # Level 0: Unrestricted
@@ -37,27 +37,21 @@ function Get-vlPowerShellExecutionPolicy {
          switch ($active_policy) {
             "Unrestricted" {
                $CULevel = 2
-               $CUrisk = 80
             }
             "Bypass" {
                $CULevel = 2
-               $CUrisk = 80
             }
             "RemoteSigned" {
                $CULevel = 6
-               $CUrisk = 40
             }
             "AllSigned" {
                $CULevel = 8
-               $CUrisk = 20
             }
             "Restricted" {
                $CULevel = 10
-               $CUrisk = 20
             }
             "Undefined" {
                $CULevel = 10
-               $CUrisk = 20
             }
          }
 
@@ -74,10 +68,10 @@ function Get-vlPowerShellExecutionPolicy {
 
          # If the execution policy in all scopes is Undefined, the effective execution policy is Restricted for Windows clients and RemoteSigned for Windows Server.
          if ($osInfo.ProductType -eq 1) {
-            return New-vlResultObject -result $result -score 10 -riskScore 0
+            return New-vlResultObject -result $result -score 10 -riskScore $CUrisk
          }
          else {
-            return New-vlResultObject -result $result -score 6 -riskScore 40
+            return New-vlResultObject -result $result -score 6 -riskScore $CUrisk
          }
       }
       catch {
@@ -147,8 +141,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBgsGMexBk/I5wJ
-# ZpNKgG9mbT/oMiEvjCTSh5ZTkrdjK6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCYVCuV8gQ2OxIk
+# bMbAQEPZjma8YR1PTRykoQr+Kw6GJqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -225,17 +219,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgGEOkgnFsql+t
-# kHkGmjMDU1vTHMHk3NbhkXYXSWeE3GQwDQYJKoZIhvcNAQEBBQAEggIAcIYqYMWE
-# SHQ37Mri4WBfo7bjC7R//k0C+7rSK/RnWpKPHoquFgs8I2ux3WNxp/tE3dGMXxRv
-# SiVyl5rnPRwL3eC7tGloor/dOoj0HklYcnQZB2VPxGpLNBHcCzzhwCS28wbgERYe
-# zvRFxWPUNr7xIM12AcGGII9qDHmii7bo4VXEFgNJzAb99shS9UN6wTSh+OKIMial
-# ORG3bcbdESOMqbicKcqHT019z13f5ekD/Ou8b6VAbp08xqmBQzyStSYW7UwtnBtD
-# qVhU8OH2BZZO7U117szC9+wyF+pITgMg1Ox/Rw4hzO5/xlwmtq662W+bgbnGWY5n
-# pshcbHORFfVmaV8o5eLRkXdNmYPWbCBZUgexmw/261gSGKByWRUNyjUDvuvtF9DD
-# OK3i3Vd0xJA7iF6DDqFhWV+sSit96Ro+zwyR40FBejSE04inBGOZGWq6kTURibsV
-# 57wvdo9qTtl1Hej9gDervFn/sRiIH3iLPAR5nVUs8Ik8FsRPIfQRdo26B/HniGH8
-# 2SW+NYFNvwuINjhOY34YxznFFyDVC9LIIn0MwMQztZ70nVN0URBzN7wYjCUTu1Rb
-# 2UTMQURPgP/zWTAaUpyNI0FPd4iV1+gqr2wnqGLKCm1RIBtK0yvbfy21J0Aq2Y3a
-# sAorfskiUlyNP/PwxMg/l99A4GEwS61G1TE=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgRiiglnBDboEJ
+# nGDkndq2xXg5qNNzT3daIBuJoXuLyNcwDQYJKoZIhvcNAQEBBQAEggIACNtakASC
+# NkE0SWqbXh1rWCwotD20j0Us2SuRddhZObCew+8Hnb7kAZYdqonAYbXIoIHrSKjU
+# WrlVdQmFHjfGdadqP/aIzYjwMZluaWokTiG6/bwrjJZ041UFUsPobcGeDz1T0KY+
+# xWId5QGBDTn+TklBar1m13ImIHSiRfyO+K/06Y+uZaYSCP0rRL9a1UJ+nu+bw6tu
+# s4tNSXBqHC1j4dpuKgv9GEKtId1A4g7b/7/e2qTFAhKMS9BZMg8/ErXUZXc4N0Ms
+# Fqo70cGPxYj9nhHQrsQ3kTn5UGB+tfR8MY/qExA1EBHbwTPnA6Ucry/1S8AB0zr4
+# PJ2qc9B5EseqGDnmcEQ91P7WaLjbxLFMze0mp4bLhuXfcjdbUXBksIbYNaiBDBd2
+# SvOTYDVEt22QUdhAiNGPQTcrfXmrmStHksjkxlj11yiHzqpwg94dW63hCQ/7Fbgo
+# KMpkNad8Hic+kRcNsIc8TtwJwnfMqy7N4QJPbJAYrq3jECDvt5t11fDn2Z/SDL07
+# kUrJlzifYF+ysQnr+Hlt0svDPZ6jE0SXSY7DJvd32LnLuZN0DYoLge85tj0dOf1Q
+# RCEbExUDiJmelfivgGxfhhn/CmHDt+w65VEcWhbOIuiaczlLWEKmVu64+esuUyQF
+# 2f55SOf2ddeYYQr+cYbp0Z25cSA4KSKnEjo=
 # SIG # End signature block
