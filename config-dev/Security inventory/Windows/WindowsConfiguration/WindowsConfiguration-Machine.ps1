@@ -203,7 +203,7 @@ function Get-COMHijacking {
         Checks if mmc.exe is set as the default program for .msc files
     .OUTPUTS
         PSCustomObject
-        detected: true if detected, false if not
+        isDefault: true if default, false if not
     .EXAMPLE
         Get-COMHijacking
     #>
@@ -216,14 +216,14 @@ function Get-COMHijacking {
 
       if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
          $result = [PSCustomObject]@{
-            Detected = $false
+            isDefault = $true
          }
 
          return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
-            Detected = $true
+            isDefault = $false
          }
          return New-vlResultObject -result $result -score 0 -riskScore $riskScore
       }
@@ -241,7 +241,7 @@ function Get-vlTimeProviderHijacking {
         Checks if w32time.dll is set as the defalut time provider
     .OUTPUTS
         PSCustomObject
-        detected: true if detected, false if not
+        isDefault: true if default, false if not
     .EXAMPLE
         Get-vlTimeProviderHijacking
     #>
@@ -254,14 +254,14 @@ function Get-vlTimeProviderHijacking {
 
       if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
          $result = [PSCustomObject]@{
-            Detected = $false
+            isDefault = $true
          }
 
          return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
       else {
          $result = [PSCustomObject]@{
-            Detected = $true
+            isDefault = $false
          }
          return New-vlResultObject -result $result -score 0 -riskScore $riskScore
       }

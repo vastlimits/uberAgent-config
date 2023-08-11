@@ -334,8 +334,11 @@ function Get-vlGetCTLCheck {
          Unknown = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts
       }
 
-      if ($result.Unknown.Count -gt 0) {
+      if ($null -ne $result.Unknown -and $result.Unknown.Count -gt 0) {
          $score -= 5
+      }
+      else {
+         $result.Unknown = @()
       }
 
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
@@ -362,6 +365,8 @@ function Get-vlCheckSyncTime {
    $riskScore = 50
 
    try {
+      $OSVersion = Get-vlOsVersion
+
       $lastCTLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "LastSyncTime" # Gets the last time the AuthRoot.stl file was synced
       $lastCRLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "DisallowedCertLastSyncTime" # Gets the last time the CRL file was synced
       $lastPRLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "PinRulesLastSyncTime" # Gets the last time the PinRules file was synced
@@ -371,16 +376,16 @@ function Get-vlCheckSyncTime {
       $score += Get-vlTimeScore -time $lastCTLSyncTime
       $score += Get-vlTimeScore -time $lastCRLSyncTime
 
-      # PRL is available starting with Windows 10
-      if ([version]$OSVersion -ge [version]'10.0') {
-         $score += Get-vlTimeScore -time $lastPRLSyncTime
-      }
-
       # Create the result object
       $result = [PSCustomObject]@{
          CTL = Get-vlTimeString -time $lastCTLSyncTime
          CRL = Get-vlTimeString -time $lastCRLSyncTime
-         PRL = Get-vlTimeString -time $lastPRLSyncTime
+      }
+
+      # PRL is available starting with Windows 10
+      if ([version]$OSVersion -ge [version]'10.0') {
+         $score += Get-vlTimeScore -time $lastPRLSyncTime
+         $result | Add-Member -Type NoteProperty -Name "PRL" -Value (Get-vlTimeString -time $lastPRLSyncTime)
       }
 
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
@@ -457,7 +462,7 @@ function Get-vlCertificateCheck {
       $Output += [PSCustomObject]@{
          Name         = "CMLaSync"
          DisplayName  = "Certificate last sync"
-         Description  = "This test determines the last time the Certificate Revocation List (CRL) and Certificate Trust List (CTL) were synchronized with Microsoft servers."
+         Description  = "This test determines the last time the Certificate Revocation List (CRL) and Certificate Trust List (CTL) were synchronized with Microsoft servers. It also checks the status of enterprise certificate pinning on Windows 10 and above, and the result shows the timestamp of the last update of the PinRules List (PRL)."
          Score        = $lastSync.Score
          ResultData   = $lastSync.Result
          RiskScore    = $lastSync.RiskScore

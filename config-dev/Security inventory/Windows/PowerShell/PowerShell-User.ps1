@@ -24,7 +24,7 @@ function Get-vlPowerShellExecutionPolicy {
             ExecutionPolicy = $active_policy.ToString()
          }
 
-         $CUrisk = 80
+         $CUrisk = 70
          $CULevel = 2
 
          # Level 0: Unrestricted
@@ -37,27 +37,21 @@ function Get-vlPowerShellExecutionPolicy {
          switch ($active_policy) {
             "Unrestricted" {
                $CULevel = 2
-               $CUrisk = 80
             }
             "Bypass" {
                $CULevel = 2
-               $CUrisk = 80
             }
             "RemoteSigned" {
                $CULevel = 6
-               $CUrisk = 40
             }
             "AllSigned" {
                $CULevel = 8
-               $CUrisk = 20
             }
             "Restricted" {
                $CULevel = 10
-               $CUrisk = 20
             }
             "Undefined" {
                $CULevel = 10
-               $CUrisk = 20
             }
          }
 
@@ -74,10 +68,10 @@ function Get-vlPowerShellExecutionPolicy {
 
          # If the execution policy in all scopes is Undefined, the effective execution policy is Restricted for Windows clients and RemoteSigned for Windows Server.
          if ($osInfo.ProductType -eq 1) {
-            return New-vlResultObject -result $result -score 10 -riskScore 0
+            return New-vlResultObject -result $result -score 10 -riskScore $CUrisk
          }
          else {
-            return New-vlResultObject -result $result -score 6 -riskScore 40
+            return New-vlResultObject -result $result -score 6 -riskScore $CUrisk
          }
       }
       catch {
