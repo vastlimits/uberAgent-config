@@ -246,12 +246,26 @@ function Get-vlOpenFirewallPorts {
             $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule
             $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule
 
+            $localPorts = if ($portFilter.LocalPort -is [System.Collections.IEnumerable] -and $portFilter.LocalPort -isnot [string]) {
+               $portFilter.LocalPort -join ','
+            }
+            else {
+               $portFilter.LocalPort
+            }
+
+            $remotePorts = if ($portFilter.RemotePort -is [System.Collections.IEnumerable] -and $portFilter.RemotePort -isnot [string]) {
+               $portFilter.RemotePort -join ','
+            }
+            else {
+               $portFilter.RemotePort
+            }
+
             [PSCustomObject]@{
                Name                  = $rule.Name
                DisplayName           = $rule.DisplayName
                ApplicationName       = $appFilter.Program
-               LocalPorts            = $portFilter.LocalPort
-               RemotePorts           = $portFilter.RemotePort
+               LocalPorts            = $localPorts
+               RemotePorts           = $remotePorts
                Protocol              = Convert-vlEnumToString $portFilter.Protocol
                Profile               = Convert-vlEnumToString $rule.Profile
                PolicyStoreSourceType = Convert-vlEnumToString $rule.PolicyStoreSourceType
@@ -341,8 +355,8 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB+phkB5oAyEAW3
-# jHZ7OI6TyB2kW/BJif98Fv+/3HfmTqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCVrGtKpYw6F645
+# mO2Z7iRSp+/0NquXKU9+TNJRd9qX56CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -419,17 +433,17 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgl5EteAwrzK2q
-# m2hFevMv+PMYgzdW9pN2unzNRDKod1cwDQYJKoZIhvcNAQEBBQAEggIAC6bSd1By
-# B01mRo9T8Rgc8KuHT58xkU129ritZKZMdRFLwYTzXTW4tzhutdLXSLYL4RLxckyH
-# SmmGtZ8dsM3IUjzJbwQfiLyve7ogEVFSRslaSFmvhm1HkWhT/Lvlx42L6h9yq9EN
-# r/dlaqctNNLje3jnrT0swPo4mvmmFEY1NZ4b5925D02Na1VWUc8SHuLRDPtLYYhr
-# 0YCGe2nlgGLoJJrRY5LiZULu+7YINzIn/p5yxj5PAPc889Z8JJ0cXZOk6xM2tGXN
-# Fhrg+/rOJnL7z+0JkICph77LNvObssTx/lSTG+e2CYhnIh9MfGbF7ekt3Pl3PM3L
-# wN3oG0fJZolLf3ry06eL8xbA/wXLr+zfH8S8fXFGoP3BhXCw4lts+J2jhgaboLlo
-# /dKxSd2lQCsqqnoSHI6mdt1gbXZSQxD9gn6Q5Pb/9oBnER8y9XCQ3g1m6gvE0tIU
-# hONv2ccPkV86OPpiDMPuXMzGEtgPbmOwzTZs8vkH+djzNN9af3+601LOxQYB5JVj
-# UaVX0fextB0x0Ucwa4icnkQH9yvMGt3KO+vXIsI4dqqPv38VdzkA8shICSmfveGI
-# KeidfUnUSvzVRr4YxDazm633uyNWvySIDijrFNFNkNiCcQhpyyndh+vEu0KrZp2P
-# c/bJP9XOJxtIu0yVRxknNH7SpnWEF+tsZnQ=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgsmGdMLhigvcC
+# w51Y7ajWjfiX+sQsuRWmr2bexxRLCa8wDQYJKoZIhvcNAQEBBQAEggIAR8/eip9/
+# opPmthCuwQkFWjQpRy84AwQ2dh9EaJtORjP9B+FOw9nUxLdcFi0DeSKUBcbTaTe1
+# A6Ft8Y5WwZt0SsykoQxi1kymT7LVVZkoVJrjl56GJYFdiZMNBvJ7iDlfKBNRFEB7
+# LbalyzauSrGkdpZG04dpDDnFugtPXx+2492vd0R6E32DnBDsT9A+nm8GtXTC1kUo
+# nSofOqTF+SdwqrWtASXrMyUXaUMQ8nYK2ALQD6WlZ/e0vHeu9p4XnGcvNauWXO9Q
+# o9ZualT2KSVedwmFMAtro9thJE/xwPoBK9KrRnnUjm9FIlFnUjy5kD2sHoRzof5j
+# tt0M9l+iErsIZeWijhZxCxzp7xgyo04/QP29zRen+ZHJlIF+oAN8IwnS4Z1356BK
+# MLWP6I3YMZbPaothQxgY6jvF1flv3AuYM/zL0TRsvaxi4eZ/JXRMBeEqiX3r+IMO
+# LskFs5WzYTga4QnjBthUsPUi9Fws01ISUZfzSnbdAhBD+9IFU6nOYT6UFwgOY335
+# me9NNTvRA2PYbm8NVWaU8M4wJETNmS9aBgDsIxB+3GknYyFEvSHX/jMR4Igitw2+
+# TKZpbFI3mP3oEa5w8bkjfZHGi0QpnRZkEGj05LCz5MpH2PEW7XU5Q9VkIMD/rea9
+# swpGlvlcrvKc6VtIKJHS3rivogfBZkAblC8=
 # SIG # End signature block
