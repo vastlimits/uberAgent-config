@@ -246,12 +246,26 @@ function Get-vlOpenFirewallPorts {
             $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule
             $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule
 
+            $localPorts = if ($portFilter.LocalPort -is [System.Collections.IEnumerable] -and $portFilter.LocalPort -isnot [string]) {
+               $portFilter.LocalPort -join ','
+            }
+            else {
+               $portFilter.LocalPort
+            }
+
+            $remotePorts = if ($portFilter.RemotePort -is [System.Collections.IEnumerable] -and $portFilter.RemotePort -isnot [string]) {
+               $portFilter.RemotePort -join ','
+            }
+            else {
+               $portFilter.RemotePort
+            }
+
             [PSCustomObject]@{
                Name                  = $rule.Name
                DisplayName           = $rule.DisplayName
                ApplicationName       = $appFilter.Program
-               LocalPorts            = $portFilter.LocalPort
-               RemotePorts           = $portFilter.RemotePort
+               LocalPorts            = $localPorts
+               RemotePorts           = $remotePorts
                Protocol              = Convert-vlEnumToString $portFilter.Protocol
                Profile               = Convert-vlEnumToString $rule.Profile
                PolicyStoreSourceType = Convert-vlEnumToString $rule.PolicyStoreSourceType
