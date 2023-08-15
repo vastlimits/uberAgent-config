@@ -192,6 +192,32 @@ function New-vlResultObject {
       $riskScore
    )
 
+   # check if top level attribues values of $result are empty or null and remove them
+   if ($null -ne $result -and $result -is [psobject]) {
+      $attributesToRemove = @()
+
+      $result | Get-Member -MemberType NoteProperty | ForEach-Object {
+         $value = $result.($_.Name)
+
+         if ($null -eq $value -or
+           ($value -is [string] -and [string]::IsNullOrEmpty($value)) -or
+           ($value -is [array] -and $value.Count -eq 0) -or
+           ($value -is [System.Collections.Generic.List[object]] -and $value.Count -eq 0)) {
+
+            # The value is empty (null, empty string, empty array/list), exclude this property
+            $attributesToRemove += $_.Name
+         }
+      }
+
+      # check if $attributesToRemove contains any attributes and remove them
+      if ($attributesToRemove.Count -gt 0) {
+         foreach ($attribute in $attributesToRemove) {
+            # remove the attribute from the result object
+            $result.PSObject.Properties.Remove($attribute)
+         }
+      }
+   }
+
    return [PSCustomObject]@{
       Result       = ConvertTo-Json $result -Compress -Depth 3
       ErrorCode    = 0
