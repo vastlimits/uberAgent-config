@@ -24,14 +24,12 @@ function Get-vlPowerShellExecutionPolicy {
          }
 
          $policys = Get-ExecutionPolicy -List
-         $highestPolicy = "Undefined"
 
          # go from lowest to highest
          # first check LocalMachine policy
          $policy = $policys | Where-Object Scope -eq "LocalMachine"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
-            $highestPolicy = "LocalMachine"
             $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
@@ -39,7 +37,6 @@ function Get-vlPowerShellExecutionPolicy {
          $policy = $policys | Where-Object Scope -eq "CurrentUser"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
-            $highestPolicy = "CurrentUser"
             $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
@@ -47,7 +44,6 @@ function Get-vlPowerShellExecutionPolicy {
          $policy = $policys | Where-Object Scope -eq "UserPolicy"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
-            $highestPolicy = "UserPolicy"
             $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
@@ -55,7 +51,6 @@ function Get-vlPowerShellExecutionPolicy {
          $policy = $policys | Where-Object Scope -eq "MachinePolicy"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
-            $highestPolicy = "MachinePolicy"
             $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
@@ -70,7 +65,7 @@ function Get-vlPowerShellExecutionPolicy {
          # Level 4: Restricted
          # Level 5: Undefined
 
-         switch ($highestPolicy) {
+         switch ($result.ExecutionPolicy) {
             "Unrestricted" {
                $CULevel = 2
             }
@@ -91,7 +86,7 @@ function Get-vlPowerShellExecutionPolicy {
             }
          }
 
-         if ($highestPolicy -ne "Undefined") {
+         if ($result.ExecutionPolicy -ne "Undefined") {
             return New-vlResultObject -result $result -score $CULevel -riskScore $CUrisk
          }
 
