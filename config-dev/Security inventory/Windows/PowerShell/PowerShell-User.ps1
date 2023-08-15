@@ -19,10 +19,41 @@ function Get-vlPowerShellExecutionPolicy {
 
    process {
       try {
-         $active_policy = Get-ExecutionPolicy
          $result = [PSCustomObject]@{
-            ExecutionPolicy = $active_policy.ToString()
+            ExecutionPolicy = "Undefined"
          }
+
+         $policys = Get-ExecutionPolicy -List
+
+         # go from lowest to highest
+         # first check LocalMachine policy
+         $policy = $policys | Where-Object Scope -eq "LocalMachine"
+
+         if ($policy.ExecutionPolicy -ne "Undefined") {
+            $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
+         }
+
+         # check CurrentUser policy
+         $policy = $policys | Where-Object Scope -eq "CurrentUser"
+
+         if ($policy.ExecutionPolicy -ne "Undefined") {
+            $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
+         }
+
+         # check UserPolicy policy
+         $policy = $policys | Where-Object Scope -eq "UserPolicy"
+
+         if ($policy.ExecutionPolicy -ne "Undefined") {
+            $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
+         }
+
+         # check MachinePolicy policy
+         $policy = $policys | Where-Object Scope -eq "MachinePolicy"
+
+         if ($policy.ExecutionPolicy -ne "Undefined") {
+            $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
+         }
+
 
          $CUrisk = 70
          $CULevel = 2
@@ -34,7 +65,7 @@ function Get-vlPowerShellExecutionPolicy {
          # Level 4: Restricted
          # Level 5: Undefined
 
-         switch ($active_policy) {
+         switch ($result.ExecutionPolicy) {
             "Unrestricted" {
                $CULevel = 2
             }
@@ -55,7 +86,7 @@ function Get-vlPowerShellExecutionPolicy {
             }
          }
 
-         if ($active_policy -ne "Undefined") {
+         if ($result.ExecutionPolicy -ne "Undefined") {
             return New-vlResultObject -result $result -score $CULevel -riskScore $CUrisk
          }
 

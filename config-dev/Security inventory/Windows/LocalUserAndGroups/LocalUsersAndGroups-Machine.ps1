@@ -217,7 +217,14 @@ function Get-vlLAPSSettings {
                Enabled            = $true
                PasswordComplexity = if ( $lapsRegSettings.PSObject.Properties.Name -contains "PasswordComplexity" -and $lapsRegSettings.PasswordComplexity -ge 1 -and $lapsRegSettings.PasswordComplexity -le 4) { $complexityArray[$lapsRegSettings.PasswordComplexity - 1] } else { $null }
                PasswordLength     = if ( $lapsRegSettings.PSObject.Properties.Name -contains "PasswordLength") { $lapsRegSettings.PasswordLength } else { $null }
-               EventLog           = $eventLog
+            }
+
+            if ($null -ne $eventLog.Warnings -and $eventLog.Warnings.Count -gt 0) {
+               $lapsSettings | Add-Member -MemberType NoteProperty -Name EventLogWarnings -Value $eventLog.Warnings
+            }
+
+            if ($null -ne $eventLog.Errors -and $eventLog.Errors.Count -gt 0) {
+               $lapsSettings | Add-Member -MemberType NoteProperty -Name EventLogErrors -Value $eventLog.Errors
             }
 
             if ($hkey.Key -eq "Legacy Microsoft LAPS") {
