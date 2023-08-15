@@ -185,14 +185,12 @@ function Get-vlPowerShellExecutionPolicy {
          }
 
          $policys = Get-ExecutionPolicy -List
-         $highestPolicy = "Undefined"
 
          # go from lowest to highest
          # first check LocalMachine policy
          $policy = $policys | Where-Object Scope -eq "LocalMachine"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
-            $highestPolicy = "LocalMachine"
             $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
@@ -200,7 +198,6 @@ function Get-vlPowerShellExecutionPolicy {
          $policy = $policys | Where-Object Scope -eq "CurrentUser"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
-            $highestPolicy = "CurrentUser"
             $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
@@ -208,7 +205,6 @@ function Get-vlPowerShellExecutionPolicy {
          $policy = $policys | Where-Object Scope -eq "UserPolicy"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
-            $highestPolicy = "UserPolicy"
             $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
@@ -216,7 +212,6 @@ function Get-vlPowerShellExecutionPolicy {
          $policy = $policys | Where-Object Scope -eq "MachinePolicy"
 
          if ($policy.ExecutionPolicy -ne "Undefined") {
-            $highestPolicy = "MachinePolicy"
             $result.ExecutionPolicy = $policy.ExecutionPolicy.ToString()
          }
 
@@ -251,7 +246,7 @@ function Get-vlPowerShellExecutionPolicy {
             }
          }
 
-         if ($active_policy -ne "Undefined") {
+         if ($result.ExecutionPolicy -ne "Undefined") {
             return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
          }
 
@@ -576,8 +571,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCfMBtfHRY5nnnh
-# UDE70CkCznthErVgll9J5SSq9fEg6qCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA9VnqQ0lzeq1AT
+# pVcE/lonvg9xs1YZId74qOwMBkvnJaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -654,17 +649,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgvoxYfT4CJJR+
-# k6HqWv/SELEZ83FBaJG1papNti4edGowDQYJKoZIhvcNAQEBBQAEggIA446Ihn36
-# /52hWEAo7eXs2fGApCiVIsiMoU6r/Uy74RTEsYi7TxBhHhl97o/gLfIYxlei+W/w
-# 36pVTFAQgnRklClZeqw4G9YBDCm1LyGKPd/D4wJo3S9grq5HK6l5urZ5E7fbVT3N
-# 5xpF+q/gl4yj/iU2cg4cdZPm5HWZgq84UA/ccMUvhKPXANknWCY/o81WX4vx90YS
-# 3wIM33m+5Lmq0J9THFpdSCfIkwuMovYHIdu9cIHetXTXiTzXWGmhDw2sb2HJo7V1
-# 3kKsosBisr7wxgzwAyane75pqVPZdIPCOcycFuezvTi+BEargmBJI/gqdA4ql/bx
-# 75/+QS10lXMvVb6goUKQoT55RVmNbMxO1CUd5O5rQw0dh0sFlb4EtXLdxpWyxMth
-# OJA+gxIoZPoBEpmUSagQSot2c+0/FJKSKdcBAW1Hn4Dhe7h9rn9qQy6dWQrd+h4j
-# Yz+edp/NlosM/EH4pmhYKulH5pNjGpwFAXNCgmG6UtKgUVGm1CZf8sKw4QbcdWDL
-# Q1pvpamxwbkS74gPlDG8W2IGfmLFZCAaCNlq0gj9z6Yois9JTm+3bmWCddAYn4vk
-# IhJSVNns/WY1kEw2uPDlAQqA2QyDUuVuLM+3Tppgw7Ok2y1HApFYbBn3J2z0i76A
-# 0kRX9241BVvdquC78nB76XPGXO+vP1dfRSI=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg1qd/W06paG3L
+# fQ6Sy9YkdrFwvIyPXM+EPd67Kx3Hpg0wDQYJKoZIhvcNAQEBBQAEggIAtHmRsT0o
+# C3KPTfHpmHnVKHpZtomJ+q8gbThXKlAghsm60T1pNe4ji+O+a/CMpXiIovHIl4m2
+# sF19AeduWuELemFtEp0bb3E+YoxDo8hjptfInjNJZO4QN4tsCHlB8rp8eXfO5q2X
+# yTjpiz7mdAod2JOp3eIMA6+Cw8x2gkrgKKn1k2m+PiuBWrttSu4Oar9JEvsMBeuH
+# RnMh7XoQd9I/ntlKCMG7YGBC3HsfpbEfKdB1AWjoYDa3nPAm55TCxVNe0UjJtGYl
+# IAqIpBjZ2ihQpGu/lMP+WEXztFJPBYiC8F7BBEPf5AprQHv7LmeX0V9AKtWzRK+q
+# MpBZyOc03ihDBhCoY3y+BnaQ2mtkERZrfiryusE13cRk5qve5/AgfRkag+bTfmQG
+# ZKL8u2eiZ9lXP+PKuVTIZ6UdGyyWU0tICuu4qASRGtVGi1CqB0ZgxGsh3FRLONG/
+# v7KHlnswXnO/5VvSXGIo+YlTo1RRNXElyeKx4KtE438JswqnuT3qmFJ7LcbBvYw2
+# Oi6A3PJITYJORe3vVtz0U7uMB8C+/jUhIpLZepj1pH7uMep+iGsYmgJqjqmGcoy/
+# P+P5X3xhqlVg7UvrPmy7iG9D5nBqZoUKuXsN1UoQ+u2hrpbUIiLJI+QmyMF7nQ1t
+# c9dRiXmGgiwCeYk/hAMseRabP7CsmSttSbA=
 # SIG # End signature block

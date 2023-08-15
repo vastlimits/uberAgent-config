@@ -217,7 +217,14 @@ function Get-vlLAPSSettings {
                Enabled            = $true
                PasswordComplexity = if ( $lapsRegSettings.PSObject.Properties.Name -contains "PasswordComplexity" -and $lapsRegSettings.PasswordComplexity -ge 1 -and $lapsRegSettings.PasswordComplexity -le 4) { $complexityArray[$lapsRegSettings.PasswordComplexity - 1] } else { $null }
                PasswordLength     = if ( $lapsRegSettings.PSObject.Properties.Name -contains "PasswordLength") { $lapsRegSettings.PasswordLength } else { $null }
-               EventLog           = $eventLog
+            }
+
+            if ($null -ne $eventLog.Warnings -and $eventLog.Warnings.Count -gt 0) {
+               $lapsSettings | Add-Member -MemberType NoteProperty -Name EventLogWarnings -Value $eventLog.Warnings
+            }
+
+            if ($null -ne $eventLog.Errors -and $eventLog.Errors.Count -gt 0) {
+               $lapsSettings | Add-Member -MemberType NoteProperty -Name EventLogErrors -Value $eventLog.Errors
             }
 
             if ($hkey.Key -eq "Legacy Microsoft LAPS") {
@@ -411,8 +418,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC9R+LD7nVLL5iP
-# dUCsqAGp23FFBr2oVZMJ66AKlQ03b6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAGRK4zFkPJAC3f
+# Q1DaVceN1Olu1dno3WjnRsGrqvoNqKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -489,17 +496,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgJUHIqeQEjIEW
-# 2/EVIoaQBV29zvKKb7rYEM2KFYz1tXUwDQYJKoZIhvcNAQEBBQAEggIAwJe5vbA5
-# erAP6cXCIraH9p6tvFtM+92G1g37+IRllalFJgYVQniNRCyzRqENR0UzIDRrC1WC
-# FjR3ZzlWyyPu7EuIUD8J8b1o+tBA0uhr9tGUgzSMKKY24Jz+QDxKwJkAaeSdPKPG
-# WkEhi0vhgN+ueJccNR35O99RwgYAij8jIHZRHZbkgFQrRCZo+kaOFsOUeRJXXfI1
-# aLacay5LL/zFMpQ4JZnMk0X6jjl9u5Lg8rM5j/7xlQWkC7llOsJTRkSKE3EwWqwC
-# A9GMvuldLKh24Rj6nVsRHvHojMtqO1ed3aH1aXCZTN0kOcTdid6MRWXzTSQMSAfD
-# ddwvhXeQg/k7lxo3+seqGyv0jDD0tcChAbfHawlg0UkL5RTOZY04VV7oSnvuLahC
-# oy4zu3ubWX3ZkSGC2lxxsCFfZOK9LG1W030SEsuhLh+q6rzzie6ENIkcEV84EI24
-# o1Kdl9Lq8HHQ9vsSywSssqsE45n6jWp6flpZzlZtelHgK7xKPElTRek8BL4lppKW
-# tyblVXt4T+18t0og7/a8tWgBFD1eUcuRf03zUZ4Ei/uSHCfmK05MtS0c8wXoccBp
-# Zmg00lKsD2lYfSzrFwA9f401FrGcU6REDzLvNARI2Zd8Y5tgX4uirsLVxFXyxaLF
-# xbE4LyUnBTbrTfp+i/0qPmW2nZywzwtSbi0=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgEYPEYijIuMPc
+# oMNgNFkNlHeCZX9vFQoFFL3MjrZYdCQwDQYJKoZIhvcNAQEBBQAEggIAMhffE48d
+# qLynSPwsLvegilmrgAD6ACKGyNl5jXB2qHNCQnNxlatYBph2BI/T9iZLiwOSchzw
+# s7vJbbk/mPN6dRJBKKT2BCjdXKA4Yi7V3WiedK/cRYPof8Lv/wCkZnGzlFgsyK+e
+# e77pPWU78Fdq22t9pA/ZGPnZiz7Eup1MlDHUKXFZEW1RYAuv5MLn9tgwOFrv9f66
+# QQHJoxinkFAKiHGKiMQ0AeSb5WCnFYTxqF2svNnjjB1g86K5ML/9vs6yWCIljNpC
+# E2xfTL6XVEeDrmSWEl4wiv/7Lu8K0cxsQm9SratHizuplsJgg718MpkCaGYk7Pwq
+# 9LR0N8uMpjif6CKPei9/tqbKbHih5JZNHyTtNrxqk2gHVJCP2A44J9sQxk6WYYPT
+# IlMTBLy6QToh1bmFcpxyP/DoX5xtpAiBe1GHY7ZfFncdapugxraY16pWLQP+FQ/C
+# rL0wB7o8DG2YIFLJFJ1ZUMaizOSmi9AnXIq+zSvlJnvBXOAn1swZneRWz8BDUeD3
+# CA80IIn2jlGdB3/bbqDRJbcSlcFQCLt/TziZhHGQsPUztOlfF4bCAONXYHJHAWsu
+# hd0GwuTInbMimwM9Urbb3eS1bH8H6uyPVWfvEyyMWDTf1dq9KuOqlLoAX2qiz6A4
+# NqcCZh2QoXOmNEUs7XwLQvPpPfRuQQLrrzk=
 # SIG # End signature block
