@@ -192,15 +192,15 @@ function Get-vlGetCTLCheck {
 
       # Create the result object
       $result = [PSCustomObject]@{
-         Unknown     = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
-         CurrentUser = $currentUser.Name
+         UnknownCertificates = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
+         CurrentUser         = $currentUser.Name
       }
 
-      if ($null -ne $result.Unknown -and $result.Unknown.Count -gt 0) {
+      if ($null -ne $result.UnknownCertificates -and $result.UnknownCertificates.Count -gt 0) {
          $score -= 5
       }
       else {
-         $result.Unknown = @()
+         $result.UnknownCertificates = @()
       }
 
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
