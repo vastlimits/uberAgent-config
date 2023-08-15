@@ -192,6 +192,32 @@ function New-vlResultObject {
       $riskScore
    )
 
+   # check if top level attribues values of $result are empty or null and remove them
+   if ($null -ne $result -and $result -is [psobject]) {
+      $attributesToRemove = @()
+
+      $result | Get-Member -MemberType NoteProperty | ForEach-Object {
+         $value = $result.($_.Name)
+
+         if ($null -eq $value -or
+           ($value -is [string] -and [string]::IsNullOrEmpty($value)) -or
+           ($value -is [array] -and $value.Count -eq 0) -or
+           ($value -is [System.Collections.Generic.List[object]] -and $value.Count -eq 0)) {
+
+            # The value is empty (null, empty string, empty array/list), exclude this property
+            $attributesToRemove += $_.Name
+         }
+      }
+
+      # check if $attributesToRemove contains any attributes and remove them
+      if ($attributesToRemove.Count -gt 0) {
+         foreach ($attribute in $attributesToRemove) {
+            # remove the attribute from the result object
+            $result.PSObject.Properties.Remove($attribute)
+         }
+      }
+   }
+
    return [PSCustomObject]@{
       Result       = ConvertTo-Json $result -Compress -Depth 3
       ErrorCode    = 0
@@ -749,8 +775,8 @@ function Write-vlTimerElapsedTime {
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD5cyCDXU8yEZq+
-# XZ3k4vKMm/MAEOyiUUQHR/TpgaOMr6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDX+JaMJAkOuKt4
+# WB0NJ8Tpj2RyV2TcLCQ/3D2oTcN96KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -827,17 +853,17 @@ function Write-vlTimerElapsedTime {
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgJGXSokngQRmt
-# e+rgssUiUFTBfgQ68G7xI8tI1/4J3L4wDQYJKoZIhvcNAQEBBQAEggIAxicY/6x1
-# dT8lkLPzJuHml5BbGCRXewg63gY8+hZL2ByWgK1r/eUQAdLkUs21Ktm2qrt0r+46
-# nohpRoYbq+9vPZ4K7jpcjbUsBbmuGnx/cyabrYzyjMGTYKnaD9j+O0bkP7sW/oQ3
-# dDtpVPz35tTq85Q7rKE8BO9jMlUFnCsDtff7Bhz62xTXw4GO7PMdJEvSJ6x+mI9B
-# 1WGTB1SYG1zc1UD64oL0yCpEhSTmlj8YqpPMSkfqrrQL0JLuSs0wwRhIBbHx6fK9
-# GFSplTItVICikCbbBrQY5G6vA1hLgRjju4YfhW4wEJVMOy3XviKPVg5LW+uH7Idq
-# k8sVc6b1Y86nsKuS9sr+kKdPZe8MtsUuQMj/9BRJcK+j3txWcXKxMKdJm1Yy91Gs
-# Ep2Aeh8QpcbCe4hwcPaELUKlv7qMUklSvGhfuxEdxCyoAi4c0XI9NVVWlVK0u5uJ
-# oh2w6Llp3XJLuTvXx+iYuvrTkH0L8lcLaCukUgIWTdn/Ass5JzZxwJFXcjnnk4xo
-# DbBVs3+ZstACLo1kysqmIrj4/XhbIzGyO4+92rNp+YfO+eeO2ENCqBaWosOuhtl6
-# 4QqnEpHOzTOYMYE316pmL+BJ05T8h48XlXzD+MVMjKuqAWNeEx/63HhRNOJy12B6
-# Xg51mS97eSZaChRcc5AEOA01chWLrdNjzGs=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgIC8RNlI3EZJL
+# SWhr+f5YCcDEaxfd3GAE94ouvXk1rf0wDQYJKoZIhvcNAQEBBQAEggIA4ccRxaHI
+# 7b+xvxhs5R7ztxR1XkiUFWivY64KjCxmwcqLXkXr1W22JN1kMc6uUH12LMo0qnv4
+# cg2LLLk+EbGyVfG15GRXA53FuKa4eLM44xPnrimma3rCv99YHszMmp+cvEb0jPlO
+# hejlXhjrhaTK2iYs0qog/i+EkQ7TwcUG+XJKeTApnLbrH5AmBGSBjZFqDJQe3ECV
+# x7uWRkub8buKer5WojbCwX/NmV4ETX0dk/vadFomeTiSEpc7S0FIcEk5VWVje1ag
+# yQVqHKh536hC7Qt4660OXnie9n+MGVLUUP5FvC1LB5U2XHIWcmZz6BqIgrlz34HO
+# Ztd/ehW9TxustEASa76fnTTmrQxYa3cmB66JimZgdLL6nLsEVXXCfasD7/aBBfpO
+# Pt4a26anItLYNosjUxGv1vw2a935zPELIUNYTPr5ylu1vrs7kEAaV76rBrIq2sDm
+# TLmsNEStZB37e1FFkiCA8vqW2U4ZtYhix025z0lmSKSOdrsyRv6sqWFxjRKU5E4u
+# xH3BGsE/wQqZEHySErEliXEDeFyRGiIxxAyoVU5L57IQw9YTOLN1V5LgmLg5XNzj
+# sGif55Y8ZiVMbZzqsRUHJtB7t1TTbU0Xql3glWGrmElLZc1VcuB3c+wtUSp4JG9l
+# bUwPDz1Xu5uAGCwKL22DSFKF4fxAxZAP1pA=
 # SIG # End signature block

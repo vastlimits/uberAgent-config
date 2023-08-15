@@ -192,15 +192,15 @@ function Get-vlGetCTLCheck {
 
       # Create the result object
       $result = [PSCustomObject]@{
-         Unknown     = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
-         CurrentUser = $currentUser.Name
+         UnknownCertificates = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
+         CurrentUser         = $currentUser.Name
       }
 
-      if ($null -ne $result.Unknown -and $result.Unknown.Count -gt 0) {
+      if ($null -ne $result.UnknownCertificates -and $result.UnknownCertificates.Count -gt 0) {
          $score -= 5
       }
       else {
-         $result.Unknown = @()
+         $result.UnknownCertificates = @()
       }
 
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
@@ -276,8 +276,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAV67b+AgRe2J9n
-# HBdsJGrL+hGc3OV5S8PPv8+Unjn5ZqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCChXm7YNXhMnTFB
+# a/6DBKULtXevD4meB8mWTCJePfy1GqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -354,17 +354,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgnzIwLq/NExM8
-# IkZ8dBrsrFN2PPthIZA+P5fhTimihtkwDQYJKoZIhvcNAQEBBQAEggIASGl4IK4F
-# 34P1QBUQwZmOk3ou2SQlbb2bEWp2rqvqmR+Vsemlp+8V2b8QiYCFO3EOHCfCRl71
-# 7xyZ6u/JnLNG2WVw//5oS/7vQy6LOEIBzRxv8M2msv/+4i7p+pZxWKOCdbpUQGWX
-# wmoMt5oQmsIP+y81YbCHrWEOYgtOn+bfp5lCMAqB/SGDcPHOK41oApuDt+I0NbyR
-# 1tTNgpAxXIC5LBDOfqVg+GMJKDGT9qU9j7rb6X0h/wNEQ26YZF4p+gwPRVUZrSpP
-# pey8sKxioEWmmuCOrbbCDOVV8Bskrb+ma7pc4k3NBPClyKl2oZhqI87lkTR0Fq4h
-# jCo0atf11YLlur0XxuorzZQVO2e7WHGFlqMLQ+ezXdl9CckBaW8HsMFfCtUAsjHV
-# ZdQxRIud+NewwOtRNU1511L+haxM9xx1dqmpZY0jqaJMjsRX2gLlcaSo5TyT2pCU
-# EH7z/da88k+baz6dwHLVmqhEbqQRVEGYue4TeLWUF8Iugp+PaL2vQljl/l0G/ned
-# B4t3WM0Vni/jlq4m7PRR/c5upbizuJy6wXRwdE9oIz0PjuHn0qCkVnUGF4lsmQim
-# uK1UjsiYdQxSzbeSCZrB+YinSuTlkm0UwTT7B2nK0VQ2kJT4PuvHNkzmUz+5KsIX
-# e2c0DEsr3LlFQyVmv1URIRhbuPvCMIMLvEw=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgM0hk9jM6kM9U
+# vIbVK4M3EfoC/8Gkymgtp7bYCSRObOIwDQYJKoZIhvcNAQEBBQAEggIA0pWRtMwc
+# wH6OhI4HaNi6c/QgNvbcb6gZILcvyybNsFKzPiNAfeA0Yvy8guBq1V0OHPXhOidr
+# a+GvmN0w2t0A0zPjK71xRoCaxzXZP8nOVRstRsv9qSAvxhz0lrTjY3W1gMVSbOoR
+# 2wrGe8FCPO4SrdqtBcYumOov8lcTn+l45+YFutkUjDdINRNBLyn/Ep9sPRl0ANby
+# hYE/8jJcQNPRLvBcOkvN7chVuE8cyBJTGt2B4P7jAtS+KoPdYCm+pn+fK6PR8bcU
+# cXVd7Get78L3UzVTA2L70EmhSDtq3lyy7DHCgLx5tdzQR/qn2TWSbCDy5wUgbsX+
+# 5VXLdoe579qL8Y655uxhh9kBmgxg+hEGIRWfyrADxibCcQk3nGX6SktJ9SG5aK++
+# iWQyB1HBMqr8e5i2PShsgH8lNZaFCjCKoC4u93atQ4Sv7Sx+8EPlrZTi4SnilT1f
+# pK7JXL2gDpzmIdtY9qQSUfPgY6BenvRdMvQpklPXjoRoeNYuEUXCI5nnOG17WJCO
+# A7vTNBgbELoAUNSfdFnxu1dAoVzFy52rluDweMfI2Msc/QG7HJScbbLeD3rqvVsi
+# amNsZloaSGZb61ccJHi1KTWQMbWrRoZqqopSrC3dO0z0W0VIl2NdA6s7wNbpowDG
+# f0zusuU0J0Th3VovV9i4RrySt/0kMKvGqCU=
 # SIG # End signature block
