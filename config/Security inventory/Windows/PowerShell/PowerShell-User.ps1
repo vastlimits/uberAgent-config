@@ -19,8 +19,12 @@ function Get-vlPowerShellExecutionPolicy {
 
    process {
       try {
+
+         $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+
          $result = [PSCustomObject]@{
             ExecutionPolicy = "Undefined"
+            CurrentUser     = $currentUser.Name
          }
 
          $policys = Get-ExecutionPolicy -List
@@ -145,7 +149,7 @@ function Get-vlPowerShellCheck {
       $powerShellExecutionPolicy = Get-vlPowerShellExecutionPolicy
       $Output += [PSCustomObject]@{
          Name         = "PSCUPolicy"
-         DisplayName  = "PowerShell policy"
+         DisplayName  = "PowerShell policy - User"
          Description  = "This test verifies the PowerShell Execution Policy, a security feature in PowerShell that determines the conditions under which PowerShell loads configuration files and runs scripts. For example, an unrestricted policy could allow a malicious script to run without any warnings or prompts, potentially leading to unauthorized system changes or data breaches. We recommend using at least the RemoteSigned policy."
          Score        = $powerShellExecutionPolicy.Score
          ResultData   = $powerShellExecutionPolicy.Result
@@ -172,8 +176,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCC7Du8J1e8Uk+aL
-# aLm0XvssAWwOHCzvHTv0BB0X5toocaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBGSBXjGy55KQFm
+# HjuKnxi4CTvZEJbai2lCi/+TvbmEQKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -250,17 +254,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgnz9ghPdiKxFC
-# 0wyzo2b0mnGXen/Tfiab87Cyi3JaIwQwDQYJKoZIhvcNAQEBBQAEggIAuGIYkeP/
-# x8982uU/yCAT1WVEz9zzzV0iaygNZi6BkyOT21qgYd7XdjUlS4kzvJxn9DYVx6Vb
-# Q1ku2RgBdOGZmbSg6bSbGTPgvKeIUZH3Yh1iuHapye+HBCpxjGabpjEKAWchY9Rf
-# 1aZajfjvChXuLPwufumrjEqghfOY5F+wOWFGp2r52i9oYWERUItNEMQgouatRHFf
-# VT0fFx6hvOReZ6lsh3WefEMLgmdqRJxqrDXzdIlMRjMXEm917u3kV94fJ6OYyqW6
-# WR8yF51l4Opp+aWahv2Z1jToStkqmCRyHnxUpDjq6TDDHUnBXbupL6jD1TH4iEbC
-# 59r2x7ePSUFjgQ3QY2zdgy+/QDpyDc0/w7ayS72WjPZ5T5EiVEJKThU5y74e4HL+
-# +XtDAMSHLPxiqmCcrJPXLA8JRySmYySDtayseib/6YZ9sifdsODwbRpk5anybhFW
-# 85KrjlzeGy0Q7YtIZ3TtgC/fWeSu11XnDsAtXAPn11gMfq1uYtVw1t0Y7R4iEu/v
-# g/G0Q0kF4TxJeZ4nMfl4b8C3HngloPs5c6NurZ9435bxKcwtqXre4aB9E8jNx5Vs
-# hu1X4b7sKX/9fCyp88dbZpi3b1MtkP0ThhX9z9B4nZJYQCuuVl/jRdg5brxndrrB
-# E78QueeB0KHjupjOBzQVklY5309n6u4FzXI=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg33Pn0x3sK/uO
+# u6rmWPmJWQ47fcP/ygA6wuYTSbvCCZ0wDQYJKoZIhvcNAQEBBQAEggIAZJT/KQwf
+# Ytm3UgsHSqTWc3+7hXBj17K3ryfmEcfDislSDKI9ZX/TQ1uE+NIiPOIvVRBSSHIC
+# BqB5Qn3g5W81ZM78T7XcnGsTLVLmYb25uBJqV9gZ05ta8XkZzPSXSAyZsJwe4k7n
+# OGAH2ezMKsmbFKj951Ijws8LihRwCa9lInFQ843+f2wsYtpppbQnQap60FohhAp5
+# AMQEC3qmbZix0/jRc72Wg55vZzdOzCexRvbazsDjzuS4iqaLO7AU/1Hv+ORHhZaO
+# A17/FS2JNI+nVW+A81jLd6gXVG92URVjKCB7wIpwX+/1gE1xVgTdpGrZfrq/sYiI
+# vEwkygJsdR2NjaGdiXZMhMf8ebsvAe9N9Qa5E3wLXvqY8oeUHDbltwlxXe+5mSUz
+# /0Rpy5K5P6Izl8k0gfxNwe6h8on7GYGqyepC+LL9SJGn6CzTX1za2c1Lyrd48gKC
+# xQEvQngmTbjMasraowMlhQSSZP3Oi/Ov3GGu6v4nECzzp6nO5HznDA+P0GTRvI0G
+# oMBCgp4OTpyCM7JxqdgSWodjFO6MOG69Iq60knPnz73mqtPA1eV6guwkqa0Gum5s
+# E4Iw4eUumsNNWHtGJK9ObLP450tmX0RQYBxgk0hxImRG+SgYJ8WqFtjQzFkbhNYg
+# qx/ESAkV0HtEnFHxgdrcSkYiOJVGG8hAZhc=
 # SIG # End signature block
