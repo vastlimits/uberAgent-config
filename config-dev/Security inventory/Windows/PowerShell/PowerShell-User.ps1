@@ -19,8 +19,12 @@ function Get-vlPowerShellExecutionPolicy {
 
    process {
       try {
+
+         $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
+
          $result = [PSCustomObject]@{
             ExecutionPolicy = "Undefined"
+            CurrentUser     = $currentUser.Name
          }
 
          $policys = Get-ExecutionPolicy -List
@@ -145,7 +149,7 @@ function Get-vlPowerShellCheck {
       $powerShellExecutionPolicy = Get-vlPowerShellExecutionPolicy
       $Output += [PSCustomObject]@{
          Name         = "PSCUPolicy"
-         DisplayName  = "PowerShell policy"
+         DisplayName  = "PowerShell policy - User"
          Description  = "This test verifies the PowerShell Execution Policy, a security feature in PowerShell that determines the conditions under which PowerShell loads configuration files and runs scripts. For example, an unrestricted policy could allow a malicious script to run without any warnings or prompts, potentially leading to unauthorized system changes or data breaches. We recommend using at least the RemoteSigned policy."
          Score        = $powerShellExecutionPolicy.Score
          ResultData   = $powerShellExecutionPolicy.Result
