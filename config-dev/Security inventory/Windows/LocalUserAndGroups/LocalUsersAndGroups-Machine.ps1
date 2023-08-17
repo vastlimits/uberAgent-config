@@ -115,6 +115,7 @@ function Get-vlLAPSEventLog {
                TimeCreated = Get-vlTimeString -time $_.TimeCreated
                Id          = $_.Id
                Message     = $_.Message
+               Level       = if ($_.Level -eq 2) { "Error" } elseif ($_.Level -eq 3) { "Warning" } else { "" }
             }
 
             # add the event to the errors array if the event id is 2 (error)
