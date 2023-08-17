@@ -403,7 +403,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUMLaps"
          DisplayName  = "Local administrator password solution - Settings"
-         Description  = "This test verifies that the Local Administrator Password Solution (LAPS) is set up and enabled. The test scans the event log for any LAPS-related errors. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
+         Description  = "This test verifies that the Local Administrator Password Solution (LAPS) is set up and enabled. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
          Score        = $laps.Score
          ResultData   = $laps.Result
          RiskScore    = $laps.RiskScore
@@ -419,7 +419,7 @@ function Get-vlLocalUsersAndGroupsCheck {
          $Output += [PSCustomObject]@{
             Name         = "LUMLapsEventLog"
             DisplayName  = "Local administrator password solution - Event log"
-            Description  = "This test scans the event log for any Local Administrator Password Solution (LAPS) related errors. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
+            Description  = "This test scans the event log for any Local Administrator Password Solution (LAPS) related errors and warnings. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
             Score        = $lapsLog.Score
             ResultData   = $lapsLog.Result
             RiskScore    = $lapsLog.RiskScore
