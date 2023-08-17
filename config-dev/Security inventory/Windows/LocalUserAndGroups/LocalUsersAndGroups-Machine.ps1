@@ -115,6 +115,7 @@ function Get-vlLAPSEventLog {
                TimeCreated = Get-vlTimeString -time $_.TimeCreated
                Id          = $_.Id
                Message     = $_.Message
+               Level       = if ($_.Level -eq 2) { "Error" } elseif ($_.Level -eq 3) { "Warning" } else { "" }
             }
 
             # add the event to the errors array if the event id is 2 (error)
@@ -156,6 +157,38 @@ function Get-vlLAPSEventLog {
       }
 
       return $result
+   }
+}
+
+function Get-vlLAPSTestEventLog {
+   <#
+    .SYNOPSIS
+        Function that checks the Windows event log for LAPS errors and warnings.
+    .DESCRIPTION
+        Function that checks the Windows event log for LAPS errors and warnings.
+    .OUTPUTS
+        If the Windows event log contains LAPS errors, the script will return a vlResultObject with the EventLog errors and warnings.
+    .EXAMPLE
+        Get-vlLAPSTestEventLog
+    #>
+   try {
+      $riskScore = 30
+      $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
+
+      # merge lists to one output list
+      $lapsLog = $eventLog.Warnings + $eventLog.Errors
+
+      if ($eventLog.Errors.Count -gt 0) {
+         return New-vlResultObject -result $lapsLog -score 8 -riskScore $riskScore
+      }
+      elseif ($eventLog.Warnings.Count -gt 0) {
+         return New-vlResultObject -result $lapsLog -score 9 -riskScore $riskScore
+      }
+
+      return New-vlResultObject -result $lapsLog -score 10 -riskScore $riskScore
+   }
+   catch {
+      return New-vlErrorObject($_)
    }
 }
 
@@ -210,8 +243,6 @@ function Get-vlLAPSSettings {
          $lapsRegSettings = Get-vlRegistryKeyValues -Hive "HKLM" -Path $hkey.Value
 
          if ($null -ne $lapsRegSettings -and $lapsRegSettings.PSObject.Properties.Count -ge 0) {
-            $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
-
             $lapsSettings = [PSCustomObject]@{
                Mode               = $hkey.Key
                Enabled            = $true
@@ -219,23 +250,15 @@ function Get-vlLAPSSettings {
                PasswordLength     = if ( $lapsRegSettings.PSObject.Properties.Name -contains "PasswordLength") { $lapsRegSettings.PasswordLength } else { $null }
             }
 
-            if ($null -ne $eventLog.Warnings -and $eventLog.Warnings.Count -gt 0) {
-               $lapsSettings | Add-Member -MemberType NoteProperty -Name EventLogWarnings -Value $eventLog.Warnings
-            }
-
-            if ($null -ne $eventLog.Errors -and $eventLog.Errors.Count -gt 0) {
-               $lapsSettings | Add-Member -MemberType NoteProperty -Name EventLogErrors -Value $eventLog.Errors
-            }
-
             if ($hkey.Key -eq "Legacy Microsoft LAPS") {
                $lapsSettings.Enabled = if ( $lapsRegSettings.PSObject.Properties.Name -contains "AdmPwdEnabled") { $lapsRegSettings.AdmPwdEnabled -eq 1 } else { $false }
-            }
 
-            if ($eventLog.Errors.Count -gt 0) {
-               return New-vlResultObject -result $lapsSettings -score 8 -riskScore $riskScore
-            }
-            elseif ($eventLog.Warnings.Count -gt 0) {
-               return New-vlResultObject -result $lapsSettings -score 9 -riskScore $riskScore
+               if ($lapsSettings.Enabled -eq $true) {
+                  return New-vlResultObject -result $lapsSettings -score 10 -riskScore $riskScore
+               }
+               else {
+                  return New-vlResultObject -result $lapsSettings -score 6 -riskScore $riskScore
+               }
             }
 
             return New-vlResultObject -result $lapsSettings -score 10 -riskScore $riskScore
@@ -379,13 +402,30 @@ function Get-vlLocalUsersAndGroupsCheck {
       $laps = Get-vlLAPSSettings
       $Output += [PSCustomObject]@{
          Name         = "LUMLaps"
-         DisplayName  = "Local administrator password solution"
-         Description  = "This test verifies that the Local Administrator Password Solution (LAPS) is set up and enabled. The test scans the event log for any LAPS-related errors. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
+         DisplayName  = "Local administrator password solution - Settings"
+         Description  = "This test verifies that the Local Administrator Password Solution (LAPS) is set up and enabled. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
          Score        = $laps.Score
          ResultData   = $laps.Result
          RiskScore    = $laps.RiskScore
          ErrorCode    = $laps.ErrorCode
          ErrorMessage = $laps.ErrorMessage
+      }
+
+      $lapsJSon = $laps.Result | ConvertFrom-Json
+
+      if ( $lapsJSon.Enabled -eq $true -and ($params.Contains("all") -or $params.Contains("LUMLapsEventLog"))) {
+         $lapsLog = Get-vlLAPSTestEventLog
+
+         $Output += [PSCustomObject]@{
+            Name         = "LUMLapsEventLog"
+            DisplayName  = "Local administrator password solution - Event log"
+            Description  = "This test scans the event log for any Local Administrator Password Solution (LAPS) related errors and warnings. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
+            Score        = $lapsLog.Score
+            ResultData   = $lapsLog.Result
+            RiskScore    = $lapsLog.RiskScore
+            ErrorCode    = $lapsLog.ErrorCode
+            ErrorMessage = $lapsLog.ErrorMessage
+         }
       }
    }
    if ($params.Contains("all") -or $params.Contains("LUMWinBio")) {

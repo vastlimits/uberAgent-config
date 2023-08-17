@@ -24,7 +24,7 @@ function Get-vlPowerShellExecutionPolicy {
 
          $result = [PSCustomObject]@{
             ExecutionPolicy = "Undefined"
-            CurrentUser     = $currentUser.Name
+            User            = $currentUser.Name
          }
 
          $policys = Get-ExecutionPolicy -List
