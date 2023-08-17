@@ -330,18 +330,16 @@ function Get-vlGetCTLCheck {
       $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl
 
       # Create the result object
-      $result = [PSCustomObject]@{
-         UnknownCertificates = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts
-      }
+      $UnknownCertificates = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts
 
-      if ($null -ne $result.UnknownCertificates -and $result.UnknownCertificates.Count -gt 0) {
+      if ($null -ne $UnknownCertificates -and $UnknownCertificates.Count -gt 0) {
          $score -= 5
       }
       else {
-         $result.UnknownCertificates = @()
+         $UnknownCertificates = @()
       }
 
-      return New-vlResultObject -result $result -score $score -riskScore $riskScore
+      return New-vlResultObject -result $UnknownCertificates -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject -context $_

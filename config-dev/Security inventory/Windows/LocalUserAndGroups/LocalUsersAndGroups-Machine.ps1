@@ -175,25 +175,17 @@ function Get-vlLAPSTestEventLog {
       $riskScore = 30
       $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
 
-      $lapsSettings = [PSCustomObject]@{
-      }
-
-      if ($null -ne $eventLog.Warnings -and $eventLog.Warnings.Count -gt 0) {
-         $lapsSettings | Add-Member -MemberType NoteProperty -Name EventLogWarnings -Value $eventLog.Warnings
-      }
-
-      if ($null -ne $eventLog.Errors -and $eventLog.Errors.Count -gt 0) {
-         $lapsSettings | Add-Member -MemberType NoteProperty -Name EventLogErrors -Value $eventLog.Errors
-      }
+      # merge lists to one output list
+      $lapsLog = $eventLog.Warnings + $eventLog.Errors
 
       if ($eventLog.Errors.Count -gt 0) {
-         return New-vlResultObject -result $lapsSettings -score 8 -riskScore $riskScore
+         return New-vlResultObject -result $lapsLog -score 8 -riskScore $riskScore
       }
       elseif ($eventLog.Warnings.Count -gt 0) {
-         return New-vlResultObject -result $lapsSettings -score 9 -riskScore $riskScore
+         return New-vlResultObject -result $lapsLog -score 9 -riskScore $riskScore
       }
 
-      return New-vlResultObject -result $lapsSettings -score 10 -riskScore $riskScore
+      return New-vlResultObject -result $lapsLog -score 10 -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject($_)
