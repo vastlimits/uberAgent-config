@@ -189,12 +189,9 @@ function Get-vlOpenFirewallPorts {
       if ($isWindows7 -eq $true) {
          $fwPolicy2 = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID("HNetCfg.FwPolicy2"))
 
-         # Erhalte die Regeln
          $rules = $fwPolicy2.Rules
-
          $output = @()
 
-         # Iteriere über die Regeln
          foreach ($rule in $rules) {
             if ($rule.Direction -eq $FW_RULE_DIRECTION["IN"] -and $rule.Action -eq $FW_ACTION["ALLOW"] -and $rule.Enabled -eq $true -and ($rule.Grouping -eq "" -or $null -eq $rule.Grouping) ) {
 
