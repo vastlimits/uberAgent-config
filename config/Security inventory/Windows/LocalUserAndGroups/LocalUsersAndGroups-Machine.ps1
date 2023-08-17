@@ -115,6 +115,7 @@ function Get-vlLAPSEventLog {
                TimeCreated = Get-vlTimeString -time $_.TimeCreated
                Id          = $_.Id
                Message     = $_.Message
+               Level       = if ($_.Level -eq 2) { "Error" } elseif ($_.Level -eq 3) { "Warning" } else { "" }
             }
 
             # add the event to the errors array if the event id is 2 (error)
@@ -156,6 +157,38 @@ function Get-vlLAPSEventLog {
       }
 
       return $result
+   }
+}
+
+function Get-vlLAPSTestEventLog {
+   <#
+    .SYNOPSIS
+        Function that checks the Windows event log for LAPS errors and warnings.
+    .DESCRIPTION
+        Function that checks the Windows event log for LAPS errors and warnings.
+    .OUTPUTS
+        If the Windows event log contains LAPS errors, the script will return a vlResultObject with the EventLog errors and warnings.
+    .EXAMPLE
+        Get-vlLAPSTestEventLog
+    #>
+   try {
+      $riskScore = 30
+      $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
+
+      # merge lists to one output list
+      $lapsLog = $eventLog.Warnings + $eventLog.Errors
+
+      if ($eventLog.Errors.Count -gt 0) {
+         return New-vlResultObject -result $lapsLog -score 8 -riskScore $riskScore
+      }
+      elseif ($eventLog.Warnings.Count -gt 0) {
+         return New-vlResultObject -result $lapsLog -score 9 -riskScore $riskScore
+      }
+
+      return New-vlResultObject -result $lapsLog -score 10 -riskScore $riskScore
+   }
+   catch {
+      return New-vlErrorObject($_)
    }
 }
 
@@ -210,8 +243,6 @@ function Get-vlLAPSSettings {
          $lapsRegSettings = Get-vlRegistryKeyValues -Hive "HKLM" -Path $hkey.Value
 
          if ($null -ne $lapsRegSettings -and $lapsRegSettings.PSObject.Properties.Count -ge 0) {
-            $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
-
             $lapsSettings = [PSCustomObject]@{
                Mode               = $hkey.Key
                Enabled            = $true
@@ -219,23 +250,15 @@ function Get-vlLAPSSettings {
                PasswordLength     = if ( $lapsRegSettings.PSObject.Properties.Name -contains "PasswordLength") { $lapsRegSettings.PasswordLength } else { $null }
             }
 
-            if ($null -ne $eventLog.Warnings -and $eventLog.Warnings.Count -gt 0) {
-               $lapsSettings | Add-Member -MemberType NoteProperty -Name EventLogWarnings -Value $eventLog.Warnings
-            }
-
-            if ($null -ne $eventLog.Errors -and $eventLog.Errors.Count -gt 0) {
-               $lapsSettings | Add-Member -MemberType NoteProperty -Name EventLogErrors -Value $eventLog.Errors
-            }
-
             if ($hkey.Key -eq "Legacy Microsoft LAPS") {
                $lapsSettings.Enabled = if ( $lapsRegSettings.PSObject.Properties.Name -contains "AdmPwdEnabled") { $lapsRegSettings.AdmPwdEnabled -eq 1 } else { $false }
-            }
 
-            if ($eventLog.Errors.Count -gt 0) {
-               return New-vlResultObject -result $lapsSettings -score 8 -riskScore $riskScore
-            }
-            elseif ($eventLog.Warnings.Count -gt 0) {
-               return New-vlResultObject -result $lapsSettings -score 9 -riskScore $riskScore
+               if ($lapsSettings.Enabled -eq $true) {
+                  return New-vlResultObject -result $lapsSettings -score 10 -riskScore $riskScore
+               }
+               else {
+                  return New-vlResultObject -result $lapsSettings -score 6 -riskScore $riskScore
+               }
             }
 
             return New-vlResultObject -result $lapsSettings -score 10 -riskScore $riskScore
@@ -379,13 +402,30 @@ function Get-vlLocalUsersAndGroupsCheck {
       $laps = Get-vlLAPSSettings
       $Output += [PSCustomObject]@{
          Name         = "LUMLaps"
-         DisplayName  = "Local administrator password solution"
-         Description  = "This test verifies that the Local Administrator Password Solution (LAPS) is set up and enabled. The test scans the event log for any LAPS-related errors. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
+         DisplayName  = "Local administrator password solution - Settings"
+         Description  = "This test verifies that the Local Administrator Password Solution (LAPS) is set up and enabled. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
          Score        = $laps.Score
          ResultData   = $laps.Result
          RiskScore    = $laps.RiskScore
          ErrorCode    = $laps.ErrorCode
          ErrorMessage = $laps.ErrorMessage
+      }
+
+      $lapsJSon = $laps.Result | ConvertFrom-Json
+
+      if ( $lapsJSon.Enabled -eq $true -and ($params.Contains("all") -or $params.Contains("LUMLapsEventLog"))) {
+         $lapsLog = Get-vlLAPSTestEventLog
+
+         $Output += [PSCustomObject]@{
+            Name         = "LUMLapsEventLog"
+            DisplayName  = "Local administrator password solution - Event log"
+            Description  = "This test scans the event log for any Local Administrator Password Solution (LAPS) related errors and warnings. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory."
+            Score        = $lapsLog.Score
+            ResultData   = $lapsLog.Result
+            RiskScore    = $lapsLog.RiskScore
+            ErrorCode    = $lapsLog.ErrorCode
+            ErrorMessage = $lapsLog.ErrorMessage
+         }
       }
    }
    if ($params.Contains("all") -or $params.Contains("LUMWinBio")) {
@@ -418,8 +458,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAGRK4zFkPJAC3f
-# Q1DaVceN1Olu1dno3WjnRsGrqvoNqKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCwrO2rOsjHEWXx
+# solrFLkrvkmPsX8vWAbHKaZEupUapKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -496,17 +536,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgEYPEYijIuMPc
-# oMNgNFkNlHeCZX9vFQoFFL3MjrZYdCQwDQYJKoZIhvcNAQEBBQAEggIAMhffE48d
-# qLynSPwsLvegilmrgAD6ACKGyNl5jXB2qHNCQnNxlatYBph2BI/T9iZLiwOSchzw
-# s7vJbbk/mPN6dRJBKKT2BCjdXKA4Yi7V3WiedK/cRYPof8Lv/wCkZnGzlFgsyK+e
-# e77pPWU78Fdq22t9pA/ZGPnZiz7Eup1MlDHUKXFZEW1RYAuv5MLn9tgwOFrv9f66
-# QQHJoxinkFAKiHGKiMQ0AeSb5WCnFYTxqF2svNnjjB1g86K5ML/9vs6yWCIljNpC
-# E2xfTL6XVEeDrmSWEl4wiv/7Lu8K0cxsQm9SratHizuplsJgg718MpkCaGYk7Pwq
-# 9LR0N8uMpjif6CKPei9/tqbKbHih5JZNHyTtNrxqk2gHVJCP2A44J9sQxk6WYYPT
-# IlMTBLy6QToh1bmFcpxyP/DoX5xtpAiBe1GHY7ZfFncdapugxraY16pWLQP+FQ/C
-# rL0wB7o8DG2YIFLJFJ1ZUMaizOSmi9AnXIq+zSvlJnvBXOAn1swZneRWz8BDUeD3
-# CA80IIn2jlGdB3/bbqDRJbcSlcFQCLt/TziZhHGQsPUztOlfF4bCAONXYHJHAWsu
-# hd0GwuTInbMimwM9Urbb3eS1bH8H6uyPVWfvEyyMWDTf1dq9KuOqlLoAX2qiz6A4
-# NqcCZh2QoXOmNEUs7XwLQvPpPfRuQQLrrzk=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgoD7CzFnso2Zo
+# AJgV/MeblAuUETK7j5IPog2G3u6hbTEwDQYJKoZIhvcNAQEBBQAEggIAaN1NX5Qu
+# dhEMFXuqssphxrj0dWE6vU+MYIFK0W/nJdbcv+S42maKFLtfs9TzVxoly9MwPwGt
+# N9EGQltrh0GI51X+NNx39u5ujhqsmgft2xbk84kZ3v5MLgg0xm1tUySi5lffaFVf
+# vz9aJ6a/1ssbd58Crdkzep72xfWXuDWAziid5QcbZX3Wkg8N00h1vc47wU68sBCj
+# 1W6qbT6KZuSxZQEymXsiSXsPDbH+XAqYKOxTPNlusOry2cgGKS4FJP8PQcm+IVTe
+# kLB9QwHDQBx3DY74qNJzHepjYbQ9uIIdGgTKSL/9y28dQIu1Nel9dtvI+Okwp4sq
+# wYYZzV1YeddvgijSnDwlTLFYlsl17BoKtHUXGpLu2j9DbScnKGKm/Z8L1b64Ep+F
+# icwOSHTc7g6VaHeJwzc9N5JwQXAsALRIl3NP3XtrGGDcKZf6YnUJlGmStZwGaSS7
+# Y41CHridJgbsrhJPDYuKXMXakvFjqQthBxJ/rPTfjjVYsZIdxSBq+Up3Ti71fJee
+# op58X4Ye4z/Jkj1hDKacVirCaIYeMN/n8rD6V+CoPJwsSYexFIaXUcYUzH1ZJ4cu
+# wbVrUConMwBnBIsbMhehLJzVrin9NuYKBKeBuhuJ9MZDmwE4ts+yTQcqNwHwcphh
+# NpP7g1aWn1o2ESQ4PIxQVEU2anh7atwRRWk=
 # SIG # End signature block

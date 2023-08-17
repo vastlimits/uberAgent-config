@@ -53,7 +53,7 @@ function Get-vlIsLocalAdmin {
       if ($isLocalAdmin) {
          $result = [PSCustomObject]@{
             IsLocalAdmin = $true
-            CurrentUser  = $currentUser.Name
+            User         = $currentUser.Name
          }
 
          return New-vlResultObject -result $result -score 3 -riskScore $riskScore
@@ -61,7 +61,7 @@ function Get-vlIsLocalAdmin {
       else {
          $result = [PSCustomObject]@{
             IsLocalAdmin = $false
-            CurrentUser  = $currentUser.Name
+            User         = $currentUser.Name
          }
          return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }
@@ -284,8 +284,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCf7R811az70DL3
-# EfvJlgE2nQmHG7he+Tq9Bwql1yeni6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCARO2KjLWbB0nOj
+# s9eOp98/HbMBnfKYUCXJeu/Q1DoKAqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -362,17 +362,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg/+OKgMuh2zUE
-# uVwaVIC4oOrJDAFzslpoZEUG5P2BPh0wDQYJKoZIhvcNAQEBBQAEggIABB92Dqpt
-# PA1Soh1O38D1Me37dd6GB2YF5fgrkdVMJ2goHIK2KCoBGjKlyqJV2gnRIJlRv13h
-# i2yYIst65qhS84qdW2637fOxyLNbyrFa/sLyg/XOPjgN0mxMF2WK1RfREYXScIdM
-# KBqUw6BhBnKLf6L8wxMcOzVYDZrz4aKlY6DNOAJqFUuZc7a4GMhHIt7UHRaWa01n
-# gJP9u9er8aqG6Zq2a5jB3N+ZtNsm/As/Iw37CmkaodLltjOZfUGbAhJ4Wg8XHQuI
-# SrCxC3itp+10iqcCAhWj9luInnc5BDVHyYZkfLHPFaqg0TCxPhpyc917qP04m8tH
-# iwf3T8r2uxEDDwYl5RFZi10O573sL+amRArcqVjGZ62s0hL7VOb3qwJjBkNpPMD0
-# Ln2PezV5t7P6PBVhHU/l1CTCHfnzCr8POSQMu0oIusKSRPZzTAayOBfMDVzYJV/9
-# azK+FBJCOKwRVkXNX6xhSCk/gfN3pE06Car8+ydy9K+VprLk3fpsxGv7BAH58WRN
-# 0lZcl5a0Lsr5bo4dnDseYwISSc0eRfnI15ErehKvpGgecmkJdoUI40RlkPAGUilu
-# 6INjya8U6rEnSCz/WyqR13WPXh6jGmCx7C8ZFTSG44+nTJilkY7rBnvh/dAUreE0
-# zfpXAusc3GxekZVXQMJn1bP4YmEIMJ941dI=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgbNFbPWT6ZLbw
+# qZ17WXwQE2nqMqGEl/AczXXkalGBjQQwDQYJKoZIhvcNAQEBBQAEggIANK92hIEg
+# BNI3NgS8M5yvnNpITG/K3uj1s7L/L3ZTDvVBidE0nIuGQrQWouupON5vYeu8dpGH
+# D0GIzWAyiBVQqe1wNEbZ8uV9f4vlDDZoftv+fDf2KWWt5QGkC5zwQfPzHafeEhMI
+# Hdhn8BxMHYsuXjwGCJu70u6zAbCUTYrYEFTm0jhGbplReZfqjLoeFYtEvCXXCyd6
+# xphn7ebrLCZb+C2YIfK6k8Ek1etUYe32F0fWQcifHQpqQjV+TtTCr1RaPIppKy01
+# 3iV5Mma+lk4efUl2cbeagv8Q1DEgTGTqwW6mw76KX8H3FGU7maqS1BMSAPtq3bls
+# 7IiNwMsqRYnJz79AZ4gWNFaUlqQmS/KWV+m/RASegISFl7mGx7L2wX422K29aU6F
+# KVy+z9f2mAdVdDDXipu5fN6uNxuHmbyvFIpjUsJgWb/SnvEbjz9r4+SmRydihNlM
+# h2ytLHkkVb1X11DMQTxoIrOpv+D5YglRLGOtTUcOu/J5K6PWSWHp3DpUvBqJ+96b
+# weykSW3qc3Kk782oF/HaAZaQUnAaIr5oiYHbYiU1sbwcsHDJo/tH7j1W428TrfO8
+# ZeeoKdPEfEVIHhQh5zUcFJza6/b/R8Y0xxshaQwB3vJpQs18rWmA6vt8BgO+l/ID
+# 7wmvZ1/vwqiiyjSw1LFX/DguY2wwQ0xB8j8=
 # SIG # End signature block

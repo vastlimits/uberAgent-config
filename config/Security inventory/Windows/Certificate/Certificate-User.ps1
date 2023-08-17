@@ -182,6 +182,7 @@ function Get-vlGetCTLCheck {
 
       # convert NotAfter and NotBefore to string iso format
       $currentUserCerts = $currentUserCerts | ForEach-Object {
+         $_ | Add-Member -Type NoteProperty -Name "User" -Value $currentUser.Name
          $_.NotAfter = Get-vlTimeString -time $_.NotAfter
          $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          return $_
@@ -191,19 +192,16 @@ function Get-vlGetCTLCheck {
       $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl
 
       # Create the result object
-      $result = [PSCustomObject]@{
-         UnknownCertificates = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
-         CurrentUser         = $currentUser.Name
-      }
+      $UnknownCertificates = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
 
-      if ($null -ne $result.UnknownCertificates -and $result.UnknownCertificates.Count -gt 0) {
+      if ($null -ne $UnknownCertificates -and $UnknownCertificates.Count -gt 0) {
          $score -= 5
       }
       else {
-         $result.UnknownCertificates = @()
+         $UnknownCertificates = @()
       }
 
-      return New-vlResultObject -result $result -score $score -riskScore $riskScore
+      return New-vlResultObject -result $UnknownCertificates -score $score -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject -context $_
@@ -276,8 +274,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCChXm7YNXhMnTFB
-# a/6DBKULtXevD4meB8mWTCJePfy1GqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDCMIK/D02WNfoo
+# Ly/KYMJ9A7/QAH8yA1G0zUFKq18E+KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -354,17 +352,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgM0hk9jM6kM9U
-# vIbVK4M3EfoC/8Gkymgtp7bYCSRObOIwDQYJKoZIhvcNAQEBBQAEggIA0pWRtMwc
-# wH6OhI4HaNi6c/QgNvbcb6gZILcvyybNsFKzPiNAfeA0Yvy8guBq1V0OHPXhOidr
-# a+GvmN0w2t0A0zPjK71xRoCaxzXZP8nOVRstRsv9qSAvxhz0lrTjY3W1gMVSbOoR
-# 2wrGe8FCPO4SrdqtBcYumOov8lcTn+l45+YFutkUjDdINRNBLyn/Ep9sPRl0ANby
-# hYE/8jJcQNPRLvBcOkvN7chVuE8cyBJTGt2B4P7jAtS+KoPdYCm+pn+fK6PR8bcU
-# cXVd7Get78L3UzVTA2L70EmhSDtq3lyy7DHCgLx5tdzQR/qn2TWSbCDy5wUgbsX+
-# 5VXLdoe579qL8Y655uxhh9kBmgxg+hEGIRWfyrADxibCcQk3nGX6SktJ9SG5aK++
-# iWQyB1HBMqr8e5i2PShsgH8lNZaFCjCKoC4u93atQ4Sv7Sx+8EPlrZTi4SnilT1f
-# pK7JXL2gDpzmIdtY9qQSUfPgY6BenvRdMvQpklPXjoRoeNYuEUXCI5nnOG17WJCO
-# A7vTNBgbELoAUNSfdFnxu1dAoVzFy52rluDweMfI2Msc/QG7HJScbbLeD3rqvVsi
-# amNsZloaSGZb61ccJHi1KTWQMbWrRoZqqopSrC3dO0z0W0VIl2NdA6s7wNbpowDG
-# f0zusuU0J0Th3VovV9i4RrySt/0kMKvGqCU=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgWXK/KHAlOWWo
+# 17JnPduqak1B+4C5rv9UZGPaDagoPPEwDQYJKoZIhvcNAQEBBQAEggIAY8uzUSzz
+# nPO9ob4+VoFIOFUqsWYJ5bbaJMOt/E78LUK+EOXUamGOwSO7xFcnAr0aBxY6qZIP
+# Wk4esfy2TWvpffHe47Dukb/fUVEhvBL3apYjJjWFs/BOyB6BReZ5sG20rybqRC9R
+# yRY6lHlheWWCtVAtxhi9zwqUCZlA18rpdvCyPdAHTBWzTYieQe+M0QmbvO+pUFOL
+# gw3dq2bvWSW4ffXCmERv5y1nyphef529hMuwYnpCTkVxhgTgoNbiQ9xua7OyRK6j
+# O8oGFa67IHNOnNTDzK/l4vvNZtRUlF9d9I7HyzNk7Xxb2KAY100cAfZcCaEeOm34
+# RLqTNb1ipiQ3QljSiaP4UWuUYQTJqJsfDsNJFy3ycMsQ/qnO+6o2VqS0kC7CGHfu
+# h5yU5qIitjUye63f71/RSKnTkeILjMhQq34D//tod7WWS2AtjIoJlN7jc5ezaciR
+# V+iWjGwdHW2A+Y1GZZSgR7LjW9EANqawBOYGRpmLcQ+gPViW94E5HsbYxOvqHOUi
+# sbndP3O3SWsGFDZuvyV3U5BxAhL3PaJtd25o4rpOghqza5ZENSxG3L80EzmndCfl
+# YRD5phUzUblcg30Ljqcr2GXcJ94yz2yHo601O4jdYH/BMd4HiR0lsv75Q5+dTz2y
+# 4YvB+lV2aXbydlSTOndrbuQ9xLTBWL7nh4M=
 # SIG # End signature block

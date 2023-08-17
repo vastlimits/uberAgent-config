@@ -189,12 +189,9 @@ function Get-vlOpenFirewallPorts {
       if ($isWindows7 -eq $true) {
          $fwPolicy2 = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID("HNetCfg.FwPolicy2"))
 
-         # Erhalte die Regeln
          $rules = $fwPolicy2.Rules
-
          $output = @()
 
-         # Iteriere über die Regeln
          foreach ($rule in $rules) {
             if ($rule.Direction -eq $FW_RULE_DIRECTION["IN"] -and $rule.Action -eq $FW_ACTION["ALLOW"] -and $rule.Enabled -eq $true -and ($rule.Grouping -eq "" -or $null -eq $rule.Grouping) ) {
 
@@ -355,8 +352,8 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCVrGtKpYw6F645
-# mO2Z7iRSp+/0NquXKU9+TNJRd9qX56CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDyL1oGT9KHclMD
+# ftpb0DIf7gwFGXX/0ywk0MC5FsNFJaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -433,17 +430,17 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgsmGdMLhigvcC
-# w51Y7ajWjfiX+sQsuRWmr2bexxRLCa8wDQYJKoZIhvcNAQEBBQAEggIAR8/eip9/
-# opPmthCuwQkFWjQpRy84AwQ2dh9EaJtORjP9B+FOw9nUxLdcFi0DeSKUBcbTaTe1
-# A6Ft8Y5WwZt0SsykoQxi1kymT7LVVZkoVJrjl56GJYFdiZMNBvJ7iDlfKBNRFEB7
-# LbalyzauSrGkdpZG04dpDDnFugtPXx+2492vd0R6E32DnBDsT9A+nm8GtXTC1kUo
-# nSofOqTF+SdwqrWtASXrMyUXaUMQ8nYK2ALQD6WlZ/e0vHeu9p4XnGcvNauWXO9Q
-# o9ZualT2KSVedwmFMAtro9thJE/xwPoBK9KrRnnUjm9FIlFnUjy5kD2sHoRzof5j
-# tt0M9l+iErsIZeWijhZxCxzp7xgyo04/QP29zRen+ZHJlIF+oAN8IwnS4Z1356BK
-# MLWP6I3YMZbPaothQxgY6jvF1flv3AuYM/zL0TRsvaxi4eZ/JXRMBeEqiX3r+IMO
-# LskFs5WzYTga4QnjBthUsPUi9Fws01ISUZfzSnbdAhBD+9IFU6nOYT6UFwgOY335
-# me9NNTvRA2PYbm8NVWaU8M4wJETNmS9aBgDsIxB+3GknYyFEvSHX/jMR4Igitw2+
-# TKZpbFI3mP3oEa5w8bkjfZHGi0QpnRZkEGj05LCz5MpH2PEW7XU5Q9VkIMD/rea9
-# swpGlvlcrvKc6VtIKJHS3rivogfBZkAblC8=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgZmhaKhEzYdnV
+# Glh4Bw1bPU50SXup4DjSMzbYMRs9rywwDQYJKoZIhvcNAQEBBQAEggIAC8Penv00
+# RPBH0tMJrUgicJD7eyuKvRMvN5B094Ewdnlst0rjU5nk+aqTU64karUwUi3cX97e
+# yjs9/MFnHoLALLLerZk6QV1O8NR1fpbrYWDLwkR+VmoQS+HFQ7VFnXya2Qd9mlrD
+# m/XnSHy5UutvihDA9gkdtw7P7f3ZsZiHbbUBPprmEeQ7AXKj8jR8Hl4BVKHArixY
+# fBQGBUF1asRtCss0ASxLCXeZgVTJ2lHMe574I1TI3L/q4dPNjLOpUaOO3GeiTIow
+# hoZnES5jIquYVeJ75EjvZxTYSUrdKRi2Ky9c+aB1NNy0H4bLH6fmImjbrs13Vt38
+# MCK4N5BDPawiOvNszt6Bi+SQY5A8pD6r3zUhr21mVOqPf08QRa6B0k0mbggNp7fJ
+# /cxOZ8QqqzZFzdbuTdvbjBpp2Dpv2PIkAWn92dt+2wMnVboMb4obDdG7O8a7zz3Y
+# Nd19nYqZTsxPZ9hRY1pGXSEnaHZUQ/YICuq1LgIN++Kz/jwOly/aJxxa7uQZh8MU
+# Xy/ig3dA6mRcxpo1J76tNhVAuVjievMEmXcL+m7qVkBejzSu+8Z8gMvRK07KaZ6r
+# wWskXJUxPGTFcPGjpV4nI6GllDKQF9yEP9/2MkTyX8qAMZMsza6RnF622mQBX+b+
+# GFr3hUx9ntT14G1L3qE2XUf+ZLjik4tClu4=
 # SIG # End signature block
