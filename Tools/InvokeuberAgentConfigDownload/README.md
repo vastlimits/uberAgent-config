@@ -2,13 +2,13 @@
 
 ## Description
 
-While the configuration for uberAgent UXM typically does not change much, the configuration for uberAgent ESA changes daily, as the included sigma rules are updated daily.
+While the configuration for uberAgent UXM remains relatively static, the configuration for uberAgent ESA changes daily due to regular updates to the included Sigma rules.
 
-To make your life easier, we wrote a PowerShell script that automates the configuration file pulling, filtering, and bundling.
+To make your life easier, we provide a PowerShell script that automates the configuration file pulling, filtering, and bundling.
 
 You can find examples in the [Syntax and Examples](#syntax-and-examples) section for the most common use-cases:
 - **Example 1**: you have a customized `uberAgent.conf` that should persist, but all other configuration files should be on the latest version available on GitHub.
-- **Example 2**: you did several customizations in the configuration files that should persist, but all TDE rules and SCI tests should be on the latest version available on GitHub.
+- **Example 2**: you applied several customizations in the configuration files that should persist, but all TDE rules and SCI tests should be on the latest version available on GitHub.
 - **Example 3**: you want the latest TDE rules from GitHub with a few exceptions.
 
 ## Development
@@ -36,7 +36,7 @@ DESCRIPTION
 
 PARAMETERS
     -Branch <String>
-        The GitHub branch that should be cloned. A branch equals to an uberAgent version. Mandatory parameter.
+        The GitHub branch that should be cloned. A branch is equivalent to an uberAgent version. Mandatory parameter.
         
         Required?                    false
         Position?                    1
@@ -45,7 +45,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -TargetDirectory <String>
-        Path where the files should be copied to. Only full paths are supported. Do not use relative paths. Mandatory 
+        Path the files should be copied to. Only full paths are supported. Do not use relative paths. Mandatory 
         parameter.
         
         Required?                    true
@@ -55,8 +55,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Excludes <String[]>
-        List of files that will not be downloaded. Wildcards are supported. Use it when you want to persist existing 
-        config files. Excludes takes precedence over includes.
+        List of files not downloaded. Wildcards are supported. Use it when you want to persist existing config files. 
+        Excludes takes precedence over includes.
         
         Required?                    false
         Position?                    3
@@ -65,8 +65,8 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Includes <String[]>
-        List of files that will be copied. Wildcards are supported. Use it when you want to download only a subset 
-        from GitHub. Excludes takes precedence over includes.
+        List of files to be copied. Wildcards are supported. Use it when you want to download only a subset from 
+        GitHub. Excludes takes precedence over includes.
         
         Required?                    false
         Position?                    4
@@ -75,9 +75,10 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -uAConfigArchive <Boolean>
-        Creates an uberAgent.uAConfig archive from the target directory. The uberAgent.uAConfig will be placed in the 
-        root of the target folder.
-        The archive gets downloaded by the endpoint agents and applied if changes are found.
+        Creates an uberAgent.uAConfig archive from the target directory. The uberAgent.uAConfig is placed in the root 
+        of the target folder.
+        The archive is downloaded by the endpoint agents and applied if meaningful changes are found. See 
+        https://uberagent.com/docs/uberagent/latest/advanced-topics/auto-application-of-configuration-changes/.
         Default is true.
         
         Required?                    false
@@ -88,7 +89,7 @@ PARAMETERS
         
     -ForceVersionUpdate <Boolean>
         This updates the version setting in the uberAgent.conf so that the endpoint agent is forced to restart and 
-        update the config even if there were no changes.
+        update the config even if there were no meaningful changes.
         Requires an existing uberAgent.conf in the target directory.
         Default is false.
         
@@ -123,8 +124,8 @@ OUTPUTS
     PS C:\>.\InvokeuberAgentConfigDownload.ps1 -Branch "7.1" -TargetDirectory "\\server\share\uberAgentConfig" 
     -Excludes "uberAgent.conf" -uAConfigArchive $true -ForceVersionUpdate $true
     
-    Download everything except the uberAgent.conf. Create an uberAgent.uAConfig archive and update the version string 
-    to force the endpoint agent to apply the archive.
+    Download everything except uberAgent.conf. Create an uberAgent.uAConfig archive and update the version string to 
+    force the endpoint agent to apply the archive.
     
     
     

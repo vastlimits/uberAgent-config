@@ -5,24 +5,24 @@
 Downloads the uberAgent configuration from a configurable GitHub branch, applies excludes and includes, creates a configuration archive, and copies the result to a target folder.
 
 .PARAMETER Branch
-The GitHub branch that should be cloned. A branch equals to an uberAgent version. Mandatory parameter.
+The GitHub branch that should be cloned. A branch is equivalent to an uberAgent version. Mandatory parameter.
 
 .PARAMETER TargetDirectory
-Path where the files should be copied to. Only full paths are supported. Do not use relative paths. Mandatory parameter.
+Path the files should be copied to. Only full paths are supported. Do not use relative paths. Mandatory parameter.
 
 .PARAMETER Excludes
-List of files that will not be downloaded. Wildcards are supported. Use it when you want to persist existing config files. Excludes takes precedence over includes.
+List of files not downloaded. Wildcards are supported. Use it when you want to persist existing config files. Excludes takes precedence over includes.
 
 .PARAMETER Includes
-List of files that will be copied. Wildcards are supported. Use it when you want to download only a subset from GitHub. Excludes takes precedence over includes.
+List of files to be copied. Wildcards are supported. Use it when you want to download only a subset from GitHub. Excludes takes precedence over includes.
 
 .PARAMETER uAConfigArchive
-Creates an uberAgent.uAConfig archive from the target directory. The uberAgent.uAConfig will be placed in the root of the target folder.
-The archive gets downloaded by the endpoint agents and applied if changes are found.
+Creates an uberAgent.uAConfig archive from the target directory. The uberAgent.uAConfig is placed in the root of the target folder.
+The archive is downloaded by the endpoint agents and applied if meaningful changes are found. See https://uberagent.com/docs/uberagent/latest/advanced-topics/auto-application-of-configuration-changes/.
 Default is true.
 
 .PARAMETER ForceVersionUpdate
-This updates the version setting in the uberAgent.conf so that the endpoint agent is forced to restart and update the config even if there were no changes.
+This updates the version setting in the uberAgent.conf so that the endpoint agent is forced to restart and update the config even if there were no meaningful changes.
 Requires an existing uberAgent.conf in the target directory.
 Default is false.
 
@@ -32,7 +32,7 @@ Default is "https://github.com/vastlimits/uberAgent-config"
 
 .EXAMPLE
 .\InvokeuberAgentConfigDownload.ps1 -Branch "7.1" -TargetDirectory "\\server\share\uberAgentConfig" -Excludes "uberAgent.conf" -uAConfigArchive $true -ForceVersionUpdate $true
-Download everything except the uberAgent.conf. Create an uberAgent.uAConfig archive and update the version string to force the endpoint agent to apply the archive.
+Download everything except uberAgent.conf. Create an uberAgent.uAConfig archive and update the version string to force the endpoint agent to apply the archive.
 
 .EXAMPLE
 .\InvokeuberAgentConfigDownload.ps1 -Branch "7.1" -TargetDirectory "\\server\share\uberAgentConfig" -Includes "uberAgent-ESA-am-*.conf", "uberAgent-ESA-si-*.conf", "Security inventory", "Security inventory\*"
