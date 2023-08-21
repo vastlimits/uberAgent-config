@@ -6,7 +6,9 @@ This repository is the home for the [uberAgent](https://uberagent.com/) configur
 
 1. Select the Git branch that matches your installed uberAgent version.
 2. Clone this repository to your machine.
-3. Update the files in your [uberAgent configuration](https://uberagent.com/docs/uberagent/latest/planning/configuration-options/) with the files from the `config` or `config-dist` folders of this repository, depending on your uberAgent version (see below).
+3. Update the files in your [uberAgent configuration](https://uberagent.com/docs/uberagent/latest/planning/configuration-options/) 
+   - Choose either the files from the `config` or `config-dist` folders of this repository, depending on your uberAgent version (see [uberAgent Versions & Git Branches](#uberagent-versions--git-branches)).
+   - The process can be automated. See [uberAgent Configuration Update Automation](#uberagent-configuration-update-automation).
 
 ## Repository Structure
 
@@ -27,6 +29,12 @@ This repository is organized in such a way that uberAgent releases are represent
 | `config`      | Compiled configuration as individual source files. Use the contents of this folder for your **deployment with any uberAgent version**. |
 | `config-dev`  | Contains files that cannot be used without further processing, such as transpilation. Do not use the contents of this folder on your endpoints unless you know what you're doing. |
 | `config-dist` | Compiled configuration as configuration archive (`*.uAConfig`). Use the contents of this folder for your **deployment with uberAgent 7.1+**. |
+
+## uberAgent Configuration Update Automation
+
+While the configuration for uberAgent UXM typically does not change much, the configuration for uberAgent ESA changes daily, as the included sigma rules are updated daily.
+
+To make your life easier, we wrote a PowerShell script that automates the configuration file pulling, filtering, and bundling. You can find more information in [Tools/InvokeuberAgentConfigDownload](Tools/InvokeuberAgentConfigDownload).
 
 ## Help and Support
 
