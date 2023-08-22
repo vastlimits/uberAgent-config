@@ -193,13 +193,13 @@ function Invoke-GitClone {
 
     # Create/update the uberAgent config archive
     if ($uAConfigArchive -eq $true) {
-        $zipFilePath = Join-Path -Path $targetDirectory -ChildPath "config-temp.zip"
-        Compress-Archive -Path "$targetDirectory\*" -DestinationPath $zipFilePath
-
         $uAConfigArchiveFilePath = Join-Path -Path $targetDirectory -ChildPath "uberAgent.uAConfig"
         if (Test-Path $uAConfigArchiveFilePath) {
             Remove-Item $uAConfigArchiveFilePath -Force
         }
+
+        $zipFilePath = Join-Path -Path $targetDirectory -ChildPath "config-temp.zip"
+        Compress-Archive -Path "$targetDirectory\*" -DestinationPath $zipFilePath
         Move-Item $zipFilePath $uAConfigArchiveFilePath
     }
 
