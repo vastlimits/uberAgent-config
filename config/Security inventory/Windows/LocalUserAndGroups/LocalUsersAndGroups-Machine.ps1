@@ -176,7 +176,15 @@ function Get-vlLAPSTestEventLog {
       $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
 
       # merge lists to one output list
-      $lapsLog = $eventLog.Warnings + $eventLog.Errors
+      $lapsLog = @()
+
+      if ($eventLog.Warnings) {
+         $lapsLog += $eventLog.Warnings
+      }
+
+      if ($eventLog.Errors) {
+         $lapsLog += $eventLog.Errors
+      }
 
       if ($eventLog.Errors.Count -gt 0) {
          return New-vlResultObject -result $lapsLog -score 8 -riskScore $riskScore
@@ -458,8 +466,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCwrO2rOsjHEWXx
-# solrFLkrvkmPsX8vWAbHKaZEupUapKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBpsh09ASbACB2Q
+# QbGITEkCN8gFCh/6rSg0QXkjA5lzX6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -536,17 +544,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgoD7CzFnso2Zo
-# AJgV/MeblAuUETK7j5IPog2G3u6hbTEwDQYJKoZIhvcNAQEBBQAEggIAaN1NX5Qu
-# dhEMFXuqssphxrj0dWE6vU+MYIFK0W/nJdbcv+S42maKFLtfs9TzVxoly9MwPwGt
-# N9EGQltrh0GI51X+NNx39u5ujhqsmgft2xbk84kZ3v5MLgg0xm1tUySi5lffaFVf
-# vz9aJ6a/1ssbd58Crdkzep72xfWXuDWAziid5QcbZX3Wkg8N00h1vc47wU68sBCj
-# 1W6qbT6KZuSxZQEymXsiSXsPDbH+XAqYKOxTPNlusOry2cgGKS4FJP8PQcm+IVTe
-# kLB9QwHDQBx3DY74qNJzHepjYbQ9uIIdGgTKSL/9y28dQIu1Nel9dtvI+Okwp4sq
-# wYYZzV1YeddvgijSnDwlTLFYlsl17BoKtHUXGpLu2j9DbScnKGKm/Z8L1b64Ep+F
-# icwOSHTc7g6VaHeJwzc9N5JwQXAsALRIl3NP3XtrGGDcKZf6YnUJlGmStZwGaSS7
-# Y41CHridJgbsrhJPDYuKXMXakvFjqQthBxJ/rPTfjjVYsZIdxSBq+Up3Ti71fJee
-# op58X4Ye4z/Jkj1hDKacVirCaIYeMN/n8rD6V+CoPJwsSYexFIaXUcYUzH1ZJ4cu
-# wbVrUConMwBnBIsbMhehLJzVrin9NuYKBKeBuhuJ9MZDmwE4ts+yTQcqNwHwcphh
-# NpP7g1aWn1o2ESQ4PIxQVEU2anh7atwRRWk=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgVJCbdc/ecuaT
+# w2+SRkenul5LlwS2Qk9vGuFxDTgyDOowDQYJKoZIhvcNAQEBBQAEggIAzYg4L3ny
+# 3XUydIyk0HejKx3fLG1ObZB4nToVV+3jxAB3m+4GPu0Fsn9i4Toc+BC48hYpgipv
+# NEtKgmNPFcTcLKKCfOrojVmOS5IP03KTSnKQ6kv5jGXxsS7TMm3vXoFzbP1KonsA
+# igrhwlV4LQMnVyJAQ3+XrBcYYX4SpwjtAFepXEQFmh5zhd3d/2TvqGqVcQihta0D
+# ZsHZjMasWSIshfqEI5QWwJrgs02Pnw6Q4tkW6CTfEcgDwdX+iLrNSEbboIBEmRJI
+# EOIE3mhhoTg4TkPlQMn2IRcrAZRLVg0wo8iZawj+RNBBG6omfHn4Qzg3rA40riRA
+# sPlmWL2vJUVLsoMfNQbs2YYmDYrJ4+hKVyJ8doIdj6gAfiW5KgqFbt3HwXLADVSU
+# FbXCVrTO8BcEdbcmQMCK7qdeR1seMO6kaacJ2I/+ZP2lEihA33/VC1psXUPFfvVj
+# 9fkCnl+OrotbjpjGm/N9sY00bf5ZVqPEWBLO+eocaWQig4qfZHBlMpaljHZq6OUO
+# 4yCMZB57JnLAOjGvY4xI5ZE+8zTJiMc/lVEaz5GC4u0n2tE+tLXf31+kbLUBeM9J
+# uzPW6rn7ErjMS1lqnkzR040Jbh3pWWB729CkjqwxOM7RwZQ8TVZXvJIqrIN8jw/C
+# sZT5RO6KGDcUAnCLlFDiDqY9QDqPbkFg8GU=
 # SIG # End signature block

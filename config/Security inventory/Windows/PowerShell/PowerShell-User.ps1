@@ -20,11 +20,8 @@ function Get-vlPowerShellExecutionPolicy {
    process {
       try {
 
-         $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
-
          $result = [PSCustomObject]@{
             ExecutionPolicy = "Undefined"
-            User            = $currentUser.Name
          }
 
          $policys = Get-ExecutionPolicy -List
@@ -176,8 +173,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCA7WRswY/BSMZhx
-# kkz2ha5dDdvRZ3bruNgUenQUznMEzaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAztG9Ls7BDeMtR
+# Ei7tlfdiscf93yt21TA2QKs2PS3yhKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -254,17 +251,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg08TQK4nixF9h
-# K7gQJYktDQKkR1dcxBXTsX/bbmChoQwwDQYJKoZIhvcNAQEBBQAEggIATjqYp+d6
-# QEwwDcl52BBoPiX+95sRO8/6rGbSrO4mY4gfNuVVdxWT+jRxeX8ZEp4K0tA9FfNe
-# B7Dg3mQvLUWgjI8YTqMvLErJC9K+f0tDElNloN84bTMHui6Ij9TBzRTvxJmrTq1Q
-# oPZhCZq50Co25uNe7+05XDamR6iZVveJ0j/WZG09sOeF6oplGYmsm5a/3Q9UwljV
-# 69C4YYsDIIwme62gv0DVoRfxDHppkmrdZ4QCcPdOa2kBxzEdCAeiO45o2oAlf071
-# TYnK7yImPSjY9UpkDkYdZl3XknyObXO7TtIbNm9i4ZsBa0krY3ITNKyL7mGRqa7I
-# FRBjLno8i/+tFItztH4w+c8ucexyCH3X9T6sNioEfS3uAv37csKBaHUUNvKESpuv
-# TJmdgLBXa8JHPTJi2IEiIGZR72yorubZ+P9IyDeSPetU4t1hOzykxFwayzRwycE7
-# qAxidmiV8FLhIeW6ZYccyZvE0qZWqVMQysyCohJhi02xrfGW0iu0bMlcD2tq1VRK
-# KBHR9V4UZkI0v0UMRJHqjNz42SpkQO3PT9QhwF0mCv5IbbJBY7fwnFloe45vrkQB
-# cQX56JyBdXdAhtn4pGBfuTmXSCOSfBuuvYuulGszFiPbjQDk7J7pkGAKDqTZCebN
-# L5lK8M8irLhjMssU2nbjgWDCXe8l7k45rrc=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgHCVj9sq0EQKu
+# l8A/NA+OSxPbH00dAjbTCX/rQAXkcSwwDQYJKoZIhvcNAQEBBQAEggIAPep396VW
+# 0bNQTgkkVSdkXaZ62g6zObE0DKy3L7BSkqhT+dA+QxPYCNf4ZS8g0GuxfoC+NOFs
+# y3p2305eqd6VMcNMuC5gT28R7eegJqMdnasBTUs7ZiwvgGHYj2NV24Ja8CquXp6u
+# qg1syUlLqtYyRqhLd/wQhmfnpbhtac8cP0efCDAC81kWaHc2J/zbBF/noukZOy3q
+# Au9AdXRMnTJQAEqtOH4LRTHNnwzHK/xYDwturfeXoHOuKnCou+QljrpSlrehmi0X
+# NCcgx+UF3Vd4G3BRWjYKIJqBGQjnsy9CPUjD93QQ96LNoxZ+oU9hxdnL4gLxnYrb
+# 1sHfq39LT2jUSpFT2s62CetjSlCTqZoBBCbelXqJTFv6iDQirxXs72eTbG+hFhTW
+# y3426gmxU8vlyeDkLg8LXs1Q3n7KP6GBShQ04F4sqUYYwb87Sr3DTO6C+rsxhMqZ
+# u21AtIcpDADka+XGT+NcspMV4j/zMltokUlX+oB/jfH/x0jGAfakmv00POzuhsxD
+# TEU6YTBRL7uRxfdTE9eawGXkVAlbbsVO1jfDq7+/0inwtkQF26Zz9qvggVJf07oU
+# s547f3PDhgFljDnyLTmozlm4f4AFF1dJjSmj6hOeHENL/PWOCbzFZ9BmBRovWryW
+# 9Nn8fuFqC+BKoIx5G2I/uJ/nGF/jh1PQatA=
 # SIG # End signature block

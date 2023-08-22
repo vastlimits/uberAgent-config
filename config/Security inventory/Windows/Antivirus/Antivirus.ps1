@@ -105,8 +105,8 @@ function Get-vlAntivirusStatus {
                         Defender = $defenderStatus
                      }
 
-                     $score -= Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
-                     $score -= Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
+                     $score += Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
+                     $score += Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
                   }
                }
                else {
@@ -129,8 +129,8 @@ function Get-vlAntivirusStatus {
             if ($defenderStatus -and $defenderStatus.AMServiceEnabled -and $defenderStatus.AntispywareEnabled -and $defenderStatus.AntivirusEnabled) {
                $score = 10
 
-               $score -= Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
-               $score -= Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
+               $score += Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
+               $score += Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
 
                $result += [PSCustomObject]@{
                   Enabled  = $true
@@ -215,8 +215,8 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBDfLqxgIrHoHo+
-# ZzFfxEN2uOwbkRKoLGjSxUKpUDj886CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD5xESXU5U6foJh
+# BFSgmWaLCfewh5N5io8xM55i+Y0plaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -293,17 +293,17 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgszNxsUHI8Rym
-# X4kyQ11ShiBG0jByP+VdfZpPAk9wZi4wDQYJKoZIhvcNAQEBBQAEggIAJHOJ/kVZ
-# hYCUgltq5eRIqEOpLgebY965mtB9ibnI/KmRZTmRnEt1Y6uMybHiEAIKWwRwBlcX
-# kd1OsDVIdeToPLx/5sBELLsPtafaxv7b/fDpsVwJ625jdxvj3Z3e3Yt8aiEj9vjH
-# t1bHqDYFRWf704+OwN5px9YedQbwl2Gv/vjuqsDVdTss0Cn5N9GKD0N/NQdpcRk8
-# rlpB4GD6Zl8leHklHsWfW14mgBJ/Ib8GkMtMKIsd7Hxyzg7GS7SNv2hLwleOkT1q
-# zNNUwJw52jz6Mkl74+tDZg8tf3H0SEXR9Hek+3YgqiCpc3kdDuJ2Q79uyOF5srPU
-# zimhQyMYzIYarY081HFKyTxTUp359qhU7lSnPc9PXzca/H1ZgwIwxQGnw3745hmd
-# t/qfcsGwcYVSR8NT5z9INNbF6hzUgVdLFCLRtQSrL0vKTXW6blC5Gd+qSHJfOHkF
-# wlIipnu6zlvscAzzIb+4kTEsb4+S6081N84lbpo4biiQTywaDVrNadTpcLFRY1jY
-# dIt4QZNMVvn8Dzy5z5gssN8fpgCkdobCCPoo91dv45bsgiEFJ3QSauNUMtZ3k7gp
-# Pl584CIMdqa/ktj8jZuLx4XZzD9OLZtgzyYQZkeVU18qiXJQ/TBV3l5P72w8ZhwJ
-# +CLg+o8zB1EquphIF6o7XVVy6iM/KTHuULU=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgzYuqk7aoa2h7
+# LwLIEdpgkfdbmcz58KylqkB8q4BdrtEwDQYJKoZIhvcNAQEBBQAEggIAGNXpf77/
+# k11gvM3dlbqzSvVJPkAAQQHW7nPRUfjuk4mygtjlhTdk9Htv/d3MTaic6DP64GhV
+# iG1yc0uaLfALmZyLuSX0x7nWXfTpW9gPq52nCga/vpjp5lmEvLHj7cr2AF+AfsmV
+# OgRLhgWkJsmnAGJrt2PaqEfvd+vF89lHCXo4SiWLAPzI3faiGTb6fLjJC2R8kN+g
+# j53om7nzg9ndB8Bn8eiJjDnSIrLsvW/3IAXeeSWHYvbklGCWkPALVlT1bw9DNuAF
+# QMQ7mpjtBcPyn/XPx98bqgcoiV8oHlTvNwEgybr91Z7NOkueXjzekWKrzJz6HpIb
+# rkBuCAExOvDw18qh4vE8aGOs+Tp7tcIZTiRmjnGxtzGUPXi9En18g32fK7KjaWse
+# u5BKkKtrSvOY1dx3bilPfYbBFcvDH9AOoR7FWI8tcsxJ3r3+PzN/8jLab6hdkVco
+# 5qRUl+JKpkgzSaoHHrlzVdiMURrtf6GN60LROPOfj1p5BJ5wMiik0SNiync2tjAd
+# 5HSV3p63ywN7vbNfLDzM2JnBe7jF5WEjZei2xQ03IJzobKChwAZolzD2uGWs/1IH
+# 43wPEwqKY14VS4s8FihnlG+Haniel4ld0pmjOpnLwxwta38ApaZ/0q0n28fL1+zu
+# dTLk0h2+xP+e3hn8p1yOK5Yt1QHEJ/e1i08=
 # SIG # End signature block

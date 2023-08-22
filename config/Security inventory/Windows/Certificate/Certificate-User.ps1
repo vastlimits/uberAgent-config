@@ -166,8 +166,6 @@ function Get-vlGetCTLCheck {
       $score = 10
       $riskScore = 70
 
-      $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
-
       #Load Stl
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
@@ -182,7 +180,6 @@ function Get-vlGetCTLCheck {
 
       # convert NotAfter and NotBefore to string iso format
       $currentUserCerts = $currentUserCerts | ForEach-Object {
-         $_ | Add-Member -Type NoteProperty -Name "User" -Value $currentUser.Name
          $_.NotAfter = Get-vlTimeString -time $_.NotAfter
          $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          return $_
@@ -274,8 +271,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDCMIK/D02WNfoo
-# Ly/KYMJ9A7/QAH8yA1G0zUFKq18E+KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCATkSvpYkmcUMOq
+# gtegdtZnZs0NILkejSPHaTyZrvlna6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -352,17 +349,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgWXK/KHAlOWWo
-# 17JnPduqak1B+4C5rv9UZGPaDagoPPEwDQYJKoZIhvcNAQEBBQAEggIAY8uzUSzz
-# nPO9ob4+VoFIOFUqsWYJ5bbaJMOt/E78LUK+EOXUamGOwSO7xFcnAr0aBxY6qZIP
-# Wk4esfy2TWvpffHe47Dukb/fUVEhvBL3apYjJjWFs/BOyB6BReZ5sG20rybqRC9R
-# yRY6lHlheWWCtVAtxhi9zwqUCZlA18rpdvCyPdAHTBWzTYieQe+M0QmbvO+pUFOL
-# gw3dq2bvWSW4ffXCmERv5y1nyphef529hMuwYnpCTkVxhgTgoNbiQ9xua7OyRK6j
-# O8oGFa67IHNOnNTDzK/l4vvNZtRUlF9d9I7HyzNk7Xxb2KAY100cAfZcCaEeOm34
-# RLqTNb1ipiQ3QljSiaP4UWuUYQTJqJsfDsNJFy3ycMsQ/qnO+6o2VqS0kC7CGHfu
-# h5yU5qIitjUye63f71/RSKnTkeILjMhQq34D//tod7WWS2AtjIoJlN7jc5ezaciR
-# V+iWjGwdHW2A+Y1GZZSgR7LjW9EANqawBOYGRpmLcQ+gPViW94E5HsbYxOvqHOUi
-# sbndP3O3SWsGFDZuvyV3U5BxAhL3PaJtd25o4rpOghqza5ZENSxG3L80EzmndCfl
-# YRD5phUzUblcg30Ljqcr2GXcJ94yz2yHo601O4jdYH/BMd4HiR0lsv75Q5+dTz2y
-# 4YvB+lV2aXbydlSTOndrbuQ9xLTBWL7nh4M=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgRz80u7kG7rmT
+# vD6gTIjCml8yUQ1eoKu7FGKk2AWfqwQwDQYJKoZIhvcNAQEBBQAEggIA0lZvb9JQ
+# 4uTc2XdoIkEiPUjleId9zyLyxEKBbucbUMq0IHEZJnnrF8DG6wGlXf/6XdEyA3/7
+# qvyOSv9bVgeIx5ZgN7Fc18UIHmVAsWVRgF2/vn7aieYVJIzZfexj6RdaNP9KzLuE
+# znKTPTuWjm/xJ6L8SAbOhTmqYYgQxOPL0XhkI4uhRaXbEvaycAnHY8tiklrxC14D
+# nmY+9eG+FTx7FcF0JADz05uWrAvVucvGSECgSyH55pPEegktf3QFKSwdau2lNqqs
+# whrM5Ec1imfIB1Yktdpqe8iY9U7So6M69CH3Cxw7exwu40KX2gWaFKbV1Uy4M2N1
+# CRbnuB2DtOKyvilQXzuyRk0LudWGG6XXahJQNjNbgZZccQbWjcVxaimBGSlcDKKI
+# 19SA2mygCvDDl6rwYr+s8bXS6rkgJDhBVC7UmJLaExTBshRz1g+RPWVDqY/EDPfO
+# r5S4jzl6WXamw0arkwXTKdMUvBRj5N49DEwwpOiMemy3/CjATFgD8ktUdg9ObZ3G
+# y8QSkBVUSp6ip2P/90pKPrI86COUoiwuOzrQQ9PU1C3hrfYXapCYWZ709uK5z5wj
+# Ivz90CFd1vaW35eYtUFZwg+R68mqQohKTw03BEH0ZQUPXvcf14gQ/ZwJil1VWXBx
+# r3MN1meAUZeinkBX+3YVx+BqKC9FiF1mEBE=
 # SIG # End signature block
