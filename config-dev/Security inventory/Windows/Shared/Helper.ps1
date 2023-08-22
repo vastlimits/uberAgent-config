@@ -186,7 +186,6 @@ function New-vlResultObject {
 
    [CmdletBinding()]
    param (
-      [Parameter(Mandatory = $true)]
       $result,
       $score,
       $riskScore
