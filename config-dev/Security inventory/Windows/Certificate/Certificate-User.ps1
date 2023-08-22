@@ -166,8 +166,6 @@ function Get-vlGetCTLCheck {
       $score = 10
       $riskScore = 70
 
-      $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
-
       #Load Stl
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
@@ -182,7 +180,6 @@ function Get-vlGetCTLCheck {
 
       # convert NotAfter and NotBefore to string iso format
       $currentUserCerts = $currentUserCerts | ForEach-Object {
-         $_ | Add-Member -Type NoteProperty -Name "User" -Value $currentUser.Name
          $_.NotAfter = Get-vlTimeString -time $_.NotAfter
          $_.NotBefore = Get-vlTimeString -time $_.NotBefore
          return $_

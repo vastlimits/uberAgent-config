@@ -105,8 +105,8 @@ function Get-vlAntivirusStatus {
                         Defender = $defenderStatus
                      }
 
-                     $score -= Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
-                     $score -= Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
+                     $score += Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
+                     $score += Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
                   }
                }
                else {
@@ -129,8 +129,8 @@ function Get-vlAntivirusStatus {
             if ($defenderStatus -and $defenderStatus.AMServiceEnabled -and $defenderStatus.AntispywareEnabled -and $defenderStatus.AntivirusEnabled) {
                $score = 10
 
-               $score -= Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
-               $score -= Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
+               $score += Get-vlTimeScore($defenderStatus.AntispywareSignatureLastUpdated)
+               $score += Get-vlTimeScore($defenderStatus.AntivirusSignatureLastUpdated)
 
                $result += [PSCustomObject]@{
                   Enabled  = $true

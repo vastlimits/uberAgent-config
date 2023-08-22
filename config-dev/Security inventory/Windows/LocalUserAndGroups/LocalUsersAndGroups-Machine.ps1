@@ -176,7 +176,15 @@ function Get-vlLAPSTestEventLog {
       $eventLog = Get-vlLAPSEventLog -StartTime (Get-Date).AddHours(-24) -EndTime (Get-Date)
 
       # merge lists to one output list
-      $lapsLog = $eventLog.Warnings + $eventLog.Errors
+      $lapsLog = @()
+
+      if ($eventLog.Warnings) {
+         $lapsLog += $eventLog.Warnings
+      }
+
+      if ($eventLog.Errors) {
+         $lapsLog += $eventLog.Errors
+      }
 
       if ($eventLog.Errors.Count -gt 0) {
          return New-vlResultObject -result $lapsLog -score 8 -riskScore $riskScore

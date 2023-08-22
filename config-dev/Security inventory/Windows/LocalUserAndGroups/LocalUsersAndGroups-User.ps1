@@ -53,7 +53,6 @@ function Get-vlIsLocalAdmin {
       if ($isLocalAdmin) {
          $result = [PSCustomObject]@{
             IsLocalAdmin = $true
-            User         = $currentUser.Name
          }
 
          return New-vlResultObject -result $result -score 3 -riskScore $riskScore
@@ -61,7 +60,6 @@ function Get-vlIsLocalAdmin {
       else {
          $result = [PSCustomObject]@{
             IsLocalAdmin = $false
-            User         = $currentUser.Name
          }
          return New-vlResultObject -result $result -score 10 -riskScore $riskScore
       }

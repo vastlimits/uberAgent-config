@@ -20,11 +20,8 @@ function Get-vlPowerShellExecutionPolicy {
    process {
       try {
 
-         $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
-
          $result = [PSCustomObject]@{
             ExecutionPolicy = "Undefined"
-            User            = $currentUser.Name
          }
 
          $policys = Get-ExecutionPolicy -List
