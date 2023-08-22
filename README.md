@@ -8,7 +8,7 @@ This repository is the home for the [uberAgent](https://uberagent.com/) configur
 2. Clone this repository to your machine.
 3. Update the files in your [uberAgent configuration](https://uberagent.com/docs/uberagent/latest/planning/configuration-options/) 
    - Choose either the files from the `config` or `config-dist` folders of this repository, depending on your uberAgent version (see [uberAgent Versions & Git Branches](#uberagent-versions--git-branches)).
-   - The process can be automated. See [uberAgent Configuration Update Automation](#automating-uberagent-configuration-updates).
+   - The process can be automated. See [Automating uberAgent Configuration Updates](#automating-uberagent-configuration-updates).
 
 ## Repository Structure
 
