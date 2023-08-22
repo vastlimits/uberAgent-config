@@ -55,7 +55,7 @@ PARAMETERS
         Accept wildcard characters?  false
         
     -Excludes <String[]>
-        List of files not downloaded. Wildcards are supported. Use it when you want to persist existing config files. 
+        List of files that are not downloaded. Wildcards are supported. Use it when you want to persist existing config files. 
         Excludes takes precedence over includes.
         
         Required?                    false

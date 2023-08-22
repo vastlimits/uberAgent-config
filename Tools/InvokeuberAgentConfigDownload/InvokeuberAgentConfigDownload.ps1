@@ -11,7 +11,7 @@ The GitHub branch that should be cloned. A branch is equivalent to an uberAgent 
 Path the files should be copied to. Only full paths are supported. Do not use relative paths. Mandatory parameter.
 
 .PARAMETER Excludes
-List of files not downloaded. Wildcards are supported. Use it when you want to persist existing config files. Excludes takes precedence over includes.
+List of files that are not downloaded. Wildcards are supported. Use it when you want to persist existing config files. Excludes takes precedence over includes.
 
 .PARAMETER Includes
 List of files to be copied. Wildcards are supported. Use it when you want to download only a subset from GitHub. Excludes takes precedence over includes.
