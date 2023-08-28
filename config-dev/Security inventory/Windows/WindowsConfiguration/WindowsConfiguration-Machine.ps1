@@ -124,7 +124,13 @@ function Get-vlBitlockerEnabled {
 
       if ($bitlockerInstalled -eq $true) {
          # check if bitlocker is enabled using Get-BitLockerVolume
-         $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property  MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage, VolumeType
+         $bitlockerEnabled = Get-BitLockerVolume |
+         Select-Object -Property MountPoint,
+         @{Name = 'Status'; Expression = { $_.ProtectionStatus } },
+         EncryptionMethod,
+         EncryptionPercentage,
+         VolumeType
+
          $drives = Get-vlDrives
 
          # add the properties of drive to the bitlocker object by MountPoint and DriveLetter
@@ -147,11 +153,11 @@ function Get-vlBitlockerEnabled {
                continue
             }
 
-            if ($item.ProtectionStatus -ne "On" -or $item.EncryptionPercentage -ne 100) {
+            if ($item.Status -ne "On" -or $item.EncryptionPercentage -ne 100) {
                $allEncrypted = $false
             }
 
-            if ($item.VolumeType -eq "OperatingSystem" -and $item.ProtectionStatus -eq "On" -and $item.EncryptionPercentage -eq 100) {
+            if ($item.VolumeType -eq "OperatingSystem" -and $item.Status -eq "On" -and $item.EncryptionPercentage -eq 100) {
                $osEncrypted = $true
             }
          }
