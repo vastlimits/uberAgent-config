@@ -600,7 +600,7 @@ function Add-vlTimer {
     .OUTPUTS
 
     .EXAMPLE
-        Start-vlTimer -Name "timer1"
+        Add-vlTimer -Name "timer1"
     #>
 
    [CmdletBinding()]
