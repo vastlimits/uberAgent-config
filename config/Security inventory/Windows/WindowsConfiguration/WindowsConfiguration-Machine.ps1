@@ -124,7 +124,13 @@ function Get-vlBitlockerEnabled {
 
       if ($bitlockerInstalled -eq $true) {
          # check if bitlocker is enabled using Get-BitLockerVolume
-         $bitlockerEnabled = Get-BitLockerVolume | Select-Object -Property  MountPoint, ProtectionStatus, EncryptionMethod, EncryptionPercentage, VolumeType
+         $bitlockerEnabled = Get-BitLockerVolume |
+         Select-Object -Property MountPoint,
+         @{Name = 'Status'; Expression = { $_.ProtectionStatus } },
+         EncryptionMethod,
+         EncryptionPercentage,
+         VolumeType
+
          $drives = Get-vlDrives
 
          # add the properties of drive to the bitlocker object by MountPoint and DriveLetter
@@ -147,11 +153,11 @@ function Get-vlBitlockerEnabled {
                continue
             }
 
-            if ($item.ProtectionStatus -ne "On" -or $item.EncryptionPercentage -ne 100) {
+            if ($item.Status -ne "On" -or $item.EncryptionPercentage -ne 100) {
                $allEncrypted = $false
             }
 
-            if ($item.VolumeType -eq "OperatingSystem" -and $item.ProtectionStatus -eq "On" -and $item.EncryptionPercentage -eq 100) {
+            if ($item.VolumeType -eq "OperatingSystem" -and $item.Status -eq "On" -and $item.EncryptionPercentage -eq 100) {
                $osEncrypted = $true
             }
          }
@@ -422,8 +428,8 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB0GoN/i+yrvXaL
-# Pine5hyKVkU33N4PpMRG7A2YUW76BqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDYru/IeM+Gjj0E
+# 95N6Qd9yzVrjqNgRFkIimvCjzfZjc6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -500,17 +506,17 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg1kgLoIn0MGcH
-# QurM2HRYUd+vEUu3ZMS2dldnz+SFBPMwDQYJKoZIhvcNAQEBBQAEggIAxBkOO23a
-# XT4NLF+kMs7gRj1+ChNmY817kZEaTrt0O3Z+gfRdpe4lShuosFNJQ3k/0ciwR0qG
-# sATLhbbqple8gGpvzdGEJpwWSSxkSSZtVteJIQSKutWPJMcvipHfvW8JJucLWybn
-# 7SWK6x4Xt42Sek2FlG0MiWeKBaGRvO6B0QuZTjJm2ElyZSAPfhWXVdBW2nb/EopL
-# kjxRX1JaJmZECWbzjnbeLdpzkxu6VPc+VLU9dFPbxmULqO6mx1EPatpHAcqgbP5f
-# lsRQhZsCtqOynETQ+Tw/oGFD8dQgHqLEoGX+l8YtQSZXBGlVMeLNuiGYgFA+IfzY
-# UOFjkUtfiym6SNRGILecQelZXqmUw6p8U/zhbRjVnZla1CoSUWBAVez2hGUfKnoJ
-# iCuEM21XhCnSQhPA4BWD4bqaX3iQvHHmn50C5oVq4MhD1Gt39eqdjUkt+iFXOV13
-# CwaPj1FE9DuWjJF2cpWNpiiSZpsXm0bcCE0yA45BfLnlqcNkHA14t4ueILC2H4IL
-# 3cgeU+YPhssRJZqMYmHxdrqzMEqRMn0zlUtycX/imQ1OLsCT07quJHFnhTXVwycY
-# Qu/dd4zFlcOb2qdGTJrL7MpnGTzH0AN5wbkIpaXs/Icq4rBLKfyUOub2Rwo+xtIh
-# INXb1jrdcaUKaqbVp18oJL/zCENaCygNub4=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgT4UurhdUDwsB
+# msZv3t2ruVfUfJq0g0QtdwLC0L6NP5YwDQYJKoZIhvcNAQEBBQAEggIAUh5dJdzU
+# 1bapoAnqd5VA8SgS3BNNnO8Lno6T56NRmvKTDPDKW9hDeRU5rfW7ERHGHXVL3vEr
+# 3TSfG5taWQYOOE33TDq70LWVae+gfyuLf7MRWm2Us/lGPGwvbChoQnAJI0Nldk5i
+# WMcDGpyxNmkwBlawysKGJyTbZvNXfbCPzWQ0MyRdH+lskFqZNCZ9TXAwGF3U/pm8
+# S/j2qk/ZemgWFr+v6I/7Dn89UbgdyQJVxjD9jfoC3+Ja9sLNPIJgWkBYeWUFcMIZ
+# j4/k7d3AISMP6/q9ClDnIocx+7X28zaXSzWxPGfV/2SJJYaZoXUdoFrsrp3Uq7yO
+# ijUTddXkqWEZrinM7prfuFCWOcys/B0AO6rQjRYro4PcVWYdvUKJ0SksFWbnHaI8
+# N68dRe/ZtrTVSFY5KCNnf9zZ7bMECgnbGSAWJVTNUjknnyvQBgTus3sl5u/IYncs
+# tCv5+PoWq5FfsNNbyMBm8tpwKJC1d8sKj/xzJdwXfCKtVNPyU7WR87s7FYkUBnLM
+# 4IEj/bqyYkc3C88myOl3Mri/kjLcVq4VUTqGBjppFTNEl54nr5Ps2e4m+z1tyyMY
+# wcMCwHfv+bkABTn+JdLto4ZWVJ86QF5BNPkJj+eXFmW0/Lczrroo65VcnNBueaIQ
+# aaj587UUYVhlV/BLREc0tc2KBXImtCdDSPA=
 # SIG # End signature block
