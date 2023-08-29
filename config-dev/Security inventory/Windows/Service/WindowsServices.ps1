@@ -87,7 +87,7 @@ function Get-vlServiceDLLLocations {
 
             $ServiceDLL = $PSItem.ServiceDLL
             $ServiceName = ($PSItem.PSParentPath).split('\\')[-1]
-            if ($ServiceDLL -inotmatch '^C:\\WINDOWS\\system32.*$' -AND $ServiceName -inotmatch '^AzureAttestService$|^WinDefend$|^WinHttpAutoProxySvc$') {
+            if ($ServiceDLL -inotmatch '^((\\\?\?\\)?%SystemRoot%|C:\\WINDOWS)\\System32\\.*' -AND $ServiceName -inotmatch '^AzureAttestService$|^WinDefend$|^WinHttpAutoProxySvc$') {
 
                $result += [PSCustomObject]@{
                   Service    = $ServiceName
