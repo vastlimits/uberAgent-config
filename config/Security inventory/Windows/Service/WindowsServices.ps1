@@ -87,7 +87,7 @@ function Get-vlServiceDLLLocations {
 
             $ServiceDLL = $PSItem.ServiceDLL
             $ServiceName = ($PSItem.PSParentPath).split('\\')[-1]
-            if ($ServiceDLL -inotmatch '^C:\\WINDOWS\\system32.*$' -AND $ServiceName -inotmatch '^AzureAttestService$|^WinDefend$|^WinHttpAutoProxySvc$') {
+            if ($ServiceDLL -inotmatch '^((\\\?\?\\)?%SystemRoot%|C:\\WINDOWS)\\System32\\.*' -AND $ServiceName -inotmatch '^AzureAttestService$|^WinDefend$|^WinHttpAutoProxySvc$') {
 
                $result += [PSCustomObject]@{
                   Service    = $ServiceName
@@ -184,8 +184,8 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCh51J3LV8/Deok
-# 6MKGWVfczh4lRGsI0g9VBjHwrbdpfqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB0d9QKViwZ1Jxj
+# FZCyjqSniunFchlK8OplyRebChHA8qCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -262,17 +262,17 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgt4llQPnbQGm6
-# NkYBz5eKuX1fEcFL6ah9gEnvjTN6gsEwDQYJKoZIhvcNAQEBBQAEggIAKgEposeh
-# 3wqxwEfeevi7cof++8ZLZ0UR7H70DQ/sjnAJ3XJffmZdX+1loSUmZYCjWRMoCnb7
-# Sv6Y2dyN65QUsiziN3faQV4DAIQmvNYmJKxQJQNn7RMC5+1p1s+taCPMmUxWth3j
-# rAjyE2gZALaCwNt+i/FtZ6jO0DB+02zaGO4qJk7ggMiXFAjjXAcDxQ3d+bRA67ju
-# VCuFyRSJulUhadxCw1v4+z0RYaj3ODkIIYfTgdDdRr5Jo0XrxeYIi6qDgOqoc4ON
-# fexRzq3OogQ9pmK/sb6FzPRH9f0D0ECDeCs0WY4G/Vechq99nj/ncwg8l9H4Rzt2
-# kraX33mrGoZcvEnj5O+GHFE+udeTxB3af/xpe9lBhQfT3Z2+Te4o2jbg02Muyq27
-# QuzlGgfqxD5C2K8jeo9zk80i18NNPJ0kYOxT89+Dfnl5FuV0stXLpXkIzMWKhs/j
-# 6dZtQGyyn04BSf7KURDFZVdr4Ti5DDPzLIrYIRkdqLAw88cFV3uMYIJ4uxNT7Va4
-# Js0etcUu3rcL1Q3aNr7InPVXMVvgmm7QIzgTmcRwvQPQaVyY4mcGRp5GDZF0JN0h
-# rnntYQXYq8HgZ5laChQPV3ZEHriZ3JzHXTzIQYmuTIZ4PkA/yqBDPBVkiVnSZY5T
-# t5NuOiCtdHNOH+mT45X+xwKNMHwn32sM+58=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgiMfPEWydFfiU
+# 6ynDetV755rJFFu4TK12OifAP1yOI2gwDQYJKoZIhvcNAQEBBQAEggIAaKX+2hTJ
+# XAky1ewqRmcWnV1hotxW/m0wWdiADsP1t92APbeY5rmgjphJ6kGJDJ4bhwLl2NeQ
+# CTquNSSg7w2Ivs/mhOLb/dLv/v+JqVoMQ36VDJOeu8+Io6HTFJRfe5w1RJ8Pypn6
+# 23NkJJd7AW5bXJrALvazLYr7WNZJtNoxTFVrWoJYDu1kIYA0t//AsK10O3Y/B2o4
+# 3EDvg5UJILINUcfWWdidCNkDjz/S//VR3reVs7px83klY3YXJj+JEyK7z1j8sg7k
+# Tab3DXFbfuKbO3zLiz4Lf1n/dHLUaRugxfbNfCodEYi06gO8cZhdpzPk9r2Ctv+g
+# +eH+JEoDkfbh3/QiaR9/TNdCnqwEGa69SXYOEILUjncTcwPj9j7ilys2d6piPU8v
+# XSNYrWtnmfiKd69UID1YYZZnuUSwNCs9+LHeHhqvbJQ6gctStcYFFs4bRdTWx4ef
+# rL4HLLwNN8+T5Qyb4kK6ApnMIMQeXZS4Ew8x7guBBc1zMmOLSAJBsbhxgUkuGYtd
+# +QdcKH/9gCYroN9hdiQRJ9/dXe2xYblbZRwu4mzF3YZJe7tTyil0D/3wVGgVnUNJ
+# 7SNZu66SkZAOaBM6ruvvuhmBn88PtRqxZeeeBhCGZLhWgY6TzY4s7xX1MzqmWptg
+# FZdv1mlTUtVnzt2GAi+HYLkRcga8suMupdU=
 # SIG # End signature block
