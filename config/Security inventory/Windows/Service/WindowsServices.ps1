@@ -80,39 +80,49 @@ function Get-vlServiceDLLLocations {
 
    process {
       $riskScore = 90
+      $result = @()
 
       try {
-         $result = @()
-         Get-ItemProperty hklm:\SYSTEM\CurrentControlSet\Services\*\Parameters | Where-Object { $_.servicedll } | ForEach-Object -process {
-
-            $ServiceDLL = $PSItem.ServiceDLL
-            $ServiceName = ($PSItem.PSParentPath).split('\\')[-1]
-            if ($ServiceDLL -inotmatch '^((\\\?\?\\)?%SystemRoot%|C:\\WINDOWS)\\System32\\.*' -AND $ServiceName -inotmatch '^AzureAttestService$|^WinDefend$|^WinHttpAutoProxySvc$') {
-
-               $result += [PSCustomObject]@{
-                  Service    = $ServiceName
-                  ServiceDLL = $ServiceDLL
-               }
-            }
-
-         }
-
-         if (-not $result) {
-            # No service.dll file outside common locations found
-            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
-         }
-         else {
-            # Service.dll file outside common location found
-            return New-vlResultObject -result $result -score 1 -riskScore $riskScore
-         }
+         $services = Get-ChildItem 'hklm:\SYSTEM\CurrentControlSet\Services'
       }
       catch {
-
          return New-vlErrorObject($_)
       }
-      finally {
 
-      }
+      $services | ForEach-Object {
+         try {
+             $property = Get-ItemProperty -Path "$($_.PSPath)\Parameters" -ErrorAction Stop
+             if ($property.ServiceDLL) {
+               $ServiceDLL = $property.ServiceDLL
+               $ServiceName = ($property.PSParentPath).split('\\')[-1]
+               if ($ServiceDLL -inotmatch '^((\\\?\?\\)?%SystemRoot%|C:\\WINDOWS)\\System32\\.*' -AND $ServiceName -inotmatch '^AzureAttestService$|^WinDefend$|^WinHttpAutoProxySvc$') {
+
+                  $result += [PSCustomObject]@{
+                     Service    = $ServiceName
+                     ServiceDLL = $ServiceDLL
+                  }
+               }
+             }
+         }
+         catch [System.Management.Automation.ItemNotFoundException] {
+            # This error happens if the registry key does not exist, which can happen in case of user services like CaptureService_* which are gone after logoff
+            # If that happens, skip the service
+         }
+         catch {
+            return New-vlErrorObject($_)
+         }
+     }
+
+     if (-not $result) {
+      # No service.dll file outside common locations found
+      return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+     }
+     else {
+        # Service.dll file outside common location found
+        return New-vlResultObject -result $result -score 1 -riskScore $riskScore
+     }
+
+
 
    }
 
@@ -184,8 +194,8 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCB0d9QKViwZ1Jxj
-# FZCyjqSniunFchlK8OplyRebChHA8qCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAlNf85IiqYnluF
+# u7h/Bmll1KcrdBqouD4auCbygw1A9aCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -262,17 +272,17 @@ Write-Output (Get-vlWindowsServicesCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgiMfPEWydFfiU
-# 6ynDetV755rJFFu4TK12OifAP1yOI2gwDQYJKoZIhvcNAQEBBQAEggIAaKX+2hTJ
-# XAky1ewqRmcWnV1hotxW/m0wWdiADsP1t92APbeY5rmgjphJ6kGJDJ4bhwLl2NeQ
-# CTquNSSg7w2Ivs/mhOLb/dLv/v+JqVoMQ36VDJOeu8+Io6HTFJRfe5w1RJ8Pypn6
-# 23NkJJd7AW5bXJrALvazLYr7WNZJtNoxTFVrWoJYDu1kIYA0t//AsK10O3Y/B2o4
-# 3EDvg5UJILINUcfWWdidCNkDjz/S//VR3reVs7px83klY3YXJj+JEyK7z1j8sg7k
-# Tab3DXFbfuKbO3zLiz4Lf1n/dHLUaRugxfbNfCodEYi06gO8cZhdpzPk9r2Ctv+g
-# +eH+JEoDkfbh3/QiaR9/TNdCnqwEGa69SXYOEILUjncTcwPj9j7ilys2d6piPU8v
-# XSNYrWtnmfiKd69UID1YYZZnuUSwNCs9+LHeHhqvbJQ6gctStcYFFs4bRdTWx4ef
-# rL4HLLwNN8+T5Qyb4kK6ApnMIMQeXZS4Ew8x7guBBc1zMmOLSAJBsbhxgUkuGYtd
-# +QdcKH/9gCYroN9hdiQRJ9/dXe2xYblbZRwu4mzF3YZJe7tTyil0D/3wVGgVnUNJ
-# 7SNZu66SkZAOaBM6ruvvuhmBn88PtRqxZeeeBhCGZLhWgY6TzY4s7xX1MzqmWptg
-# FZdv1mlTUtVnzt2GAi+HYLkRcga8suMupdU=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgthGVvEkUe2zj
+# S2MJ0hcopEvMYW99aMr3Bklc2tlGj9QwDQYJKoZIhvcNAQEBBQAEggIAbXgFXeAL
+# GtZ0qjW55H+ShzrWWwMtIESCnPuCnGGhF4eVfb9Mdud9Tj/5DNwr6U48yiRSHGco
+# T6ZA0nULjaLG2dKVA69T6xERmce+RXWQVv+lN3wMW2opE6DzrubFX0gPFoH+ogiK
+# 4rlaDMDRBSoFs5vWw05f12jdpcDoqpr3jqj+hLYqubXbKl8eGxc6SIywR0B7mGEN
+# wcM50MVWnV/2WRQMOZYR+J4efUvw7bu7R/1xoXKHJJPx+YtJgN2P9EnHP6vWYDGU
+# XGM8S0UeYwsBZf/7djIAFnCpga2/HW/1RQuKwKacz3HxqCthCIxQI3CRLj/uurtr
+# n9De30LQL4pEoqVElYw77LgnmfHYE5JC9d2yBjdy40MrSFW3Lx+AUfzl6S+1lmq8
+# hDCUhObjDieymIW7r5Io5gYw7YZZku0m7SHpnpIft6isF8/6tsndEtVkXgDkXUNf
+# 5hh9uRukFfCLXSY+gUjYhjHBbhFqCtpBFV4Q9i26+f9ZLuwBZb78UfF4q2LDkYkG
+# ZYaZO2KFoVHvpXx5xGgpfmIqXgq3L20JWofgX93AC4CL3C3fRY/tAheyX3w9efoH
+# LROqvT2i61NsVhC8hqmFY1fqg9mYx/kxprFO6nrdTKN3LLegdeWaF9hPL6n5usCT
+# cWfuRdE8BfW3HqNWmPBos8OFp8cn8bBJ6es=
 # SIG # End signature block
