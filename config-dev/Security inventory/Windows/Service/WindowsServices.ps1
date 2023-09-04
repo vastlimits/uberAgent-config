@@ -80,39 +80,49 @@ function Get-vlServiceDLLLocations {
 
    process {
       $riskScore = 90
+      $result = @()
 
       try {
-         $result = @()
-         Get-ItemProperty hklm:\SYSTEM\CurrentControlSet\Services\*\Parameters | Where-Object { $_.servicedll } | ForEach-Object -process {
-
-            $ServiceDLL = $PSItem.ServiceDLL
-            $ServiceName = ($PSItem.PSParentPath).split('\\')[-1]
-            if ($ServiceDLL -inotmatch '^((\\\?\?\\)?%SystemRoot%|C:\\WINDOWS)\\System32\\.*' -AND $ServiceName -inotmatch '^AzureAttestService$|^WinDefend$|^WinHttpAutoProxySvc$') {
-
-               $result += [PSCustomObject]@{
-                  Service    = $ServiceName
-                  ServiceDLL = $ServiceDLL
-               }
-            }
-
-         }
-
-         if (-not $result) {
-            # No service.dll file outside common locations found
-            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
-         }
-         else {
-            # Service.dll file outside common location found
-            return New-vlResultObject -result $result -score 1 -riskScore $riskScore
-         }
+         $services = Get-ChildItem 'hklm:\SYSTEM\CurrentControlSet\Services'
       }
       catch {
-
          return New-vlErrorObject($_)
       }
-      finally {
 
-      }
+      $services | ForEach-Object {
+         try {
+             $property = Get-ItemProperty -Path "$($_.PSPath)\Parameters" -ErrorAction Stop
+             if ($property.ServiceDLL) {
+               $ServiceDLL = $property.ServiceDLL
+               $ServiceName = ($property.PSParentPath).split('\\')[-1]
+               if ($ServiceDLL -inotmatch '^((\\\?\?\\)?%SystemRoot%|C:\\WINDOWS)\\System32\\.*' -AND $ServiceName -inotmatch '^AzureAttestService$|^WinDefend$|^WinHttpAutoProxySvc$') {
+
+                  $result += [PSCustomObject]@{
+                     Service    = $ServiceName
+                     ServiceDLL = $ServiceDLL
+                  }
+               }
+             }
+         }
+         catch [System.Management.Automation.ItemNotFoundException] {
+            # This error happens if the registry key does not exist, which can happen in case of user services like CaptureService_* which are gone after logoff
+            # If that happens, skip the service
+         }
+         catch {
+            return New-vlErrorObject($_)
+         }
+     }
+
+     if (-not $result) {
+      # No service.dll file outside common locations found
+      return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+     }
+     else {
+        # Service.dll file outside common location found
+        return New-vlResultObject -result $result -score 1 -riskScore $riskScore
+     }
+
+
 
    }
 
