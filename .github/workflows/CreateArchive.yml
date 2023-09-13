@@ -2,8 +2,10 @@ name: Create config archive
 
 on:
   push:
-    branches:             # this YAML file needs to reside in all of the branches specified here
-    - develop
+    branches-ignore:
+    - "main"
+    - "version/7.0"
+    - "version/6.2"
     paths-ignore:
     - "config-dist/**"    # avoid recursion
     
@@ -15,13 +17,10 @@ env:
 jobs:
   create-archive:
     runs-on: ubuntu-latest
-
     steps:
-    
     - name: Check out repo
       uses: actions/checkout@v3
       with:
-        # ref: develop     # hard-coded to allow for manual workflow runs
         ref: ${{ github.ref_name }}
         token: ${{ secrets.VLSVC_PAT }}
         
