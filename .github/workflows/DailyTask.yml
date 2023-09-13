@@ -9,7 +9,7 @@ jobs:
   build:
     strategy:
       matrix:
-        branch: [ develop, version/6.2, version/7.0 ]
+        branch: [ develop, version/6.2, version/7.0, version/7.1 ]
     
     runs-on: ubuntu-latest
 
