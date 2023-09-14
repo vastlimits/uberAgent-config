@@ -45,10 +45,10 @@ function Get-vlAntivirusStatus {
          $riskScore = 100
 
          $isWindowsServer = Get-vlIsWindowsServer
-         $isWindows7 = Get-vlIsWindows7
+         $isMpComputerStatusAvailable = Get-vlIsCmdletAvailable "Get-MpComputerStatus"
          $defenderStatus = [PSCustomObject]@{}
 
-         if ($isWindows7 -ne $true) {
+         if ($isMpComputerStatusAvailable -eq $true) {
             $instances = Get-MpComputerStatus
 
             $defenderStatus = [PSCustomObject]@{
@@ -200,7 +200,6 @@ function Get-vlAntivirusCheck {
 
    Write-Output $output
 }
-
 
 try {
    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8

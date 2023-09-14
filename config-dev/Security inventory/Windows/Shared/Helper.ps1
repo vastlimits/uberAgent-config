@@ -585,6 +585,29 @@ function Get-vlTimeString {
    }
 }
 
+function Get-vlIsCmdletAvailable {
+   [CmdletBinding()]
+   [OutputType([bool])]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$CmdletName
+   )
+
+   try {
+      $cmdlet = Get-Command $CmdletName -ErrorAction SilentlyContinue
+      if ($null -ne $cmdlet) {
+         return $true
+      }
+      else {
+         return $false
+      }
+   }
+   catch {
+      return $false
+   }
+
+}
+
 ##### Debugging utilities #####
 
 function Add-vlTimer {
@@ -723,6 +746,54 @@ function Get-vlTimerElapsedTime {
    }
 }
 
+function Write-vlDebugLog {
+   <#
+    .SYNOPSIS
+        Write the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
+    .DESCRIPTION
+        Write the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
+    .PARAMETER Name
+        The name of the timer
+    .PARAMETER Unit
+        The unit of time to return. Valid values are "sec" and "ms"
+    .PARAMETER UseFile
+        Write the elapsed time to a file
+    .LINK
+        https://uberagent.com
+    .OUTPUTS
+
+    .EXAMPLE
+        Write-vlTimerElapsedTime -Name "timer1"
+    #>
+
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Data,
+      [Parameter(Mandatory = $false)]
+      [bool]$UseFile = $false
+   )
+
+   process {
+      # get current time and format it for the log with milliseconds like 2019-01-01 12:00:00.000
+      $time = Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff"
+
+      if ($UseFile) {
+         # use C:\Windows\Temp as default log path
+         $logPath = "C:\\Windows\\Temp\\ua_script_debug.log"
+
+         Add-Content -Path $logPath -Value "[$time] - ${data}"
+      }
+      else {
+         Write-Debug "${Name}: $elapsed $Unit"
+      }
+   }
+
+   end {
+
+   }
+}
+
 function Write-vlTimerElapsedTime {
    <#
     .SYNOPSIS
@@ -753,21 +824,10 @@ function Write-vlTimerElapsedTime {
       [ValidateSet("sec", "ms")]
       [string]$Unit = "ms"
    )
-   begin {
-
-   }
 
    process {
       $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
-      if ($UseFile) {
-         Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
-      }
-      else {
-         Write-Debug "${Name}: $elapsed $Unit"
-      }
+      Write-vlDebugLog -Data "${Name}: $elapsed $Unit" -UseFile $UseFile
    }
 
-   end {
-
-   }
 }
