@@ -3,25 +3,6 @@
 #define global variable that contains a list of timers.
 $global:debug_timers = @()
 
-function Get-vlOsArchitecture {
-   <#
-    .SYNOPSIS
-        Get the OS architecture
-    .DESCRIPTION
-        Get the OS architecture of the current machine as a string. Valid values are "32-bit" and "64-bit"
-        This cmdlet is only available on the Windows platform.
-        Get-CimInstance was added in PowerShell 3.0
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A string containing the OS architecture. Valid values are "32-bit" and "64-bit"
-    .EXAMPLE
-        return Get-vlOsArchitecture
-    #>
-
-   return (Get-CimInstance Win32_operatingsystem).OSArchitecture
-}
-
 function Get-vlOsVersion {
    <#
     .SYNOPSIS
