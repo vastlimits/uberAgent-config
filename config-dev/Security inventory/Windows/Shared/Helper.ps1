@@ -570,7 +570,7 @@ function Get-vlIsCmdletAvailable {
    )
 
    try {
-      $cmdlet = Get-Command $CmdletName -ErrorAction SilentlyContinue
+      $cmdlet = Get-Command $CmdletName -ErrorAction Stop
       if ($null -ne $cmdlet) {
          return $true
       }
