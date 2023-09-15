@@ -44,7 +44,7 @@ function Get-vlNetworkConfigurationSSLTLSUser {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 

@@ -65,7 +65,7 @@ function Get-vlIsLocalAdmin {
       }
    }
    catch {
-      return New-vlErrorObject($result)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -113,7 +113,7 @@ function Get-vlGetUserEnrolledFactors() {
 
    $enroledFac = @()
    foreach ($factor in $WinBioStatus.GetEnumerator()) {
-      if ($enroledFactors -band $factor.value) {
+      if ($enroledFactors -and $enroledFactors -band $factor.value) {
          $enroledFac += $factor.key
       }
    }
@@ -148,70 +148,75 @@ function Get-vlWindowsHelloStatusLocalUser () {
 
    $riskScore = 30
 
-   # Get currently logged on user's SID
-   $currentUserSID = (New-Object System.Security.Principal.NTAccount($env:USERNAME)).Translate([System.Security.Principal.SecurityIdentifier]).value
+   try {
+      # Get currently logged on user's SID
+      $currentUserSID = (New-Object System.Security.Principal.NTAccount($env:USERNAME)).Translate([System.Security.Principal.SecurityIdentifier]).value
 
-   # Registry path to credential provider belonging for the PIN. A PIN is required with Windows Hello
-   $registryItems = Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{D6886603-9D2F-4EB2-B667-1971041FA96B}"
-   if (-not $registryItems ) {
-      $result = [PSCustomObject]@{
-         WindowsHelloEnabled = $false
+      # Registry path to credential provider belonging for the PIN. A PIN is required with Windows Hello
+      $registryItems = Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{D6886603-9D2F-4EB2-B667-1971041FA96B}"
+      if (-not $registryItems ) {
+         $result = [PSCustomObject]@{
+            WindowsHelloEnabled = $false
+         }
+
+         return New-vlResultObject -result $result -score 7 -riskScore $riskScore
       }
+      if (-NOT[string]::IsNullOrEmpty($currentUserSID)) {
 
-      return New-vlResultObject -result $result -score 7 -riskScore $riskScore
-   }
-   if (-NOT[string]::IsNullOrEmpty($currentUserSID)) {
+         $enroledFactors = Get-vlGetUserEnrolledFactors
 
-      $enroledFactors = Get-vlGetUserEnrolledFactors
-
-      if ($enroledFactors.WinBioAvailable -and $enroledFactors.WinBioUsed) {
-         $enroledFactors = $enroledFactors.WinBioEnroledFactors
-      }
-      else {
-         $enroledFactors = @()
-      }
-
-      # If multiple SID's are found in registry, look for the SID belonging to the logged on user
-      if ($registryItems.GetType().IsArray) {
-         # LogonCredsAvailable needs to be set to 1, indicating that the PIN credential provider is in use
-         if ($registryItems.Where({ $_.PSChildName -eq $currentUserSID }).LogonCredsAvailable -eq 1) {
-            $result = [PSCustomObject]@{
-               WindowsHelloEnabled = $true
-               EnrolledFactors     = ($enroledFactors + "PIN")
-            }
-
-            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+         if ($enroledFactors.WinBioAvailable -and $enroledFactors.WinBioUsed) {
+            $enroledFactors = $enroledFactors.WinBioEnroledFactors
          }
          else {
-            $result = [PSCustomObject]@{
-               WindowsHelloEnabled = $false
-               EnrolledFactors     = $enroledFactors
-            }
+            $enroledFactors = @()
+         }
 
-            return New-vlResultObject -result $result -score 7 -riskScore $riskScore
+         # If multiple SID's are found in registry, look for the SID belonging to the logged on user
+         if ($registryItems.GetType().IsArray) {
+            # LogonCredsAvailable needs to be set to 1, indicating that the PIN credential provider is in use
+            if ($registryItems.Where({ $_.PSChildName -eq $currentUserSID }).LogonCredsAvailable -eq 1) {
+               $result = [PSCustomObject]@{
+                  WindowsHelloEnabled = $true
+                  EnrolledFactors     = ($enroledFactors + "PIN")
+               }
+
+               return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+            }
+            else {
+               $result = [PSCustomObject]@{
+                  WindowsHelloEnabled = $false
+                  EnrolledFactors     = $enroledFactors
+               }
+
+               return New-vlResultObject -result $result -score 7 -riskScore $riskScore
+            }
+         }
+         else {
+            if (($registryItems.PSChildName -eq $currentUserSID) -AND ($registryItems.LogonCredsAvailable -eq 1)) {
+               $result = [PSCustomObject]@{
+                  WindowsHelloEnabled = $true
+                  EnrolledFactors     = ($enroledFactors + "PIN")
+               }
+
+               return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+            }
+            else {
+               $result = [PSCustomObject]@{
+                  WindowsHelloEnabled = $false
+                  EnrolledFactors     = $enroledFactors
+               }
+
+               return New-vlResultObject -result $result -score 7 -riskScore $riskScore
+            }
          }
       }
       else {
-         if (($registryItems.PSChildName -eq $currentUserSID) -AND ($registryItems.LogonCredsAvailable -eq 1)) {
-            $result = [PSCustomObject]@{
-               WindowsHelloEnabled = $true
-               EnrolledFactors     = ($enroledFactors + "PIN")
-            }
-
-            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
-         }
-         else {
-            $result = [PSCustomObject]@{
-               WindowsHelloEnabled = $false
-               EnrolledFactors     = $enroledFactors
-            }
-
-            return New-vlResultObject -result $result -score 7 -riskScore $riskScore
-         }
+         return New-vlErrorObject -message "Failed to determine Windows Hello enrollment status: SID is empty" -errorCode 1 -context $null
       }
    }
-   else {
-      return New-vlErrorObject("Not able to determine Windows Hello enrollment status")
+   catch {
+      return New-vlErrorObject -context $_
    }
 }
 

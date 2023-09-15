@@ -3,25 +3,6 @@
 #define global variable that contains a list of timers.
 $global:debug_timers = @()
 
-function Get-vlOsArchitecture {
-   <#
-    .SYNOPSIS
-        Get the OS architecture
-    .DESCRIPTION
-        Get the OS architecture of the current machine as a string. Valid values are "32-bit" and "64-bit"
-        This cmdlet is only available on the Windows platform.
-        Get-CimInstance was added in PowerShell 3.0
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A string containing the OS architecture. Valid values are "32-bit" and "64-bit"
-    .EXAMPLE
-        return Get-vlOsArchitecture
-    #>
-
-   return (Get-CimInstance Win32_operatingsystem).OSArchitecture
-}
-
 function Get-vlOsVersion {
    <#
     .SYNOPSIS
@@ -37,29 +18,6 @@ function Get-vlOsVersion {
    $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
 
    return $osVersion
-}
-
-function Get-vlIsWindows7 {
-   <#
-    .SYNOPSIS
-        Check if the OS is Windows 7
-    .DESCRIPTION
-        Check if the OS is Windows 7
-    .OUTPUTS
-        A boolean indicating if the OS is Windows 7
-    .EXAMPLE
-        return Get-vlIsWindows7
-   #>
-   # use CIM instead of WMI
-
-   $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
-
-   if ($osVersion -match "^6\.1") {
-      return $true
-   }
-   else {
-      return $false
-   }
 }
 
 function  Get-vlIsWindowsServer {
@@ -102,6 +60,10 @@ function Convert-vlEnumToString ($object) {
     #>
 
    $outputObj = $object | ForEach-Object {
+      if ($null -eq $_) {
+         return ""
+      }
+
       if ($_ -is [Enum]) {
          $_.ToString()
       }
@@ -138,19 +100,23 @@ function New-vlErrorObject {
         A [psobject] containing the error code and error message
     .EXAMPLE
         catch {
-            return New-vlErrorObject($_)
+            return New-vlErrorObject -context $_
         }
     #>
 
    [CmdletBinding()]
    param (
-      [Parameter(Mandatory = $true)]
       $context,
       $message = $null,
       $errorCode = $null
    )
 
-   $finalCode = if ($context.Exception.HResult) { $context.Exception.HResult } else { 1 }
+   if ( $null -ne $context) {
+      $finalCode = if ($context.Exception.HResult) { $context.Exception.HResult } else { 1 }
+   }
+   else {
+      $finalCode = 1
+   }
 
    if ( $null -ne $errorCode) {
       $finalCode = $errorCode
@@ -241,7 +207,7 @@ function Get-vlRegValue {
     .PARAMETER IncludePolicies
         Checks also the GPO policies path
     .OUTPUTS
-        The value of the registry key or an empty string if the key was not found
+        The value of the registry key or $null if the key was not found
     .EXAMPLE
         Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Value "ProductName"
     #>
@@ -475,7 +441,12 @@ function Get-vlHashTableKey {
       [Object]$value
    )
 
-   $hashTable.GetEnumerator() | Where-Object { $_.Value -eq $value } | ForEach-Object { $_.Name }
+   if ($null -ne $hashTable) {
+      $hashTable.GetEnumerator() | Where-Object { $_.Value -eq $value } | ForEach-Object { $_.Name }
+   }
+   else {
+      return $null
+   }
 }
 
 
@@ -500,7 +471,12 @@ function Get-vlHashTableKeys {
       [Object]$value
    )
 
-   $hashTable.GetEnumerator() | Where-Object { ($value -band $_.Value) -ne 0 } | ForEach-Object { $_.Name }
+   if ($null -ne $hashTable) {
+      $hashTable.GetEnumerator() | Where-Object { ($value -band $_.Value) -ne 0 } | ForEach-Object { $_.Name }
+   }
+   else {
+      return $null
+   }
 }
 
 
@@ -583,6 +559,29 @@ function Get-vlTimeString {
    catch {
       return ""
    }
+}
+
+function Get-vlIsCmdletAvailable {
+   [CmdletBinding()]
+   [OutputType([bool])]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$CmdletName
+   )
+
+   try {
+      $cmdlet = Get-Command $CmdletName -ErrorAction Stop
+      if ($null -ne $cmdlet) {
+         return $true
+      }
+      else {
+         return $false
+      }
+   }
+   catch {
+      return $false
+   }
+
 }
 
 ##### Debugging utilities #####
@@ -723,6 +722,54 @@ function Get-vlTimerElapsedTime {
    }
 }
 
+function Write-vlDebugLog {
+   <#
+    .SYNOPSIS
+        Write the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
+    .DESCRIPTION
+        Write the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
+    .PARAMETER Name
+        The name of the timer
+    .PARAMETER Unit
+        The unit of time to return. Valid values are "sec" and "ms"
+    .PARAMETER UseFile
+        Write the elapsed time to a file
+    .LINK
+        https://uberagent.com
+    .OUTPUTS
+
+    .EXAMPLE
+        Write-vlTimerElapsedTime -Name "timer1"
+    #>
+
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Data,
+      [Parameter(Mandatory = $false)]
+      [bool]$UseFile = $false
+   )
+
+   process {
+      # get current time and format it for the log with milliseconds like 2019-01-01 12:00:00.000
+      $time = Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff"
+
+      if ($UseFile) {
+         # use C:\Windows\Temp as default log path
+         $logPath = "C:\\Windows\\Temp\\ua_script_debug.log"
+
+         Add-Content -Path $logPath -Value "[$time] - ${data}"
+      }
+      else {
+         Write-Debug "${Name}: $elapsed $Unit"
+      }
+   }
+
+   end {
+
+   }
+}
+
 function Write-vlTimerElapsedTime {
    <#
     .SYNOPSIS
@@ -753,21 +800,10 @@ function Write-vlTimerElapsedTime {
       [ValidateSet("sec", "ms")]
       [string]$Unit = "ms"
    )
-   begin {
-
-   }
 
    process {
       $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
-      if ($UseFile) {
-         Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
-      }
-      else {
-         Write-Debug "${Name}: $elapsed $Unit"
-      }
+      Write-vlDebugLog -Data "${Name}: $elapsed $Unit" -UseFile $UseFile
    }
 
-   end {
-
-   }
 }
