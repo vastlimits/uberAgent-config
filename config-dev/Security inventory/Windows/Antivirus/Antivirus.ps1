@@ -68,7 +68,7 @@ function Get-vlAntivirusStatus {
          }
 
          if ($isWindowsServer -eq $false) {
-            if ($isWindows7) {
+            if ($isWindows7 -eq $true) {
                $instances = Get-CimInstance -ClassName AntiSpywareProduct -Namespace "root\SecurityCenter2" -ErrorAction Stop
             }
             else {
