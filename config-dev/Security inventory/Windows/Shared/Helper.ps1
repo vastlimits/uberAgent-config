@@ -39,29 +39,6 @@ function Get-vlOsVersion {
    return $osVersion
 }
 
-function Get-vlIsWindows7 {
-   <#
-    .SYNOPSIS
-        Check if the OS is Windows 7
-    .DESCRIPTION
-        Check if the OS is Windows 7
-    .OUTPUTS
-        A boolean indicating if the OS is Windows 7
-    .EXAMPLE
-        return Get-vlIsWindows7
-   #>
-   # use CIM instead of WMI
-
-   $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
-
-   if ($osVersion -match "^6\.1") {
-      return $true
-   }
-   else {
-      return $false
-   }
-}
-
 function  Get-vlIsWindowsServer {
    <#
     .SYNOPSIS

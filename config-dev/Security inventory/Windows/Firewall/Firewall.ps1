@@ -131,9 +131,10 @@ function Get-vlIsFirewallEnabled {
    $riskScore = 100
 
    try {
-      $isWindows7 = Get-vlIsWindows7 -ErrorAction Stop
+      $isNetConnectionProfileAvailable = Get-vlIsCmdletAvailable "Get-NetConnectionProfile"
+      $isNetFirewallProfile = Get-vlIsCmdletAvailable "Get-NetFirewallProfile"
 
-      if ($isWindows7 -eq $true) {
+      if ($isNetConnectionProfileAvailable -eq $false -or $isNetFirewallProfile -eq $false) {
          return Get-vlIsFirewallEnabled_COM
       }
       else {
@@ -277,11 +278,11 @@ function Get-vlOpenFirewallPorts {
    $riskScore = 70
 
    try {
-      $isWindows7 = Get-vlIsWindows7 -ErrorAction Stop
       $isGetNetFirewallRuleAvailable = Get-vlIsCmdletAvailable "Get-NetFirewallRule"
       $isGetNetFirewallPortFilter = Get-vlIsCmdletAvailable "Get-NetFirewallPortFilter"
+      $isNetFirewallApplicationFilter = Get-vlIsCmdletAvailable "Get-NetFirewallApplicationFilter"
 
-      if ($isWindows7 -eq $true -or $isGetNetFirewallRuleAvailable -eq $false -or $isGetNetFirewallPortFilter -eq $false) {
+      if ($isGetNetFirewallRuleAvailable -eq $false -or $isGetNetFirewallPortFilter -eq $false -or $isNetFirewallApplicationFilter -eq $false) {
          # Get-NetFirewallRule are not available
          return Get-vlOpenFirewallPorts_COM
       }
@@ -362,8 +363,6 @@ function Get-vlFirewallCheck {
    $params = if ($global:args) { $global:args } else { "all" }
    $Output = @()
 
-   $isWindows7 = Get-vlIsWindows7
-
    if ($params.Contains("all") -or $params.Contains("FWState")) {
       $firewallEnabled = Get-vlIsFirewallEnabled
       $Output += [PSCustomObject]@{
@@ -378,7 +377,7 @@ function Get-vlFirewallCheck {
       }
    }
 
-   if ($params.Contains("all") -or $params.Contains("FWPorts") -and $isWindows7 -eq $false) {
+   if ($params.Contains("all") -or $params.Contains("FWPorts")) {
       $openPorts = Get-vlOpenFirewallPorts
       $Output += [PSCustomObject]@{
          Name         = "FWPorts"
