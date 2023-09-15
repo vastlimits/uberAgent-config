@@ -108,6 +108,6 @@ else {
     }
     catch {
         $errorMsg = "Failed to load AppLinkHelper: " + $_.Exception.Message
-        Write-Error $errorMsg ;
+        Write-Error $errorMsg;
     }
 }
