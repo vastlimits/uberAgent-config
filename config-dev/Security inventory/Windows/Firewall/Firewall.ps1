@@ -105,7 +105,7 @@ function Get-vlIsFirewallEnabled_COM {
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -249,7 +249,7 @@ function Get-vlOpenFirewallPorts_COM {
       return New-vlResultObject -result $output -score 10 -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 

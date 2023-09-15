@@ -248,7 +248,7 @@ function Get-vlCertificateTrustListFromBytes {
 
     #Check if byte array is not null
     if ($bytes.Length -eq 0) {
-        Write-Error "Invalid byte array"
+        Write-Error "Invalid byte array (empty)"
         return
     }
 
@@ -258,7 +258,7 @@ function Get-vlCertificateTrustListFromBytes {
         $listOfTrustedCerts = [StlParser]::parseMemory($bytes);
     }
     catch {
-        Write-Error "Error while parsing file"
+        Write-Error "Error while parsing file CTL: " + $_.Exception.Message
         return
     }
 

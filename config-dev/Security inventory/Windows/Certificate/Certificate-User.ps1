@@ -68,7 +68,7 @@ function Get-vlExpiredCertificateCheck {
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -90,14 +90,14 @@ function Get-vlStlFromRegistryToMemory {
       $authRootStl = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot\AutoUpdate" -Value "EncodedCtl"
 
       #check if $authRootStl is not empty
-      if ($authRootStl.Length -gt 0) {
+      if ($null -ne $authRootStl -and $authRootStl.Length -gt 0) {
          return $authRootStl
       }
 
-      return ""
+      return $null
    }
    catch {
-      return ""
+      return $null
    }
 }
 
@@ -169,6 +169,10 @@ function Get-vlGetCTLCheck {
       #Load Stl
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
+      if ($null -eq $localAuthRootStl) {
+         throw "Could not load AuthRoot.stl from registry"
+      }
+
       # Get all certificates from the local machine
       $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root -ErrorAction Stop
 
@@ -186,7 +190,7 @@ function Get-vlGetCTLCheck {
       }
 
       #extract CTL
-      $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl
+      $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl -ErrorAction Stop
 
       # Create the result object
       $UnknownCertificates = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts

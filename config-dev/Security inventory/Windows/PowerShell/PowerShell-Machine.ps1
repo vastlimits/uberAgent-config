@@ -37,7 +37,7 @@ function Get-vlPowerShellV2Status {
          }
          catch {
             # check if HKEY_LOCAL_MACHINE\Software\Microsoft\PowerShell\1\PowerShellEngine exists
-            $powerShellV2Enabled = Test-Path -Path "HKLM:\Software\Microsoft\PowerShell\1\PowerShellEngine"
+            $powerShellV2Enabled = Test-Path -Path "HKLM:\Software\Microsoft\PowerShell\1\PowerShellEngine" -ErrorAction Stop
          }
 
          $result = [PSCustomObject]@{
@@ -53,8 +53,7 @@ function Get-vlPowerShellV2Status {
          }
       }
       catch {
-
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
    }
 }
@@ -89,7 +88,7 @@ function Get-vlPowerShellCL {
       }
       catch {
 
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
    }
 
@@ -250,7 +249,7 @@ function Get-vlPowerShellExecutionPolicy {
             return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
          }
 
-         $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem
+         $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop
          <#
                 Work Station (1)
                 Domain Controller (2)
@@ -267,7 +266,7 @@ function Get-vlPowerShellExecutionPolicy {
       }
       catch {
 
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
       finally {
 
@@ -410,7 +409,7 @@ function Get-vlPowerShellLogging {
       }
       catch {
 
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
       finally {
 

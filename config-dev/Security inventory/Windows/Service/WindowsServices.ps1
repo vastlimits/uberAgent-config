@@ -48,7 +48,7 @@ function Get-vlServiceLocations {
       }
       catch {
 
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
       finally {
 
@@ -86,7 +86,7 @@ function Get-vlServiceDLLLocations {
          $services = Get-ChildItem 'hklm:\SYSTEM\CurrentControlSet\Services'
       }
       catch {
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
 
       $services | ForEach-Object {
@@ -109,7 +109,7 @@ function Get-vlServiceDLLLocations {
             # If that happens, skip the service
          }
          catch {
-            return New-vlErrorObject($_)
+            return New-vlErrorObject -context $_
          }
       }
 

@@ -50,11 +50,11 @@ function Get-vlNetworkConfigurationSMBv1 {
          return New-vlResultObject -result $result -score 2 -riskScore $riskScore
       }
       else {
-         return New-vlErrorObject("SMBv1 install state must be 1 or 2 but is $SMBv1")
+         return New-vlErrorObject -message "SMBv1 install state must be 1 or 2 but is $SMBv1" -errorCode 1 -context $null
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -126,12 +126,11 @@ function Get-vlNetworkConfigurationSMBSigning {
 
       }
       else {
-         Throw "Return of Get-vlNetworkConfigurationSMBv1 is invalid"
-         return New-vlErrorObject($Error)
+         return New-vlErrorObject -message "Return of Get-vlNetworkConfigurationSMBv1 is invalid" -errorCode 1 -context $null
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -171,7 +170,7 @@ function Get-vlNetworkConfigurationNetBIOS {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -211,7 +210,7 @@ function Get-vlNetworkConfigurationWINS {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -260,11 +259,11 @@ function Get-vlNetworkConfigurationSSLTLSLocalMachine {
          }
       }
       catch {
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 

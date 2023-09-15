@@ -53,7 +53,7 @@ function Get-vlRootCertificateInstallationCheck {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -98,7 +98,7 @@ function Get-vlAutoCertificateUpdateCheck {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -167,7 +167,7 @@ function Get-vlExpiredCertificateCheck {
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -197,7 +197,7 @@ function Get-vlLastGetSyncTimeByKey {
       $lastSyncTimeBytes = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot\AutoUpdate" -Value $syncKey
 
       #check if $lastSyncTimeBytes is a byte array and has a length of 8
-      if ($lastSyncTimeBytes.Length -eq 8) {
+      if ($null -ne $lastSyncTimeBytes -and $lastSyncTimeBytes.Length -eq 8) {
          # Convert bytes to datetime
          $fileTime = [System.BitConverter]::ToInt64($lastSyncTimeBytes, 0)
          $lastSyncTime = [System.DateTime]::FromFileTimeUtc($fileTime)
@@ -230,14 +230,14 @@ function Get-vlStlFromRegistryToMemory {
       $authRootStl = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot\AutoUpdate" -Value "EncodedCtl"
 
       #check if $authRootStl is not empty
-      if ($authRootStl.Length -gt 0) {
+      if ($null -ne $authRootStl -and $authRootStl.Length -gt 0) {
          return $authRootStl
       }
 
-      return ""
+      return $null
    }
    catch {
-      return ""
+      return $null
    }
 }
 
@@ -301,6 +301,10 @@ function Get-vlGetCTLCheck {
       #Load Stl
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
+      if ($null -eq $localAuthRootStl) {
+         throw "Could not load AuthRoot.stl from registry"
+      }
+
       #get all certificates from the local machine
       $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root -ErrorAction Stop | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
 
@@ -327,7 +331,7 @@ function Get-vlGetCTLCheck {
       $localMachineCerts = $localMachineCerts | Where-Object { $_.Thumbprint -notin $allowList }
 
       #extract CTL
-      $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl
+      $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl -ErrorAction Stop
 
       # Create the result object
       $UnknownCertificates = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts

@@ -108,7 +108,7 @@ function Get-vlPowerShellExecutionPolicy {
       }
       catch {
 
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
       finally {
 

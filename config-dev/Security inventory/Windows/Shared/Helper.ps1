@@ -142,19 +142,23 @@ function New-vlErrorObject {
         A [psobject] containing the error code and error message
     .EXAMPLE
         catch {
-            return New-vlErrorObject($_)
+            return New-vlErrorObject -context $_
         }
     #>
 
    [CmdletBinding()]
    param (
-      [Parameter(Mandatory = $true)]
       $context,
       $message = $null,
       $errorCode = $null
    )
 
-   $finalCode = if ($context.Exception.HResult) { $context.Exception.HResult } else { 1 }
+   if ( $null -ne $context) {
+      $finalCode = if ($context.Exception.HResult) { $context.Exception.HResult } else { 1 }
+   }
+   else {
+      $finalCode = 1
+   }
 
    if ( $null -ne $errorCode) {
       $finalCode = $errorCode
@@ -245,7 +249,7 @@ function Get-vlRegValue {
     .PARAMETER IncludePolicies
         Checks also the GPO policies path
     .OUTPUTS
-        The value of the registry key or an empty string if the key was not found
+        The value of the registry key or $null if the key was not found
     .EXAMPLE
         Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Value "ProductName"
     #>
