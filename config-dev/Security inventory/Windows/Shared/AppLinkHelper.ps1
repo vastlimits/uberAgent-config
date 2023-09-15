@@ -100,8 +100,13 @@ public static class AppLinkHelper
 # Check if the AppLinkHelper class is already loaded and if not, load it.
 
 if ("AppLinkHelper" -as [type]) {
-   Write-Verbose "AppLinkHelper already loaded";
+    Write-Verbose "AppLinkHelper already loaded";
 }
 else {
-   Add-Type -TypeDefinition $getLinkedAppCSharp -Language CSharp;
+    try {
+        Add-Type -TypeDefinition $getLinkedAppCSharp -Language CSharp;
+    }
+    catch {
+        Write-Error "Failed to load AppLinkHelper: " + $_.Exception.Message;
+    }
 }

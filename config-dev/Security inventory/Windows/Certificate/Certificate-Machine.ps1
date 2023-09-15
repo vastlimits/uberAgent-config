@@ -53,7 +53,7 @@ function Get-vlRootCertificateInstallationCheck {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -98,7 +98,7 @@ function Get-vlAutoCertificateUpdateCheck {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -121,7 +121,7 @@ function Get-vlExpiredCertificateCheck {
       $score = 10
       $riskScore = 20
 
-      $certs = Get-ChildItem -Path Cert:\LocalMachine -Recurse
+      $certs = Get-ChildItem -Path Cert:\LocalMachine -Recurse -ErrorAction Stop
       $expCets = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and $_.NotAfter -lt (Get-Date) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
       $willExpire30 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date) -and $_.NotAfter -lt (Get-Date).AddDays(30)) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
       $willExpire60 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date).AddDays(30) -and $_.NotAfter -lt (Get-Date).AddDays(60)) } | Select-Object -Property FriendlyName, NotBefore, Issuer, NotAfter, Thumbprint
@@ -167,7 +167,7 @@ function Get-vlExpiredCertificateCheck {
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -197,7 +197,7 @@ function Get-vlLastGetSyncTimeByKey {
       $lastSyncTimeBytes = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot\AutoUpdate" -Value $syncKey
 
       #check if $lastSyncTimeBytes is a byte array and has a length of 8
-      if ($lastSyncTimeBytes.Length -eq 8) {
+      if ($null -ne $lastSyncTimeBytes -and $lastSyncTimeBytes.Length -eq 8) {
          # Convert bytes to datetime
          $fileTime = [System.BitConverter]::ToInt64($lastSyncTimeBytes, 0)
          $lastSyncTime = [System.DateTime]::FromFileTimeUtc($fileTime)
@@ -230,14 +230,14 @@ function Get-vlStlFromRegistryToMemory {
       $authRootStl = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot\AutoUpdate" -Value "EncodedCtl"
 
       #check if $authRootStl is not empty
-      if ($authRootStl.Length -gt 0) {
+      if ($null -ne $authRootStl -and $authRootStl.Length -gt 0) {
          return $authRootStl
       }
 
-      return ""
+      return $null
    }
    catch {
-      return ""
+      return $null
    }
 }
 
@@ -301,8 +301,12 @@ function Get-vlGetCTLCheck {
       #Load Stl
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
+      if ($null -eq $localAuthRootStl) {
+         throw "Could not load AuthRoot.stl from registry"
+      }
+
       #get all certificates from the local machine
-      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
+      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root -ErrorAction Stop | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
 
       # convert NotAfter and NotBefore to string iso format
       $localMachineCerts = $localMachineCerts | ForEach-Object {
@@ -327,7 +331,7 @@ function Get-vlGetCTLCheck {
       $localMachineCerts = $localMachineCerts | Where-Object { $_.Thumbprint -notin $allowList }
 
       #extract CTL
-      $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl
+      $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl -ErrorAction Stop
 
       # Create the result object
       $UnknownCertificates = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts
@@ -363,7 +367,7 @@ function Get-vlCheckSyncTime {
    $riskScore = 50
 
    try {
-      $OSVersion = Get-vlOsVersion
+      $OSVersion = Get-vlOsVersion -ErrorAction Stop
 
       $lastCTLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "LastSyncTime" # Gets the last time the AuthRoot.stl file was synced
       $lastCRLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "DisallowedCertLastSyncTime" # Gets the last time the CRL file was synced
@@ -383,7 +387,7 @@ function Get-vlCheckSyncTime {
       # PRL is available starting with Windows 10
       if ([version]$OSVersion -ge [version]'10.0') {
          $score += Get-vlTimeScore -time $lastPRLSyncTime
-         $result | Add-Member -Type NoteProperty -Name "PRL" -Value (Get-vlTimeString -time $lastPRLSyncTime)
+         $result | Add-Member -Type NoteProperty -Name "PRL" -Value (Get-vlTimeString -time $lastPRLSyncTime) -ErrorAction Stop
       }
 
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
