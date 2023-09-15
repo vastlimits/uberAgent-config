@@ -29,9 +29,9 @@ $FW_PROFILES = @{
 function Get-vlIsFirewallEnabled_COM {
    <#
     .SYNOPSIS
-        Function that checks if the firewall is enabled using the com interface
+        Function that checks if the firewall is enabled using the COM Interface
     .DESCRIPTION
-        Function that checks if the firewall is enabled using the com interface
+        Function that checks if the firewall is enabled using the COM Interface
     .OUTPUTS
         Returns a [psobject] containing the following properties:
 
