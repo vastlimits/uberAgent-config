@@ -121,7 +121,7 @@ function Get-vlExpiredCertificateCheck {
       $score = 10
       $riskScore = 20
 
-      $certs = Get-ChildItem -Path Cert:\LocalMachine -Recurse
+      $certs = Get-ChildItem -Path Cert:\LocalMachine -Recurse -ErrorAction Stop
       $expCets = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and $_.NotAfter -lt (Get-Date) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
       $willExpire30 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date) -and $_.NotAfter -lt (Get-Date).AddDays(30)) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
       $willExpire60 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date).AddDays(30) -and $_.NotAfter -lt (Get-Date).AddDays(60)) } | Select-Object -Property FriendlyName, NotBefore, Issuer, NotAfter, Thumbprint
@@ -302,7 +302,7 @@ function Get-vlGetCTLCheck {
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
       #get all certificates from the local machine
-      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
+      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root -ErrorAction Stop | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
 
       # convert NotAfter and NotBefore to string iso format
       $localMachineCerts = $localMachineCerts | ForEach-Object {
@@ -363,7 +363,7 @@ function Get-vlCheckSyncTime {
    $riskScore = 50
 
    try {
-      $OSVersion = Get-vlOsVersion
+      $OSVersion = Get-vlOsVersion -ErrorAction Stop
 
       $lastCTLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "LastSyncTime" # Gets the last time the AuthRoot.stl file was synced
       $lastCRLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "DisallowedCertLastSyncTime" # Gets the last time the CRL file was synced
@@ -383,7 +383,7 @@ function Get-vlCheckSyncTime {
       # PRL is available starting with Windows 10
       if ([version]$OSVersion -ge [version]'10.0') {
          $score += Get-vlTimeScore -time $lastPRLSyncTime
-         $result | Add-Member -Type NoteProperty -Name "PRL" -Value (Get-vlTimeString -time $lastPRLSyncTime)
+         $result | Add-Member -Type NoteProperty -Name "PRL" -Value (Get-vlTimeString -time $lastPRLSyncTime) -ErrorAction Stop
       }
 
       return New-vlResultObject -result $result -score $score -riskScore $riskScore

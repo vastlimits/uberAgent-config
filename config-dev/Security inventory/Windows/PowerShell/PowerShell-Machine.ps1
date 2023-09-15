@@ -26,7 +26,7 @@ function Get-vlPowerShellV2Status {
 
          #check if PowerShell V2 is installed on the system
          try {
-            $installationStatus = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2
+            $installationStatus = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2 -ErrorAction Stop
 
             if ($installationStatus.State -eq "Enabled") {
                $powerShellV2Enabled = $true
@@ -110,7 +110,7 @@ Function Get-vlPowerShellRemotingStatus {
     #>
 
    try {
-      $serviceStatus = Get-Service -Name WinRM | Select-Object -ExpandProperty Status
+      $serviceStatus = Get-Service -Name WinRM -ErrorAction Stop | Select-Object -ExpandProperty Status
 
       #if the service is not running, remoting is disabled
       if ($serviceStatus -ne "Running") {
@@ -126,10 +126,10 @@ Function Get-vlPowerShellRemotingStatus {
 
       # Try to open a session to localhost
       try {
-         $session = New-PSSession -ComputerName localhost
+         $session = New-PSSession -ComputerName localhost -ErrorAction Stop
 
          # Close the session
-         Remove-PSSession $session
+         Remove-PSSession $session -ErrorAction Stop
          $remotingEnabled = $true
       }
       catch {
@@ -184,7 +184,7 @@ function Get-vlPowerShellExecutionPolicy {
             ExecutionPolicy = "Undefined"
          }
 
-         $policys = Get-ExecutionPolicy -List
+         $policys = Get-ExecutionPolicy -List -ErrorAction Stop
 
          # go from lowest to highest
          # first check LocalMachine policy
@@ -444,7 +444,7 @@ Function Get-vlJEACheck {
       }
 
       # check if there are any JEA configurations apart from the default ones
-      $jeaSessions = Get-PSSessionConfiguration | Where-Object { $_.Name.ToLower() -notlike 'microsoft.*' }
+      $jeaSessions = Get-PSSessionConfiguration -ErrorAction Stop | Where-Object { $_.Name.ToLower() -notlike 'microsoft.*' }
 
       if ($jeaSessions.Count -eq 0) {
          return $false

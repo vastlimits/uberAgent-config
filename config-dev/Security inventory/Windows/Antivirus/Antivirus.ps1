@@ -44,12 +44,12 @@ function Get-vlAntivirusStatus {
          $score = 0
          $riskScore = 100
 
-         $isWindowsServer = Get-vlIsWindowsServer
+         $isWindowsServer = Get-vlIsWindowsServer -ErrorAction Stop
          $isMpComputerStatusAvailable = Get-vlIsCmdletAvailable "Get-MpComputerStatus"
          $defenderStatus = [PSCustomObject]@{}
 
          if ($isMpComputerStatusAvailable -eq $true) {
-            $instances = Get-MpComputerStatus
+            $instances = Get-MpComputerStatus -ErrorAction Stop
 
             $defenderStatus = [PSCustomObject]@{
                AMEngineVersion                 = if ($instances.AMEngineVersion) { $instances.AMEngineVersion } else { "" }
@@ -66,10 +66,10 @@ function Get-vlAntivirusStatus {
 
          if ($isWindowsServer -eq $false) {
             if ($isWindows7 -eq $true) {
-               $instances = Get-CimInstance -ClassName AntiSpywareProduct -Namespace "root\SecurityCenter2"
+               $instances = Get-CimInstance -ClassName AntiSpywareProduct -Namespace "root\SecurityCenter2" -ErrorAction Stop
             }
             else {
-               $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
+               $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2" -ErrorAction Stop
             }
 
             $avEnabledFound = $false

@@ -22,7 +22,7 @@ function Get-vlExpiredCertificateCheck {
       $riskScore = 20
 
       # get certs for user store
-      $certs = Get-ChildItem -Path Cert:\CurrentUser -Recurse
+      $certs = Get-ChildItem -Path Cert:\CurrentUser -Recurse -ErrorAction Stop
       $expCets = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and $_.NotAfter -lt (Get-Date) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
       $willExpire30 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date) -and $_.NotAfter -lt (Get-Date).AddDays(30)) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
       $willExpire60 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date).AddDays(30) -and $_.NotAfter -lt (Get-Date).AddDays(60)) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
@@ -170,10 +170,10 @@ function Get-vlGetCTLCheck {
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
       # Get all certificates from the local machine
-      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root
+      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root -ErrorAction Stop
 
       #add all certificates that are not expired from the current user
-      $currentUserCerts = Get-ChildItem cert:\CurrentUser\Root | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
+      $currentUserCerts = Get-ChildItem cert:\CurrentUser\Root -ErrorAction Stop | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
 
       # filter out certificates from $currentUserCerts that are contained in $localMachineCerts
       $currentUserCerts = $currentUserCerts | Where-Object { $_.Thumbprint -notin $localMachineCerts.Thumbprint }

@@ -231,7 +231,12 @@ if ("StlParser" -as [type]) {
     Write-Verbose "StlParser already loaded";
 }
 else {
-    Add-Type -TypeDefinition $definitionCode -Language CSharp;
+    try {
+        Add-Type -TypeDefinition $definitionCode -Language CSharp;
+    }
+    catch {
+        Write-Error "Failed to load StlParser: " + $_.Exception.Message;
+    }
 }
 
 function Get-vlCertificateTrustListFromBytes {

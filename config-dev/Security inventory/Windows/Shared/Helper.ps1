@@ -102,6 +102,10 @@ function Convert-vlEnumToString ($object) {
     #>
 
    $outputObj = $object | ForEach-Object {
+      if ($null -eq $_) {
+         return ""
+      }
+
       if ($_ -is [Enum]) {
          $_.ToString()
       }
@@ -475,7 +479,12 @@ function Get-vlHashTableKey {
       [Object]$value
    )
 
-   $hashTable.GetEnumerator() | Where-Object { $_.Value -eq $value } | ForEach-Object { $_.Name }
+   if ($null -ne $hashTable) {
+      $hashTable.GetEnumerator() | Where-Object { $_.Value -eq $value } | ForEach-Object { $_.Name }
+   }
+   else {
+      return $null
+   }
 }
 
 
@@ -500,7 +509,12 @@ function Get-vlHashTableKeys {
       [Object]$value
    )
 
-   $hashTable.GetEnumerator() | Where-Object { ($value -band $_.Value) -ne 0 } | ForEach-Object { $_.Name }
+   if ($null -ne $hashTable) {
+      $hashTable.GetEnumerator() | Where-Object { ($value -band $_.Value) -ne 0 } | ForEach-Object { $_.Name }
+   }
+   else {
+      return $null
+   }
 }
 
 

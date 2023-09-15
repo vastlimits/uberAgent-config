@@ -24,7 +24,7 @@ function Get-vlPowerShellExecutionPolicy {
             ExecutionPolicy = "Undefined"
          }
 
-         $policys = Get-ExecutionPolicy -List
+         $policys = Get-ExecutionPolicy -List -ErrorAction Stop
 
          # go from lowest to highest
          # first check LocalMachine policy
@@ -91,7 +91,7 @@ function Get-vlPowerShellExecutionPolicy {
             return New-vlResultObject -result $result -score $CULevel -riskScore $CUrisk
          }
 
-         $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem
+         $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop
          <#
                 Work Station (1)
                 Domain Controller (2)

@@ -131,7 +131,7 @@ function Get-vlIsFirewallEnabled {
    $riskScore = 100
 
    try {
-      $isWindows7 = Get-vlIsWindows7
+      $isWindows7 = Get-vlIsWindows7 -ErrorAction Stop
 
       if ($isWindows7 -eq $true) {
          return Get-vlIsFirewallEnabled_COM
@@ -222,7 +222,7 @@ function Get-vlOpenFirewallPorts_COM {
             if ($null -ne $rule.Profiles) {
                $parsedProfile = Get-vlHashTableKeys -hashTable $FW_PROFILES -value $rule.Profiles
 
-               if ($parsedProfile.length -eq 3) {
+               if ($null -ne $parsedProfile -and $parsedProfile.length -eq 3) {
                   $parsedProfile = "Any"
                }
                else {
@@ -277,7 +277,7 @@ function Get-vlOpenFirewallPorts {
    $riskScore = 70
 
    try {
-      $isWindows7 = Get-vlIsWindows7
+      $isWindows7 = Get-vlIsWindows7 -ErrorAction Stop
       $isGetNetFirewallRuleAvailable = Get-vlIsCmdletAvailable "Get-NetFirewallRule"
       $isGetNetFirewallPortFilter = Get-vlIsCmdletAvailable "Get-NetFirewallPortFilter"
 

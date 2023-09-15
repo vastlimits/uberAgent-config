@@ -175,7 +175,7 @@ function Get-vlBitlockerEnabled {
          return New-vlResultObject -result $bitlockerEnabled -score $score -riskScore $riskScore
       }
       else {
-         $isWindowsServer = Get-vlIsWindowsServer
+         $isWindowsServer = Get-vlIsWindowsServer -ErrorAction Stop
 
          $bitlockerStatus = [PSCustomObject]@{
             Status = "Bitlocker is not installed on this system."
