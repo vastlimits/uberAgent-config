@@ -44,6 +44,9 @@ function Get-vlAntivirusStatus {
          $score = 0
          $riskScore = 100
 
+         $osVersion = Get-vlOsVersion -ErrorAction Stop
+         $isWindows7 = $osVersion -match "^6\.1"
+
          $isWindowsServer = Get-vlIsWindowsServer -ErrorAction Stop
          $isMpComputerStatusAvailable = Get-vlIsCmdletAvailable "Get-MpComputerStatus"
          $defenderStatus = [PSCustomObject]@{}
@@ -65,7 +68,7 @@ function Get-vlAntivirusStatus {
          }
 
          if ($isWindowsServer -eq $false) {
-            if ($isWindows7 -eq $true) {
+            if ($isWindows7) {
                $instances = Get-CimInstance -ClassName AntiSpywareProduct -Namespace "root\SecurityCenter2" -ErrorAction Stop
             }
             else {
