@@ -107,6 +107,7 @@ else {
         Add-Type -TypeDefinition $getLinkedAppCSharp -Language CSharp;
     }
     catch {
-        Write-Error "Failed to load AppLinkHelper: " + $_.Exception.Message;
+        $errorMsg = "Failed to load AppLinkHelper: " + $_.Exception.Message
+        Write-Error $errorMsg ;
     }
 }

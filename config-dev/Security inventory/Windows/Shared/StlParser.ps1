@@ -235,7 +235,8 @@ else {
         Add-Type -TypeDefinition $definitionCode -Language CSharp;
     }
     catch {
-        Write-Error "Failed to load StlParser: " + $_.Exception.Message;
+        $errorMessage = "Failed to load StlParser: " + $_.Exception.Message
+        Write-Error $errorMessage
     }
 }
 
@@ -258,7 +259,8 @@ function Get-vlCertificateTrustListFromBytes {
         $listOfTrustedCerts = [StlParser]::parseMemory($bytes);
     }
     catch {
-        Write-Error "Error while parsing file CTL: " + $_.Exception.Message
+        $errorMsg = "Error while parsing file CTL: " + $_.Exception.Message
+        Write-Error $errorMsg
         return
     }
 
