@@ -26,16 +26,95 @@ $FW_PROFILES = @{
    Public  = 4
 }
 
+function Get-vlIsFirewallEnabled_COM {
+   <#
+    .SYNOPSIS
+        Function that checks if the firewall is enabled using the COM Interface
+    .DESCRIPTION
+        Function that checks if the firewall is enabled using the COM Interface
+    .OUTPUTS
+        Returns a [psobject] containing the following properties:
 
-# function to check if firewall is enabled
+        Domain
+        Private
+        Public
+
+        The value of each property is a boolean indicating if the firewall is enabled for the specific profile.
+
+    .EXAMPLE
+        Get-vlIsFirewallEnabled_COM
+    #>
+
+   $riskScore = 100
+
+   try {
+      $networkListManager = [System.Activator]::CreateInstance([System.Type]::GetTypeFromCLSID("DCB00C01-570F-4A9B-8D69-199FDBA5723B"))
+
+      $connectionStatus = @()
+      $networks = $networkListManager.GetNetworks(1)
+
+      foreach ($network in $networks) {
+         $netCat = $network.GetCategory()
+
+         if ($netCat -eq 0) {
+            $connectionStatus += "Public"
+         }
+         elseif ($netCat -eq 1) {
+            $connectionStatus += "Private"
+         }
+         elseif ($netCat -eq 2) {
+            $connectionStatus += "Domain"
+         }
+      }
+
+      # Create a new instance of the HNetCfg.FwPolicy2 object
+      $fwPolicy2 = New-Object -ComObject HNetCfg.FwPolicy2
+
+      $result = [PSCustomObject]@()
+
+      $domainStatus = [bool]($fwPolicy2.FirewallEnabled(1))
+      $privateStatus = [bool]($fwPolicy2.FirewallEnabled(2))
+      $publicStatus = [bool]($fwPolicy2.FirewallEnabled(4))
+
+      $result += [PSCustomObject]@{
+         Profile   = "Domain"
+         Enabled   = $domainStatus
+         Connected = if ($connectionStatus -contains "Domain") { $true } else { $false }
+      }
+      $result += [PSCustomObject]@{
+         Profile   = "Private"
+         Enabled   = $privateStatus
+         Connected = if ($connectionStatus -contains "Private") { $true } else { $false }
+      }
+      $result += [PSCustomObject]@{
+         Profile   = "Public"
+         Enabled   = $publicStatus
+         Connected = if ($connectionStatus -contains "Public") { $true } else { $false }
+      }
+
+      $score = 10
+
+      if ($domainStatus -eq $false -or $privateStatus -eq $false) {
+         $score = 5
+      }
+
+      if ($publicStatus -eq $false) {
+         $score = 0
+      }
+
+      return New-vlResultObject -result $result -score $score -riskScore $riskScore
+   }
+   catch {
+      return New-vlErrorObject -context $_
+   }
+}
+
 function Get-vlIsFirewallEnabled {
    <#
     .SYNOPSIS
         Function that checks if the firewall is enabled.
     .DESCRIPTION
         Function that checks if the firewall is enabled.
-    .LINK
-        https://uberagent.com
     .OUTPUTS
         Returns a [psobject] containing the following properties:
 
@@ -52,73 +131,19 @@ function Get-vlIsFirewallEnabled {
    $riskScore = 100
 
    try {
-      $isWindows7 = Get-vlIsWindows7
+      $isNetConnectionProfileAvailable = Get-vlIsCmdletAvailable "Get-NetConnectionProfile"
+      $isNetFirewallProfile = Get-vlIsCmdletAvailable "Get-NetFirewallProfile"
 
-      if ($isWindows7 -eq $true) {
-
-         $networkListManager = [System.Activator]::CreateInstance([System.Type]::GetTypeFromCLSID("DCB00C01-570F-4A9B-8D69-199FDBA5723B"))
-
-         $connectionStatus = @()
-         $networks = $networkListManager.GetNetworks(1)
-
-         foreach ($network in $networks) {
-            $netCat = $network.GetCategory()
-
-            if ($netCat -eq 0) {
-               $connectionStatus += "Public"
-            }
-            elseif ($netCat -eq 1) {
-               $connectionStatus += "Private"
-            }
-            elseif ($netCat -eq 2) {
-               $connectionStatus += "Domain"
-            }
-         }
-
-         # Create a new instance of the HNetCfg.FwPolicy2 object
-         $fwPolicy2 = New-Object -ComObject HNetCfg.FwPolicy2
-
-         $result = [PSCustomObject]@()
-
-         $domainStatus = [bool]($fwPolicy2.FirewallEnabled(1))
-         $privateStatus = [bool]($fwPolicy2.FirewallEnabled(2))
-         $publicStatus = [bool]($fwPolicy2.FirewallEnabled(4))
-
-         $result += [PSCustomObject]@{
-            Profile   = "Domain"
-            Enabled   = $domainStatus
-            Connected = if ($connectionStatus -contains "Domain") { $true } else { $false }
-         }
-         $result += [PSCustomObject]@{
-            Profile   = "Private"
-            Enabled   = $privateStatus
-            Connected = if ($connectionStatus -contains "Private") { $true } else { $false }
-         }
-         $result += [PSCustomObject]@{
-            Profile   = "Public"
-            Enabled   = $publicStatus
-            Connected = if ($connectionStatus -contains "Public") { $true } else { $false }
-         }
-
-         $score = 10
-
-         if ($domainStatus -eq $false -or $privateStatus -eq $false) {
-            $score = 5
-         }
-
-         if ($publicStatus -eq $false) {
-            $score = 0
-         }
-
-         return New-vlResultObject -result $result -score $score -riskScore $riskScore
-
+      if ($isNetConnectionProfileAvailable -eq $false -or $isNetFirewallProfile -eq $false) {
+         return Get-vlIsFirewallEnabled_COM
       }
       else {
-         $privateNetwork = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "Private" }
-         $publicNetwork = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "Public" }
-         $domainAuthenticatedNetwork = Get-NetConnectionProfile | Where-Object { $_.NetworkCategory -eq "DomainAuthenticated" }
+         $netConnectionProfile = Get-NetConnectionProfile -ErrorAction Stop
+         $privateNetwork = $netConnectionProfile | Where-Object { $_.NetworkCategory -eq "Private" }
+         $publicNetwork = $netConnectionProfile | Where-Object { $_.NetworkCategory -eq "Public" }
+         $domainAuthenticatedNetwork = $netConnectionProfile | Where-Object { $_.NetworkCategory -eq "DomainAuthenticated" }
 
-         $firewall = Get-NetFirewallProfile -All
+         $firewall = Get-NetFirewallProfile -All -ErrorAction Stop
          $result = [PSCustomObject]@()
 
          $domainStatus = [bool]($firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled)
@@ -155,11 +180,80 @@ function Get-vlIsFirewallEnabled {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      # If Get-NetConnectionProfile is not working as expected, for example because the Wmi-Class is not available, we fall back to the com interface
+      return (Get-vlIsFirewallEnabled_COM)
    }
 }
 
-# function to check open firewall ports returns array of open ports
+function Get-vlOpenFirewallPorts_COM {
+   <#
+    .SYNOPSIS
+        Function that iterates over all profiles and returns all enabled rules for all profiles using COM Interface.
+    .DESCRIPTION
+        Function that iterates over all profiles and returns all enabled rules for all profiles using COM Interface.
+    .LINK
+        https://uberagent.com
+
+    .OUTPUTS
+        Returns an array of objects containing the following properties:
+
+        Name
+        ApplicationName
+        LocalPorts
+        RemotePorts
+
+    .EXAMPLE
+        Get-vlOpenFirewallPorts_COM
+    #>
+
+   $riskScore = 70
+
+   try {
+      $fwPolicy2 = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID("HNetCfg.FwPolicy2"))
+
+      $rules = $fwPolicy2.Rules
+      $output = @()
+
+      foreach ($rule in $rules) {
+         if ($rule.Direction -eq $FW_RULE_DIRECTION["IN"] -and $rule.Action -eq $FW_ACTION["ALLOW"] -and $rule.Enabled -eq $true -and ($rule.Grouping -eq "" -or $null -eq $rule.Grouping) ) {
+
+            $parsedProfile = ""
+            $parsedProtocol = ""
+
+            if ($null -ne $rule.Profiles) {
+               $parsedProfile = Get-vlHashTableKeys -hashTable $FW_PROFILES -value $rule.Profiles
+
+               if ($null -ne $parsedProfile -and $parsedProfile.length -eq 3) {
+                  $parsedProfile = "Any"
+               }
+               else {
+                  $parsedProfile = $parsedProfile -join ", "
+               }
+            }
+
+            if ($null -ne $rule.Profiles) {
+               $parsedProtocol = Get-vlHashTableKey -hashTable $FW_PROTOCOL -value $rule.Protocol
+            }
+
+            $output += [PSCustomObject]@{
+               Name            = if ($null -ne $rule.Name) { $rule.Name } else { "" }
+               DisplayName     = if ($null -ne $rule.Description) { $rule.Description } else { "" }
+               ApplicationName = if ($null -ne $rule.ApplicationName) { $rule.ApplicationName } else { "" }
+               LocalPorts      = if ($null -ne $rule.LocalPorts) { if ($rule.LocalPorts -eq "*") { "Any" } else { $rule.LocalPorts } } else { "" }
+               RemotePorts     = if ($null -ne $rule.RemotePorts) { if ($rule.RemotePorts -eq "*") { "Any" } else { $rule.RemotePorts } } else { "" }
+               Protocol        = if ($null -ne $rule.Protocol) { Convert-vlEnumToString $parsedProtocol } else { "" }
+               Profile         = if ($null -ne $parsedProfile) { Convert-vlEnumToString $parsedProfile } else { "" }
+            }
+         }
+      }
+
+      return New-vlResultObject -result $output -score 10 -riskScore $riskScore
+   }
+   catch {
+      return New-vlErrorObject -context $_
+   }
+}
+
 function Get-vlOpenFirewallPorts {
    <#
     .SYNOPSIS
@@ -184,53 +278,18 @@ function Get-vlOpenFirewallPorts {
    $riskScore = 70
 
    try {
-      $isWindows7 = Get-vlIsWindows7
+      $isGetNetFirewallRuleAvailable = Get-vlIsCmdletAvailable "Get-NetFirewallRule"
+      $isGetNetFirewallPortFilter = Get-vlIsCmdletAvailable "Get-NetFirewallPortFilter"
+      $isNetFirewallApplicationFilter = Get-vlIsCmdletAvailable "Get-NetFirewallApplicationFilter"
 
-      if ($isWindows7 -eq $true) {
-         $fwPolicy2 = [System.Activator]::CreateInstance([System.Type]::GetTypeFromProgID("HNetCfg.FwPolicy2"))
-
-         $rules = $fwPolicy2.Rules
-         $output = @()
-
-         foreach ($rule in $rules) {
-            if ($rule.Direction -eq $FW_RULE_DIRECTION["IN"] -and $rule.Action -eq $FW_ACTION["ALLOW"] -and $rule.Enabled -eq $true -and ($rule.Grouping -eq "" -or $null -eq $rule.Grouping) ) {
-
-               $parsedProfile = ""
-               $parsedProtocol = ""
-
-               if ($null -ne $rule.Profiles) {
-                  $parsedProfile = Get-vlHashTableKeys -hashTable $FW_PROFILES -value $rule.Profiles
-
-                  if ($parsedProfile.length -eq 3) {
-                     $parsedProfile = "Any"
-                  }
-                  else {
-                     $parsedProfile = $parsedProfile -join ", "
-                  }
-               }
-
-               if ($null -ne $rule.Profiles) {
-                  $parsedProtocol = Get-vlHashTableKey -hashTable $FW_PROTOCOL -value $rule.Protocol
-               }
-
-               $output += [PSCustomObject]@{
-                  Name            = if ($null -ne $rule.Name) { $rule.Name } else { "" }
-                  DisplayName     = if ($null -ne $rule.Description) { $rule.Description } else { "" }
-                  ApplicationName = if ($null -ne $rule.ApplicationName) { $rule.ApplicationName } else { "" }
-                  LocalPorts      = if ($null -ne $rule.LocalPorts) { if ($rule.LocalPorts -eq "*") { "Any" } else { $rule.LocalPorts } } else { "" }
-                  RemotePorts     = if ($null -ne $rule.RemotePorts) { if ($rule.RemotePorts -eq "*") { "Any" } else { $rule.RemotePorts } } else { "" }
-                  Protocol        = if ($null -ne $rule.Protocol) { Convert-vlEnumToString $parsedProtocol } else { "" }
-                  Profile         = if ($null -ne $parsedProfile) { Convert-vlEnumToString $parsedProfile } else { "" }
-               }
-            }
-         }
-
-         return New-vlResultObject -result $output -score 10 -riskScore $riskScore
+      if ($isGetNetFirewallRuleAvailable -eq $false -or $isGetNetFirewallPortFilter -eq $false -or $isNetFirewallApplicationFilter -eq $false) {
+         # Get-NetFirewallRule are not available
+         return Get-vlOpenFirewallPorts_COM
       }
       else {
-         $rulesEx = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore ActiveStore
-         $rulesSystemDefaults = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore SystemDefaults
-         $rulesStaticServiceStore = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction SilentlyContinue -PolicyStore StaticServiceStore
+         $rulesEx = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction Stop -PolicyStore ActiveStore
+         $rulesSystemDefaults = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction Stop -PolicyStore SystemDefaults
+         $rulesStaticServiceStore = Get-NetFirewallRule -Enabled True -Direction Inbound -Action Allow -ErrorAction Stop -PolicyStore StaticServiceStore
 
          $rulesEx = $rulesEx | Where-Object { $_.ID -notin $rulesSystemDefaults.ID }
          $rulesEx = $rulesEx | Where-Object { $_.ID -notin $rulesStaticServiceStore.ID }
@@ -240,8 +299,8 @@ function Get-vlOpenFirewallPorts {
 
          $rulesEx = $rulesEx | ForEach-Object {
             $rule = $_
-            $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule
-            $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule
+            $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop
+            $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop
 
             $localPorts = if ($portFilter.LocalPort -is [System.Collections.IEnumerable] -and $portFilter.LocalPort -isnot [string]) {
                $portFilter.LocalPort -join ','
@@ -276,11 +335,9 @@ function Get-vlOpenFirewallPorts {
          return New-vlResultObject -result $rulesEx -score 10 -riskScore $riskScore
       }
    }
-   catch [Microsoft.Management.Infrastructure.CimException] {
-      return "[Get-vlOpenFirewallPorts] You need elevated privileges"
-   }
    catch {
-      return New-vlErrorObject($_)
+      # try to use the com interface if there was an exception
+      return (Get-vlOpenFirewallPorts_COM)
    }
 }
 
@@ -306,8 +363,6 @@ function Get-vlFirewallCheck {
    $params = if ($global:args) { $global:args } else { "all" }
    $Output = @()
 
-   $isWindows7 = Get-vlIsWindows7
-
    if ($params.Contains("all") -or $params.Contains("FWState")) {
       $firewallEnabled = Get-vlIsFirewallEnabled
       $Output += [PSCustomObject]@{
@@ -322,7 +377,7 @@ function Get-vlFirewallCheck {
       }
    }
 
-   if ($params.Contains("all") -or $params.Contains("FWPorts") -and $isWindows7 -eq $false) {
+   if ($params.Contains("all") -or $params.Contains("FWPorts")) {
       $openPorts = Get-vlOpenFirewallPorts
       $Output += [PSCustomObject]@{
          Name         = "FWPorts"
@@ -352,8 +407,8 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDyL1oGT9KHclMD
-# ftpb0DIf7gwFGXX/0ywk0MC5FsNFJaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCkjG6cXweq5pEU
+# JKvJV/yAR1wA1hJO4cHBcya0351n1KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -430,17 +485,17 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgZmhaKhEzYdnV
-# Glh4Bw1bPU50SXup4DjSMzbYMRs9rywwDQYJKoZIhvcNAQEBBQAEggIAC8Penv00
-# RPBH0tMJrUgicJD7eyuKvRMvN5B094Ewdnlst0rjU5nk+aqTU64karUwUi3cX97e
-# yjs9/MFnHoLALLLerZk6QV1O8NR1fpbrYWDLwkR+VmoQS+HFQ7VFnXya2Qd9mlrD
-# m/XnSHy5UutvihDA9gkdtw7P7f3ZsZiHbbUBPprmEeQ7AXKj8jR8Hl4BVKHArixY
-# fBQGBUF1asRtCss0ASxLCXeZgVTJ2lHMe574I1TI3L/q4dPNjLOpUaOO3GeiTIow
-# hoZnES5jIquYVeJ75EjvZxTYSUrdKRi2Ky9c+aB1NNy0H4bLH6fmImjbrs13Vt38
-# MCK4N5BDPawiOvNszt6Bi+SQY5A8pD6r3zUhr21mVOqPf08QRa6B0k0mbggNp7fJ
-# /cxOZ8QqqzZFzdbuTdvbjBpp2Dpv2PIkAWn92dt+2wMnVboMb4obDdG7O8a7zz3Y
-# Nd19nYqZTsxPZ9hRY1pGXSEnaHZUQ/YICuq1LgIN++Kz/jwOly/aJxxa7uQZh8MU
-# Xy/ig3dA6mRcxpo1J76tNhVAuVjievMEmXcL+m7qVkBejzSu+8Z8gMvRK07KaZ6r
-# wWskXJUxPGTFcPGjpV4nI6GllDKQF9yEP9/2MkTyX8qAMZMsza6RnF622mQBX+b+
-# GFr3hUx9ntT14G1L3qE2XUf+ZLjik4tClu4=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg885Tt7MGOacR
+# GR4xMQzqpqjgBrA+z4XaXpyimLiJMAQwDQYJKoZIhvcNAQEBBQAEggIAXtd9D/y9
+# qilFpgVu09OFjcZiaaFsBgPx4H+1eK9Tk4TsINEGAxD7+H7JmTIJC4NrAV8HCtky
+# fZKuQXvrFg3VWTuhpCTfTh2LQbVPQwmq0veflppPYyvQYAGkVp2Y3Du+sx29Dd/8
+# ErRSmDUOifJS/0wdkeeStT+ysHAT3bm+zKlMBmmmFoDm1yt5375bd1mrLqZ0l5Qm
+# H/gzH8Zgq2gK8Zzr76UB4f0Oiao5IXQ4dIxN4fNH1XD6DeshXY8+xW1sBNYmyqQ3
+# zuAX1jK61CgUnhDWWtTfTO2y0tRL7jL7yEZYOLsnxRABvDcyBcw/ox7viaRoUf0L
+# NxvZPs451eNb5YtOmm8wNBPOQVUx1QwwYHF/3jIXzO3ByRNt64wwPx3hK8gAxsCY
+# EvYwE6AMIZVeaEbO/nPucfEvQ1xCsqax7mr9E2xFq3l+IuO7q/kzl11G80+OrFmg
+# Cwmk8GTz2gIwaY/9//fqkTQrKyRhVQq+WrgJMxnTRIZML5tn9pfi65PFPBr93kXK
+# QJyRR3Bq59St+ClWdHjr7MEijKUCD3FTviI1hLyEL41KGTDWztnHsJPGbHFcY0Eb
+# LpOzbPP1lFRKYGPTdfHAucofEUQTXqNIGjD+yXnny3SX0xBlSCFQAnEZfQJ7bkz4
+# Yb2LgYJppANeeQrqzVtjoAf/AGlUVV3CvVw=
 # SIG # End signature block
