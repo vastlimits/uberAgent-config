@@ -100,16 +100,21 @@ public static class AppLinkHelper
 # Check if the AppLinkHelper class is already loaded and if not, load it.
 
 if ("AppLinkHelper" -as [type]) {
-   Write-Verbose "AppLinkHelper already loaded";
+    Write-Verbose "AppLinkHelper already loaded";
 }
 else {
-   Add-Type -TypeDefinition $getLinkedAppCSharp -Language CSharp;
+    try {
+        Add-Type -TypeDefinition $getLinkedAppCSharp -Language CSharp;
+    }
+    catch {
+        Write-Error "Failed to load AppLinkHelper: " + $_.Exception.Message;
+    }
 }
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD5X+bQR/10jkx1
-# eHfVIaxDT7T0gcsm6mpKi82JwckFYaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAkm+x1EgHJl0/b
+# RCfA8EQSeBDwoPtQNtBxAxCXUJlleqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -186,17 +191,17 @@ else {
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg/yc0DYSc0r/8
-# qPyruSnX9ERbHfaB/+vWMJT3OnZGXQ4wDQYJKoZIhvcNAQEBBQAEggIAx2R00dgr
-# ZhtzE+4PQHywaQ83babRSZgmR52PMLj/pmAzqEDHMFy0ordoq73phU4rg/lg1jjc
-# zAPuHfLfjgc7YXn+J6iJXFbzM2LlyYcss3TLnZRex6FT3ukvrPH41YjHx6Sn1e/R
-# Yl85kZzYiTLKu5nf60khhriNe3K5xk2+TplFx74/2+6s7jn4SQtoCYACkXwMRhJk
-# 1XjZZ/5IOHYTu+6M4zHTY2Bl7nczO+f6fpAAls32NN/SpRaMMWCWW7S1Glf/dxYN
-# 70hDtLAlRt3bwMnM/FVD1dp2OOTE6af4Q4RLvzQwM/s0N4QaR2rCOPwkpI/XcqrX
-# RVRZ8ZKcxYE0GSD4oLdXfLmK9DCQD/9lMNIZFa/Hb2oCrdmLVLJjc6KQGsP7IjiF
-# nQoB+GN5iWbbrlTUy4xd+LE+0y4qZPVBisT8X9TJFK3azfmJ+7zMPLeU0d5PliOR
-# gHkG7ZMit9pRFqFeHcvrtJehDNpEQeU2yNbUp9yQv/CdznSZjCPXXvhEY5gZuGfr
-# YUCcglMT2TGhTLNb/ayu2yNZCISlhtT/YLGNNxSO354zLZWlVN0wx6Yjgzcs9gv+
-# npXAf7Cj024Za9IejNY/kH8y5nX2wJZOdPMu4wLQ/yzTbYZCiH5/88BTPY0W+1SG
-# ZvRhPEZbgJV8Tjg/9tN+POEvAhkyI304144=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgiZflsLIooLhc
+# UUCn1l8F6jYVRuP/K0/JLtqWwf78+UMwDQYJKoZIhvcNAQEBBQAEggIARQ0iZTaI
+# rFojmU9EyzlDaAesgwrjWv/v2TaOhB/FOaZnDS+1tdSNgC99P+hts15yr5ZsgDhP
+# eF34OMtZCtHsUTCoM2PY8Q//GsulW/J3hcgr/9w/2Pqwdp5DruS2IGPpABSLKhLJ
+# Zytqx4rBN6whzlZXgb2EOzILXN8yOWhjm9QsEc1yjbI6kOtqNAKDLgOHz+Yeg3Q2
+# dotpLaqEIv55YwBOuZVSbMkpmkWAkMH4T0Zu4rdvQbAr+zakXzQEG+QxQTQKuSDx
+# 7e9vdhB0vsSEEDnbMZvB6YQu9d3nPn4zqmSNrI2KxIil5qqFGuXVxGIxELpHMxMX
+# gRqeXkQ8Zb2aGaKpJ7KgCsc7gc4hdsvBtFHTTWxm8Jw7cy9SqHZGLklVOA5bTboy
+# MAUiAATiLXL1mySnv+oUM2hkrqcCykeOQK/ynywe071Q9ZrzBT+MIz4RxTBpN/7f
+# QyfZ/VnY5dIWPYey7YoolqloCHbXIj48Zs67Ppc28cxvBOxhHOlGpkSKP7ua5hor
+# S6/9RQ55dovZEXUq/CwPWxRDagBnlj7o2NKQ24ON/slYOFrx38aTteUYkeuYjGpr
+# OPYaNhcjkADEzlRjd9EZsJPu+qwMtXfK8+Agmt9p89QbEVlbKeqgLT2WGgrBVITB
+# 87ScG/ZWsR9QvplZJRiIwsylZG0bZ5kjHYM=
 # SIG # End signature block

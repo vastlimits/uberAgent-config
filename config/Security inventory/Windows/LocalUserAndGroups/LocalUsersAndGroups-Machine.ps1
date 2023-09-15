@@ -62,7 +62,7 @@ function Get-vlUACState {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -196,7 +196,7 @@ function Get-vlLAPSTestEventLog {
       return New-vlResultObject -result $lapsLog -score 10 -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -280,7 +280,7 @@ function Get-vlLAPSSettings {
       return New-vlResultObject -result $lapsSettings -score 6 -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject-context $_
    }
 }
 
@@ -326,7 +326,7 @@ function Get-vlMachineAvailableFactors () {
 
    $availableFac = @()
    foreach ($factor in $WinBioStatus.GetEnumerator()) {
-      if ($availableFactors -band $factor.value) {
+      if ($availableFactors -and $availableFactors -band $factor.value) {
          $availableFac += $factor.key
       }
    }
@@ -366,7 +366,7 @@ function Get-vlWindowsHelloStatusLocalMachine () {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -466,8 +466,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBpsh09ASbACB2Q
-# QbGITEkCN8gFCh/6rSg0QXkjA5lzX6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD/hJBUj2S52f0L
+# 57XjUbMzVFLUp5bmVOSs0NpROhFn/6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -544,17 +544,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgVJCbdc/ecuaT
-# w2+SRkenul5LlwS2Qk9vGuFxDTgyDOowDQYJKoZIhvcNAQEBBQAEggIAzYg4L3ny
-# 3XUydIyk0HejKx3fLG1ObZB4nToVV+3jxAB3m+4GPu0Fsn9i4Toc+BC48hYpgipv
-# NEtKgmNPFcTcLKKCfOrojVmOS5IP03KTSnKQ6kv5jGXxsS7TMm3vXoFzbP1KonsA
-# igrhwlV4LQMnVyJAQ3+XrBcYYX4SpwjtAFepXEQFmh5zhd3d/2TvqGqVcQihta0D
-# ZsHZjMasWSIshfqEI5QWwJrgs02Pnw6Q4tkW6CTfEcgDwdX+iLrNSEbboIBEmRJI
-# EOIE3mhhoTg4TkPlQMn2IRcrAZRLVg0wo8iZawj+RNBBG6omfHn4Qzg3rA40riRA
-# sPlmWL2vJUVLsoMfNQbs2YYmDYrJ4+hKVyJ8doIdj6gAfiW5KgqFbt3HwXLADVSU
-# FbXCVrTO8BcEdbcmQMCK7qdeR1seMO6kaacJ2I/+ZP2lEihA33/VC1psXUPFfvVj
-# 9fkCnl+OrotbjpjGm/N9sY00bf5ZVqPEWBLO+eocaWQig4qfZHBlMpaljHZq6OUO
-# 4yCMZB57JnLAOjGvY4xI5ZE+8zTJiMc/lVEaz5GC4u0n2tE+tLXf31+kbLUBeM9J
-# uzPW6rn7ErjMS1lqnkzR040Jbh3pWWB729CkjqwxOM7RwZQ8TVZXvJIqrIN8jw/C
-# sZT5RO6KGDcUAnCLlFDiDqY9QDqPbkFg8GU=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgwWe/6mXry+iQ
+# pXUPPnso7crG2EQ9O7dhNe+DM4riu6IwDQYJKoZIhvcNAQEBBQAEggIADi0tyPSK
+# dxsOBQNAuIBm3sRfcAgTC6bbkPzoOHPrDxHGmOBpalnNhiWMJQrunliVo9rFfgxD
+# QHnfyAcjgDkVzLmpBr3saJZdI0xbFFVn+IvT7ix80zOFXJ8tHlqXlNNeNbcvLIJO
+# V23RtdGhs2Vp7kws/YQnuvbmjRvo0J/PfadLA38fNCwZxhdTTLrBcibTyJpDR/+T
+# OFv+842qC4gbBYwUl5k5FkOxxdW3Jo8PVZTCfoKbpHG/8PHCcwnMgC98sD+EcdQU
+# rnC41vRJiAvHE+osvcs2nXy/WT375dyNk/SfTB2Rx5IgzHupxKbX9azcpXUwqQSu
+# gEHtXVJm9Brnb5xKR8GXCbvN/Lf7coXxsqrw4nR9lbUBHYKPKZU3rILy96f1pzG1
+# f4YelmauPSX8lBf1Nc6LqkFjQEgYBVjp0VMa5W2xg3fuq3Ii9ezjR9jAus/NklDX
+# TpAJ3sy+8pRC2VPiZ75kks6REfs9mEam/lIw1yP9TqUz8xG6WC1Ejd1oyTnhAGr4
+# ypztHoMVPnjcXGCW9LoPWERHGYxFubw3ysRLHsM/JCjCnUPOjee24sGJRx4ijU7z
+# ge0xoBHTcOvjAKOjHXkY+iIxtQAKZZkyySQUUfp6pqymmmKz3zzBVeLUA5qrfeJV
+# K0fmouwBHDrHGlOE+Rp6YwI4yGZI2otcgd0=
 # SIG # End signature block

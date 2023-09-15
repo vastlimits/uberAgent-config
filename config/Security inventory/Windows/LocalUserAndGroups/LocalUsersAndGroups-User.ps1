@@ -65,7 +65,7 @@ function Get-vlIsLocalAdmin {
       }
    }
    catch {
-      return New-vlErrorObject($result)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -113,7 +113,7 @@ function Get-vlGetUserEnrolledFactors() {
 
    $enroledFac = @()
    foreach ($factor in $WinBioStatus.GetEnumerator()) {
-      if ($enroledFactors -band $factor.value) {
+      if ($enroledFactors -and $enroledFactors -band $factor.value) {
          $enroledFac += $factor.key
       }
    }
@@ -148,70 +148,75 @@ function Get-vlWindowsHelloStatusLocalUser () {
 
    $riskScore = 30
 
-   # Get currently logged on user's SID
-   $currentUserSID = (New-Object System.Security.Principal.NTAccount($env:USERNAME)).Translate([System.Security.Principal.SecurityIdentifier]).value
+   try {
+      # Get currently logged on user's SID
+      $currentUserSID = (New-Object System.Security.Principal.NTAccount($env:USERNAME)).Translate([System.Security.Principal.SecurityIdentifier]).value
 
-   # Registry path to credential provider belonging for the PIN. A PIN is required with Windows Hello
-   $registryItems = Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{D6886603-9D2F-4EB2-B667-1971041FA96B}"
-   if (-not $registryItems ) {
-      $result = [PSCustomObject]@{
-         WindowsHelloEnabled = $false
+      # Registry path to credential provider belonging for the PIN. A PIN is required with Windows Hello
+      $registryItems = Get-vlRegSubkeys -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\Credential Providers\{D6886603-9D2F-4EB2-B667-1971041FA96B}"
+      if (-not $registryItems ) {
+         $result = [PSCustomObject]@{
+            WindowsHelloEnabled = $false
+         }
+
+         return New-vlResultObject -result $result -score 7 -riskScore $riskScore
       }
+      if (-NOT[string]::IsNullOrEmpty($currentUserSID)) {
 
-      return New-vlResultObject -result $result -score 7 -riskScore $riskScore
-   }
-   if (-NOT[string]::IsNullOrEmpty($currentUserSID)) {
+         $enroledFactors = Get-vlGetUserEnrolledFactors
 
-      $enroledFactors = Get-vlGetUserEnrolledFactors
-
-      if ($enroledFactors.WinBioAvailable -and $enroledFactors.WinBioUsed) {
-         $enroledFactors = $enroledFactors.WinBioEnroledFactors
-      }
-      else {
-         $enroledFactors = @()
-      }
-
-      # If multiple SID's are found in registry, look for the SID belonging to the logged on user
-      if ($registryItems.GetType().IsArray) {
-         # LogonCredsAvailable needs to be set to 1, indicating that the PIN credential provider is in use
-         if ($registryItems.Where({ $_.PSChildName -eq $currentUserSID }).LogonCredsAvailable -eq 1) {
-            $result = [PSCustomObject]@{
-               WindowsHelloEnabled = $true
-               EnrolledFactors     = ($enroledFactors + "PIN")
-            }
-
-            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+         if ($enroledFactors.WinBioAvailable -and $enroledFactors.WinBioUsed) {
+            $enroledFactors = $enroledFactors.WinBioEnroledFactors
          }
          else {
-            $result = [PSCustomObject]@{
-               WindowsHelloEnabled = $false
-               EnrolledFactors     = $enroledFactors
-            }
+            $enroledFactors = @()
+         }
 
-            return New-vlResultObject -result $result -score 7 -riskScore $riskScore
+         # If multiple SID's are found in registry, look for the SID belonging to the logged on user
+         if ($registryItems.GetType().IsArray) {
+            # LogonCredsAvailable needs to be set to 1, indicating that the PIN credential provider is in use
+            if ($registryItems.Where({ $_.PSChildName -eq $currentUserSID }).LogonCredsAvailable -eq 1) {
+               $result = [PSCustomObject]@{
+                  WindowsHelloEnabled = $true
+                  EnrolledFactors     = ($enroledFactors + "PIN")
+               }
+
+               return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+            }
+            else {
+               $result = [PSCustomObject]@{
+                  WindowsHelloEnabled = $false
+                  EnrolledFactors     = $enroledFactors
+               }
+
+               return New-vlResultObject -result $result -score 7 -riskScore $riskScore
+            }
+         }
+         else {
+            if (($registryItems.PSChildName -eq $currentUserSID) -AND ($registryItems.LogonCredsAvailable -eq 1)) {
+               $result = [PSCustomObject]@{
+                  WindowsHelloEnabled = $true
+                  EnrolledFactors     = ($enroledFactors + "PIN")
+               }
+
+               return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+            }
+            else {
+               $result = [PSCustomObject]@{
+                  WindowsHelloEnabled = $false
+                  EnrolledFactors     = $enroledFactors
+               }
+
+               return New-vlResultObject -result $result -score 7 -riskScore $riskScore
+            }
          }
       }
       else {
-         if (($registryItems.PSChildName -eq $currentUserSID) -AND ($registryItems.LogonCredsAvailable -eq 1)) {
-            $result = [PSCustomObject]@{
-               WindowsHelloEnabled = $true
-               EnrolledFactors     = ($enroledFactors + "PIN")
-            }
-
-            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
-         }
-         else {
-            $result = [PSCustomObject]@{
-               WindowsHelloEnabled = $false
-               EnrolledFactors     = $enroledFactors
-            }
-
-            return New-vlResultObject -result $result -score 7 -riskScore $riskScore
-         }
+         return New-vlErrorObject -message "Failed to determine Windows Hello enrollment status: SID is empty" -errorCode 1 -context $null
       }
    }
-   else {
-      return New-vlErrorObject("Not able to determine Windows Hello enrollment status")
+   catch {
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -282,8 +287,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBpC65l6eZCtIw4
-# eUIdqVtlN6UeJj8TzSaFpVk6ZViU56CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBhaLfD2an9EiyE
+# OCsAEsTxQ5iHq4S8ZdzX+p9ylcTW+qCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -360,17 +365,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg/2ZT14vI23n8
-# PvGg0Iy3a3y6kyGMT7RD0Syqypsr/k0wDQYJKoZIhvcNAQEBBQAEggIAkMyFEAC6
-# cSMgP6Rj9jGVY2oItKCOLA2POPmRTU4hh8UkgP0KBeABXqr2WNuzN3qtniz9N1pD
-# pPymCki8OdmXIBn/cFRLFdNggp+owAmhpUygEXFe7/vMVCpSM00uhwpnxGZt85zt
-# H0omVZXmfkI7CTDr5zWJ0tAZQC4r4pG12ZsOgEGnSiDY60XJcxk/sX8Oz6rLQTcj
-# vXg0rEcSUeCN1XTMlGGYe/mKHeTmJ9reDi1Op2CEKOxnbGjsKdAeZk1JgnfgMvvR
-# hyYyziY8E1qkUVA08v5CP2GDXaPq7UNMcKUMSz6BIRru8/HKzuU6Zzt4K0d3T7dG
-# b/rGn2mliChNMmpH5JKG1jBiSTqI66El9ldAbvN1HYnfBZvy0jj78rLScPv2TXyF
-# DZvbOeCG7kX5dcKJXe2p0pUtKckvUB0YCP338lyKm3KDKpk1DHE3lIHBksPapwKs
-# 26PjYxtMpWRwPoEI9cN+9dbJqFTIxRO+lo+uYFK6VRBtgch0xZwvL89pvyHhzcWH
-# WBevuj53nRm5GY0fGhcu5L8fLacevihtD78t4OMZcqa97V9ZKrOLneVNm6SmCAvY
-# kA3hz3LCmwIhkC2pSzS9DPPIfwLytcY2ZHaU7byJpyqQhBlPnQ2BUmdgpB0I+5cV
-# 2Vex+QJkJjM9jolMIOEw8vxWkItaVvg421Y=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgdPcim60o+L0T
+# 5guZDnjhOp0scpFqznatKWOwfl6jLsAwDQYJKoZIhvcNAQEBBQAEggIAAZhHQeop
+# 8b41+O0pRj+J9FEjOL21axD+NipTqrq2X7LJMzmbKfCvj1dU+7b8+qVn32tSEkAL
+# 2uEUvnqc+Akp2ZZ+KW2KBztV2rHyDLobzy6Gxax4zLdlJMHssMEagzDrFraqh7fe
+# sqMAgSnwuGSXSXGzhfJrciKslJAwaotdD5cPO6GCOCarPXeTSRV4RJYvyonuA7YQ
+# VuPJXhEaFL6ox7X6k6UVMzx3+c+fTY7OP3KTfKVraGpZiZVGfh3hKh4TBINnECnu
+# QZGKMUOCUMK1rNbcugjURDB8d+BF+9dTAOXEU5fdrcYQrRn1yioxcZhJb07ikNqn
+# sI/3yHJf95muLvtq6EywpHSampfMEXbA3lmrcgoFz1ubclC2hCXaQBEEWaABYGSE
+# dCm0gSAU11TKRAIUhSHnov1dWaV55vpCm5SyN8mYkfetWoBDnTyFBTAoFpZU8Mft
+# m9iBxWf8PfObuZjNVNarXbK+NcJ4IBRIWmwkp89wkzhG+ta/aFVhm856snMF8Lyq
+# IwOM0zPa+tnQ2iHx5oaKKwDdA086JodWCuCMzA9083K51jFgTzKrhNUBM/uHWVkn
+# LBMSk4AjvZOs8PhmzDL8acfBrZLRaUFleyhXXdhAR9pevbFJKgL772biqRwupDnG
+# epvZZE3a9I4vxCQYhi0rT7DKtyTCmjBjIjg=
 # SIG # End signature block

@@ -26,7 +26,7 @@ function Get-vlPowerShellV2Status {
 
          #check if PowerShell V2 is installed on the system
          try {
-            $installationStatus = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2
+            $installationStatus = Get-WindowsOptionalFeature -Online -FeatureName MicrosoftWindowsPowerShellV2 -ErrorAction Stop
 
             if ($installationStatus.State -eq "Enabled") {
                $powerShellV2Enabled = $true
@@ -37,7 +37,7 @@ function Get-vlPowerShellV2Status {
          }
          catch {
             # check if HKEY_LOCAL_MACHINE\Software\Microsoft\PowerShell\1\PowerShellEngine exists
-            $powerShellV2Enabled = Test-Path -Path "HKLM:\Software\Microsoft\PowerShell\1\PowerShellEngine"
+            $powerShellV2Enabled = Test-Path -Path "HKLM:\Software\Microsoft\PowerShell\1\PowerShellEngine" -ErrorAction Stop
          }
 
          $result = [PSCustomObject]@{
@@ -53,8 +53,7 @@ function Get-vlPowerShellV2Status {
          }
       }
       catch {
-
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
    }
 }
@@ -89,7 +88,7 @@ function Get-vlPowerShellCL {
       }
       catch {
 
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
    }
 
@@ -110,7 +109,7 @@ Function Get-vlPowerShellRemotingStatus {
     #>
 
    try {
-      $serviceStatus = Get-Service -Name WinRM | Select-Object -ExpandProperty Status
+      $serviceStatus = Get-Service -Name WinRM -ErrorAction Stop | Select-Object -ExpandProperty Status
 
       #if the service is not running, remoting is disabled
       if ($serviceStatus -ne "Running") {
@@ -126,10 +125,10 @@ Function Get-vlPowerShellRemotingStatus {
 
       # Try to open a session to localhost
       try {
-         $session = New-PSSession -ComputerName localhost
+         $session = New-PSSession -ComputerName localhost -ErrorAction Stop
 
          # Close the session
-         Remove-PSSession $session
+         Remove-PSSession $session -ErrorAction Stop
          $remotingEnabled = $true
       }
       catch {
@@ -184,7 +183,7 @@ function Get-vlPowerShellExecutionPolicy {
             ExecutionPolicy = "Undefined"
          }
 
-         $policys = Get-ExecutionPolicy -List
+         $policys = Get-ExecutionPolicy -List -ErrorAction Stop
 
          # go from lowest to highest
          # first check LocalMachine policy
@@ -250,7 +249,7 @@ function Get-vlPowerShellExecutionPolicy {
             return New-vlResultObject -result $result -score $LMLevel -riskScore $LMrisk
          }
 
-         $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem
+         $osInfo = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Stop
          <#
                 Work Station (1)
                 Domain Controller (2)
@@ -267,7 +266,7 @@ function Get-vlPowerShellExecutionPolicy {
       }
       catch {
 
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
       finally {
 
@@ -410,7 +409,7 @@ function Get-vlPowerShellLogging {
       }
       catch {
 
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
       finally {
 
@@ -444,7 +443,7 @@ Function Get-vlJEACheck {
       }
 
       # check if there are any JEA configurations apart from the default ones
-      $jeaSessions = Get-PSSessionConfiguration | Where-Object { $_.Name.ToLower() -notlike 'microsoft.*' }
+      $jeaSessions = Get-PSSessionConfiguration -ErrorAction Stop | Where-Object { $_.Name.ToLower() -notlike 'microsoft.*' }
 
       if ($jeaSessions.Count -eq 0) {
          return $false
@@ -571,8 +570,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAVHyoKQNUdCnOG
-# ndLQHF8Yk7GdQPp9zFbhZqk0M5AtHKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAHmwKe13D5+wOJ
+# KaxCE6SOHiIpkvToXutoV/0zGGQAmqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -649,17 +648,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgkF7dWDedopgO
-# GY+Ur1uDG87z5wipcg6oXcvhQIB2RoowDQYJKoZIhvcNAQEBBQAEggIAFB6sEPTb
-# ow1G0d/sx5iIAtL/swVokUDcSrOuugTTO+eRnfBjkZCHOpcyLV+ffJJlunpohsSZ
-# ZZiyNJg6f2SLp97wP1I3KkvU004vQGIHHCAtU+HP7v7SywahhZC5KaU8HAI9+hbS
-# PDUdNzyWFKypbCzbCNC9ifIYIRkxBYITOphl3Yt2kTeZTwMpeWO8SU4VFk4GXo++
-# kPeU0ZfgsM7LabfwPD5vX8AbC1S9wOI2rOOrZ/8tDixBXunVwX4ryfaw8G8asKs+
-# rcle/f1/XD7HN2s/lIArDxHV4UeKLjUXWmy1rfM/qD7+Ba9XQLSdtv6himMp66LT
-# rceQKW/S/D26WnlHECoSacMZSg3MCo4EFa9afPAWHt4ck85qbJ9LTdvobTZOQcou
-# q0Xjq/2TulXG3a/+iXQUV1PMHqn9/V8J5yvUhqIwAXtEXpmK4mjLUdzBuBScb2OZ
-# 8ZvjZzuhL466c1QPZBhFmdMP9CH6ZPKldHaWXV8vHsR5ZTjUBqsJMO5/tq+T3AX0
-# er2MDCdjF8ekvd6/o95prv39EkGifHr24nCZ0yoN3NbpZCZpVPWD6yUrcH2NxIwy
-# UyM6xHKiDwSkKRGeRMzriO4dMdZg5RqacJTnuNyBaTapuTyrLB0igOh3xsp+0F9s
-# vsr6YsXuKCM3fLJj5Fv+hxYXCHjU8lzLdyg=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg9P4RWzZ3sf7e
+# dC/qUUoMxLzkegrAo5P13UXTD6tlHx0wDQYJKoZIhvcNAQEBBQAEggIAbCxIiQMS
+# wD2ovr70EigrlVZjeu566rEB4SznTtSdECdCkk/HP/VLSlNM5c8PqIHUs+YgS/MN
+# 0d7IeLH+zSeX1fhOlCQYMuUwz22CC20zhSGDjuSxy4NfohhTjee7ljRrG/efqJIe
+# f1BjXmyA/9KApLLCqoK4fhWBHGaaHBSpLVxLoR7Y6svuNeOUEjkhLeOzh2o+mMit
+# 2c7M7LjELLANg1xLpBD05MWOvUEqkiPBqb1p9XcuVB4xd6l6w2FMCirSV5M60VGw
+# Npc/TVaBUGnfXUDtwjCMdaaUy0bSgSAOxLyxTg5z/UypiliRhKnoZXBXV9eQxxRT
+# cBY8KdalDta4ag2SHu9KOEWlI8BxvvJFACphCXtJPHPlKyH1kO5iyRa925nkVoZ/
+# v9TNKufJNx+JZdZd6qtzJKtF+kcqqpf+pNROr6Eo1ijFgjSTvX/oqc3eeCW2JMvb
+# BVABCrX78KenopqdaZB0ydOicQHiaco5CvuHLLgIzbsdtU/pUokY4JvR2Ec9apj9
+# /9Ekt0On+XdAlilYL9xGgzQSicF8ognurpucHhOxaChTvkVRsmoSLYIlbdfDCnCX
+# Q8paFRXCgD8SKZS7q20U0XBvgyWQeZdek6QhZc/rhlcusQVE+O8fvP/xn2f1PfQy
+# SOQs/YsqAjl2t1LS5HQdj5JMt5p+VN7W2Lw=
 # SIG # End signature block

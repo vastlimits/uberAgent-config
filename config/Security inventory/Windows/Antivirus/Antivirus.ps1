@@ -44,12 +44,15 @@ function Get-vlAntivirusStatus {
          $score = 0
          $riskScore = 100
 
-         $isWindowsServer = Get-vlIsWindowsServer
-         $isWindows7 = Get-vlIsWindows7
+         $osVersion = Get-vlOsVersion -ErrorAction Stop
+         $isWindows7 = $osVersion -match "^6\.1"
+
+         $isWindowsServer = Get-vlIsWindowsServer -ErrorAction Stop
+         $isMpComputerStatusAvailable = Get-vlIsCmdletAvailable "Get-MpComputerStatus"
          $defenderStatus = [PSCustomObject]@{}
 
-         if ($isWindows7 -ne $true) {
-            $instances = Get-MpComputerStatus
+         if ($isMpComputerStatusAvailable -eq $true) {
+            $instances = Get-MpComputerStatus -ErrorAction Stop
 
             $defenderStatus = [PSCustomObject]@{
                AMEngineVersion                 = if ($instances.AMEngineVersion) { $instances.AMEngineVersion } else { "" }
@@ -66,10 +69,10 @@ function Get-vlAntivirusStatus {
 
          if ($isWindowsServer -eq $false) {
             if ($isWindows7 -eq $true) {
-               $instances = Get-CimInstance -ClassName AntiSpywareProduct -Namespace "root\SecurityCenter2"
+               $instances = Get-CimInstance -ClassName AntiSpywareProduct -Namespace "root\SecurityCenter2" -ErrorAction Stop
             }
             else {
-               $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
+               $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2" -ErrorAction Stop
             }
 
             $avEnabledFound = $false
@@ -148,14 +151,14 @@ function Get-vlAntivirusStatus {
                }
             }
             else {
-               return New-vlErrorObject -message "Status could not be determined because SecurityCenter2 is not available on Windows Server." -errorCode 1 -context $_
+               return New-vlErrorObject -message "Status could not be determined because SecurityCenter2 is not available on Windows Server." -errorCode 1 -context $null
             }
          }
 
          return New-vlResultObject -result $result -score $score -riskScore $riskScore
       }
       catch {
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
    }
 }
@@ -189,7 +192,7 @@ function Get-vlAntivirusCheck {
       $Output += [PSCustomObject]@{
          Name         = "AVState"
          DisplayName  = "Antivirus status"
-         Description  = "This test determines whether an antivirus product is installed and its current status. If the test is performed on a Windows server operating system, due to technical limitations, only the Defender status is evaluated. If Windows Defender is enabled, the test will provide additional information, such as the status of the last signature update and the current signature version."
+         Description  = "This test determines whether an antivirus product is installed and its current status. If the test is performed on a Windows server operating system, due to technical limitations, only the Defender status is evaluated. If Windows Defender is enabled and your operating system is Windows 10, Windows Server 2016 or later, the test will provide additional information, such as the status of the last signature update and the current signature version."
          Score        = $avStatus.Score
          ResultData   = $avStatus.Result
          RiskScore    = $avStatus.RiskScore
@@ -200,7 +203,6 @@ function Get-vlAntivirusCheck {
 
    Write-Output $output
 }
-
 
 try {
    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -215,8 +217,8 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD5xESXU5U6foJh
-# BFSgmWaLCfewh5N5io8xM55i+Y0plaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDEQR3KOKKTbpTX
+# 9wgXQlGGZpEZkmbzXUb8aLbyVyui56CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -293,17 +295,17 @@ Write-Output (Get-vlAntivirusCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgzYuqk7aoa2h7
-# LwLIEdpgkfdbmcz58KylqkB8q4BdrtEwDQYJKoZIhvcNAQEBBQAEggIAGNXpf77/
-# k11gvM3dlbqzSvVJPkAAQQHW7nPRUfjuk4mygtjlhTdk9Htv/d3MTaic6DP64GhV
-# iG1yc0uaLfALmZyLuSX0x7nWXfTpW9gPq52nCga/vpjp5lmEvLHj7cr2AF+AfsmV
-# OgRLhgWkJsmnAGJrt2PaqEfvd+vF89lHCXo4SiWLAPzI3faiGTb6fLjJC2R8kN+g
-# j53om7nzg9ndB8Bn8eiJjDnSIrLsvW/3IAXeeSWHYvbklGCWkPALVlT1bw9DNuAF
-# QMQ7mpjtBcPyn/XPx98bqgcoiV8oHlTvNwEgybr91Z7NOkueXjzekWKrzJz6HpIb
-# rkBuCAExOvDw18qh4vE8aGOs+Tp7tcIZTiRmjnGxtzGUPXi9En18g32fK7KjaWse
-# u5BKkKtrSvOY1dx3bilPfYbBFcvDH9AOoR7FWI8tcsxJ3r3+PzN/8jLab6hdkVco
-# 5qRUl+JKpkgzSaoHHrlzVdiMURrtf6GN60LROPOfj1p5BJ5wMiik0SNiync2tjAd
-# 5HSV3p63ywN7vbNfLDzM2JnBe7jF5WEjZei2xQ03IJzobKChwAZolzD2uGWs/1IH
-# 43wPEwqKY14VS4s8FihnlG+Haniel4ld0pmjOpnLwxwta38ApaZ/0q0n28fL1+zu
-# dTLk0h2+xP+e3hn8p1yOK5Yt1QHEJ/e1i08=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgsMTGMliT4lVs
+# Rr+o+wbiUHeVLzw2sBIkJ3TKOia6BC4wDQYJKoZIhvcNAQEBBQAEggIArYD5xPzp
+# q5CiHFM2hq4pgMB4X9TKjPBl3a6QRE0w1RNDTlgPAETy52Zj6b13umR5XI2zL/dg
+# 7SfCcMfojy1DgVqde0PjNxcNl+/LTWjfuRMM7SGx+IIFoajpmoXaBbkcDLJL+Cbf
+# XZ04LcEys0H/Xvl7e+aigdovkT5kaTFUQoEaYUh9i6Ib3ShZ/VR/cKprHXXje4lB
+# De7DcvW6RDOGS04p4MM8Iqf8z+213d9xiBbLrEuBEAHvY2ls1AsP21GPlf/CgwvT
+# Kt5lVZL7LVMn62luvU8Xlr1khn9e5gqG/Wbv3NQDS53ehvrNlVHLlzvMZyunwbEr
+# FjO0wkY3yuh7bTB5A0NoQymyJ6X68FdL712/lyYWhlO4xhSgPA+haZPjhVSjt7gW
+# NzSFJuzi0BVlLNHKrJfML5/JyCeEmJLblFctXARnpyVV0W042j+FvcHt4Y7H4Uju
+# kUCJ2FH55Uq4t2keW7fvqPS15U/ZVwOssCJY5qvofk+geHMxl7XzM6Zc49jNglVc
+# JxuEUzxcXGMq9OnEEp5l3s8QoS6n1Rf8Z+82cz4OCnc5sTZu6KKNvVPTEjb2LLsR
+# aMSmeSXajmk2UfosjoJ3PahXZnwRShYSVEGrA4fAt/vR94UQWAxN6h8btVpZZWXI
+# eQnExByTPX+kocM700Wr/FwQokhGiLj1KnQ=
 # SIG # End signature block

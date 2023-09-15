@@ -3,25 +3,6 @@
 #define global variable that contains a list of timers.
 $global:debug_timers = @()
 
-function Get-vlOsArchitecture {
-   <#
-    .SYNOPSIS
-        Get the OS architecture
-    .DESCRIPTION
-        Get the OS architecture of the current machine as a string. Valid values are "32-bit" and "64-bit"
-        This cmdlet is only available on the Windows platform.
-        Get-CimInstance was added in PowerShell 3.0
-    .LINK
-        https://uberagent.com
-    .OUTPUTS
-        A string containing the OS architecture. Valid values are "32-bit" and "64-bit"
-    .EXAMPLE
-        return Get-vlOsArchitecture
-    #>
-
-   return (Get-CimInstance Win32_operatingsystem).OSArchitecture
-}
-
 function Get-vlOsVersion {
    <#
     .SYNOPSIS
@@ -37,29 +18,6 @@ function Get-vlOsVersion {
    $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
 
    return $osVersion
-}
-
-function Get-vlIsWindows7 {
-   <#
-    .SYNOPSIS
-        Check if the OS is Windows 7
-    .DESCRIPTION
-        Check if the OS is Windows 7
-    .OUTPUTS
-        A boolean indicating if the OS is Windows 7
-    .EXAMPLE
-        return Get-vlIsWindows7
-   #>
-   # use CIM instead of WMI
-
-   $osVersion = (Get-CimInstance -ClassName Win32_OperatingSystem).Version
-
-   if ($osVersion -match "^6\.1") {
-      return $true
-   }
-   else {
-      return $false
-   }
 }
 
 function  Get-vlIsWindowsServer {
@@ -102,6 +60,10 @@ function Convert-vlEnumToString ($object) {
     #>
 
    $outputObj = $object | ForEach-Object {
+      if ($null -eq $_) {
+         return ""
+      }
+
       if ($_ -is [Enum]) {
          $_.ToString()
       }
@@ -138,19 +100,23 @@ function New-vlErrorObject {
         A [psobject] containing the error code and error message
     .EXAMPLE
         catch {
-            return New-vlErrorObject($_)
+            return New-vlErrorObject -context $_
         }
     #>
 
    [CmdletBinding()]
    param (
-      [Parameter(Mandatory = $true)]
       $context,
       $message = $null,
       $errorCode = $null
    )
 
-   $finalCode = if ($context.Exception.HResult) { $context.Exception.HResult } else { 1 }
+   if ( $null -ne $context) {
+      $finalCode = if ($context.Exception.HResult) { $context.Exception.HResult } else { 1 }
+   }
+   else {
+      $finalCode = 1
+   }
 
    if ( $null -ne $errorCode) {
       $finalCode = $errorCode
@@ -241,7 +207,7 @@ function Get-vlRegValue {
     .PARAMETER IncludePolicies
         Checks also the GPO policies path
     .OUTPUTS
-        The value of the registry key or an empty string if the key was not found
+        The value of the registry key or $null if the key was not found
     .EXAMPLE
         Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Value "ProductName"
     #>
@@ -475,7 +441,12 @@ function Get-vlHashTableKey {
       [Object]$value
    )
 
-   $hashTable.GetEnumerator() | Where-Object { $_.Value -eq $value } | ForEach-Object { $_.Name }
+   if ($null -ne $hashTable) {
+      $hashTable.GetEnumerator() | Where-Object { $_.Value -eq $value } | ForEach-Object { $_.Name }
+   }
+   else {
+      return $null
+   }
 }
 
 
@@ -500,7 +471,12 @@ function Get-vlHashTableKeys {
       [Object]$value
    )
 
-   $hashTable.GetEnumerator() | Where-Object { ($value -band $_.Value) -ne 0 } | ForEach-Object { $_.Name }
+   if ($null -ne $hashTable) {
+      $hashTable.GetEnumerator() | Where-Object { ($value -band $_.Value) -ne 0 } | ForEach-Object { $_.Name }
+   }
+   else {
+      return $null
+   }
 }
 
 
@@ -583,6 +559,29 @@ function Get-vlTimeString {
    catch {
       return ""
    }
+}
+
+function Get-vlIsCmdletAvailable {
+   [CmdletBinding()]
+   [OutputType([bool])]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$CmdletName
+   )
+
+   try {
+      $cmdlet = Get-Command $CmdletName -ErrorAction Stop
+      if ($null -ne $cmdlet) {
+         return $true
+      }
+      else {
+         return $false
+      }
+   }
+   catch {
+      return $false
+   }
+
 }
 
 ##### Debugging utilities #####
@@ -723,6 +722,54 @@ function Get-vlTimerElapsedTime {
    }
 }
 
+function Write-vlDebugLog {
+   <#
+    .SYNOPSIS
+        Write the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
+    .DESCRIPTION
+        Write the elapsed time for a timer by name and give the option to select between seconds and milliseconds. The default is milliseconds.
+    .PARAMETER Name
+        The name of the timer
+    .PARAMETER Unit
+        The unit of time to return. Valid values are "sec" and "ms"
+    .PARAMETER UseFile
+        Write the elapsed time to a file
+    .LINK
+        https://uberagent.com
+    .OUTPUTS
+
+    .EXAMPLE
+        Write-vlTimerElapsedTime -Name "timer1"
+    #>
+
+   [CmdletBinding()]
+   param (
+      [Parameter(Mandatory = $true)]
+      [string]$Data,
+      [Parameter(Mandatory = $false)]
+      [bool]$UseFile = $false
+   )
+
+   process {
+      # get current time and format it for the log with milliseconds like 2019-01-01 12:00:00.000
+      $time = Get-Date -Format "yyyy-MM-dd HH:mm:ss.fff"
+
+      if ($UseFile) {
+         # use C:\Windows\Temp as default log path
+         $logPath = "C:\\Windows\\Temp\\ua_script_debug.log"
+
+         Add-Content -Path $logPath -Value "[$time] - ${data}"
+      }
+      else {
+         Write-Debug "${Name}: $elapsed $Unit"
+      }
+   }
+
+   end {
+
+   }
+}
+
 function Write-vlTimerElapsedTime {
    <#
     .SYNOPSIS
@@ -753,29 +800,18 @@ function Write-vlTimerElapsedTime {
       [ValidateSet("sec", "ms")]
       [string]$Unit = "ms"
    )
-   begin {
-
-   }
 
    process {
       $elapsed = Get-vlTimerElapsedTime -Name $Name -Unit $Unit
-      if ($UseFile) {
-         Add-Content -Path "script_debug.log" -Value "${Name}: $elapsed $Unit"
-      }
-      else {
-         Write-Debug "${Name}: $elapsed $Unit"
-      }
+      Write-vlDebugLog -Data "${Name}: $elapsed $Unit" -UseFile $UseFile
    }
 
-   end {
-
-   }
 }
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBTyue48o0Abq1J
-# aIQlb/DzQC7PMTIcPtoP6wEMGL2ieaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBa9Qn3HAcj/I+M
+# fGoui2QiVC3HrXDgA0tthcD+RG4nCaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -852,17 +888,17 @@ function Write-vlTimerElapsedTime {
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgkEXwDotQSqCr
-# RCVC2WJY7N2BEiP72DKGPCAduI1rNcowDQYJKoZIhvcNAQEBBQAEggIAmTuee+72
-# fCQ0FdrPdDqUhCCq3zXjWUAOatN0reuK3o/KZu+GZeLIPuUzIybqKlCEDi1TqRjb
-# dFu3aAy+TpaLylcLQIHJG7UdqmxNVU5XrTJhWIOew3gHr6M6PFi/RBDbZr6TZHdT
-# GFIz7Fm7LgtshKcHBANEmFljaOHm3X7QDonJ+5djdPtTQjZq1cNTGceg0YBF/iya
-# dmoG9hvlEBMWs6bVKoCQlrYORGANkvxrTu0gbplV6pS3EHsCcr9puGw9332nJ72d
-# eCquKsL9n1diMEPZav6YvFer5l3hkBvnNoMafKXsFBaUK+3VZSmQwMGkxCriQJDS
-# seECsSVNtz9I95oE1gVMs2ojU88M26HWwBO+v02IoqgComlV6dT9h8P+E4vfgsnA
-# Iy7ZSwGemrqK2qVvRDap11nPXnJ/DACWmzYHiSW28c86/zRsA8colml0GkNunIaJ
-# 5/9/PrkYDEW8GIEDw5uUKyZtPM2Sy8wHWNKTNXSKk/6iCEV/+QEM/1hfkSSDThfB
-# EBrAYLZQEFwTR+Vz+Zk/4lHHXEMd2Qc3RKfnaAtFb3WdoQCJ6/XoA5aTUae9En9S
-# cuoOQxXoLIWMyL/Co+/WylLV0Qs59MKkt+jwIgTReb6iOxNCwKvZouVQJ87owjnW
-# NsIWKADGQOQsl/a1NLGR+b4fBW4AIB6qj8I=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgABKd9NJqYQPf
+# VON61hADj4Mecw5xSQk0e3xsdwhDT90wDQYJKoZIhvcNAQEBBQAEggIAWZKhTPZQ
+# qq9qoTxMGEE8LpzD5ApJFIx05blXNFti0u7OW1xFxl/3aXOgU0l1nuy5urb3uT4w
+# gJfNzDgrWVOIcAPmyxNQdypdCqt/mlK0qNMCyjSPEfaAdsDZAqHnCqNFRKDku+ej
+# q6UZV+DWlGQiTDXnpjD9N5YwB0MEMbDKACJwdhfyXmQjfwm3HXVZZGJ6PzVZEvvq
+# 1YCRmF16dlEdlwk2+M0v+BipX+utz41gBZcIbV6Tu4MSb+RpzcmBbAKz5aHycJ9G
+# z5gj4jVLZNqHC7xiMEI7m0G38HH7PJUREeamp8/M5cZcRtr+Ry53WGIrXmi6NM0m
+# bFkvDhx74Orw2luuSkVKJPYfVFvD/unGZIFEroIwTMflHVRqzjPDWFKrXycquJoq
+# ZqU5ixaV3jLSveP8erZ7hXFGple/WVa312RfJzD14S9Zcq3CgF8gzO5xbDPyDS8d
+# aMkHqeeNjf2fFNrDaUylvZ3L0Fwculk/Q3dav8RYE+aX9GZm83Mgqlfwul08k1HA
+# bL0CPML8/NujKZ3sfzZC9seXiBej3L0mhNYXQNbzMVGDcXv0tSiE6mVsk6WtAGnw
+# vUJ1BF9ky4g63e3GArr+rkL37ub8FH0zJxFmdRyyM+OoYpkbkOhIQyfM8fCzYQQu
+# d4OT0x5BGAObc4R5n0eP7cnHyYqd3blIcNA=
 # SIG # End signature block

@@ -22,7 +22,7 @@ function Get-vlExpiredCertificateCheck {
       $riskScore = 20
 
       # get certs for user store
-      $certs = Get-ChildItem -Path Cert:\CurrentUser -Recurse
+      $certs = Get-ChildItem -Path Cert:\CurrentUser -Recurse -ErrorAction Stop
       $expCets = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and $_.NotAfter -lt (Get-Date) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
       $willExpire30 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date) -and $_.NotAfter -lt (Get-Date).AddDays(30)) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
       $willExpire60 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date).AddDays(30) -and $_.NotAfter -lt (Get-Date).AddDays(60)) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
@@ -68,7 +68,7 @@ function Get-vlExpiredCertificateCheck {
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -90,14 +90,14 @@ function Get-vlStlFromRegistryToMemory {
       $authRootStl = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot\AutoUpdate" -Value "EncodedCtl"
 
       #check if $authRootStl is not empty
-      if ($authRootStl.Length -gt 0) {
+      if ($null -ne $authRootStl -and $authRootStl.Length -gt 0) {
          return $authRootStl
       }
 
-      return ""
+      return $null
    }
    catch {
-      return ""
+      return $null
    }
 }
 
@@ -169,11 +169,15 @@ function Get-vlGetCTLCheck {
       #Load Stl
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
+      if ($null -eq $localAuthRootStl) {
+         throw "Could not load AuthRoot.stl from registry"
+      }
+
       # Get all certificates from the local machine
-      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root
+      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root -ErrorAction Stop
 
       #add all certificates that are not expired from the current user
-      $currentUserCerts = Get-ChildItem cert:\CurrentUser\Root | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
+      $currentUserCerts = Get-ChildItem cert:\CurrentUser\Root -ErrorAction Stop | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
 
       # filter out certificates from $currentUserCerts that are contained in $localMachineCerts
       $currentUserCerts = $currentUserCerts | Where-Object { $_.Thumbprint -notin $localMachineCerts.Thumbprint }
@@ -186,7 +190,7 @@ function Get-vlGetCTLCheck {
       }
 
       #extract CTL
-      $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl
+      $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl -ErrorAction Stop
 
       # Create the result object
       $UnknownCertificates = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $currentUserCerts).UnknownCerts
@@ -271,8 +275,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCATkSvpYkmcUMOq
-# gtegdtZnZs0NILkejSPHaTyZrvlna6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDAc90j7i3wfl1G
+# 7A307HrObeyOP8wuFiYFG2ecJkQ7laCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -349,17 +353,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgRz80u7kG7rmT
-# vD6gTIjCml8yUQ1eoKu7FGKk2AWfqwQwDQYJKoZIhvcNAQEBBQAEggIA0lZvb9JQ
-# 4uTc2XdoIkEiPUjleId9zyLyxEKBbucbUMq0IHEZJnnrF8DG6wGlXf/6XdEyA3/7
-# qvyOSv9bVgeIx5ZgN7Fc18UIHmVAsWVRgF2/vn7aieYVJIzZfexj6RdaNP9KzLuE
-# znKTPTuWjm/xJ6L8SAbOhTmqYYgQxOPL0XhkI4uhRaXbEvaycAnHY8tiklrxC14D
-# nmY+9eG+FTx7FcF0JADz05uWrAvVucvGSECgSyH55pPEegktf3QFKSwdau2lNqqs
-# whrM5Ec1imfIB1Yktdpqe8iY9U7So6M69CH3Cxw7exwu40KX2gWaFKbV1Uy4M2N1
-# CRbnuB2DtOKyvilQXzuyRk0LudWGG6XXahJQNjNbgZZccQbWjcVxaimBGSlcDKKI
-# 19SA2mygCvDDl6rwYr+s8bXS6rkgJDhBVC7UmJLaExTBshRz1g+RPWVDqY/EDPfO
-# r5S4jzl6WXamw0arkwXTKdMUvBRj5N49DEwwpOiMemy3/CjATFgD8ktUdg9ObZ3G
-# y8QSkBVUSp6ip2P/90pKPrI86COUoiwuOzrQQ9PU1C3hrfYXapCYWZ709uK5z5wj
-# Ivz90CFd1vaW35eYtUFZwg+R68mqQohKTw03BEH0ZQUPXvcf14gQ/ZwJil1VWXBx
-# r3MN1meAUZeinkBX+3YVx+BqKC9FiF1mEBE=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgKW9+PZN7lnW8
+# QfHGBFTAc+Wz84Dvpa13qwPMENg14UQwDQYJKoZIhvcNAQEBBQAEggIAJJD/TkYU
+# 1vS0DhJ26e68+AEKuYNoUwWk18Q9/3Ko6bc+UCzKC6fZ3SrNDoxouEhejWIfq+XI
+# Xl/NHbHFg8GwFGxPA/mNRpAalpisqT0+ALJ2A+53A3DRBvMqqlvyOEuu0Gt5Kvuo
+# TEUWSKGe2fxaYUHKm8hMuN71SX3qcwZABMQtU1TyASp2L2HE8Wt/VO/FSCL+GlUl
+# 6C+Gn0TYDKLKb1gPl+uYPNgH5h6jWv7u220u7wKevDunpmWnM0nAIRmGnd6kfs7Q
+# cBfg3A1bZjAVgEcUaPZ7hO8XGV8YxW0TB6VFpxY7xAVi/0IMAqrfCJUABNx08hag
+# ykjSHBUrjZzp8T9G9TVjOyOUURV2x8KY5nRvHs8jZrbTsori3YOCm5/N4rYGlUN3
+# zLm6c5apD+OyyNvh+TVesyzJVTlt7JzuYVJ+JrSD07E4KiabPYGO2GJTOf/vtvXG
+# NqVQWferv1BYRWasyljszhiiLB6wYrfjOytTOFSdeHTH7+K7pj1nJxPiMwbRlRqI
+# qSflVh2Bp/inV3qBLV2igs0Rix8ulIsSPy/KMWpUovwEzbJRFFyf9XRHUaZqpfjk
+# nhBEoy/lAr3h8JIsNQXfxWS75FfPdxktnzrVYv/5Iq9ssmPWAW9wQlSti1asH/tF
+# pEUNdKSd/pofe+X45LW4hrSCWjJHqlUyF08=
 # SIG # End signature block

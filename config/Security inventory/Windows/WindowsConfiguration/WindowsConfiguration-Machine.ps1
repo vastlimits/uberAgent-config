@@ -90,10 +90,18 @@ function Get-vlIsBitlockerInstalled {
     #>
 
    try {
-      $installed = Get-BitLockerVolume
+      $isBitLockerVolumeAvailable = Get-vlIsCmdletAvailable "Get-BitLockerVolume"
 
-      if ($installed) {
-         return $true
+      if ( $isBitLockerVolumeAvailable -eq $true ) {
+
+         $installed = Get-BitLockerVolume -ErrorAction Stop
+
+         if ($installed) {
+            return $true
+         }
+         else {
+            return $false
+         }
       }
       else {
          return $false
@@ -175,7 +183,7 @@ function Get-vlBitlockerEnabled {
          return New-vlResultObject -result $bitlockerEnabled -score $score -riskScore $riskScore
       }
       else {
-         $isWindowsServer = Get-vlIsWindowsServer
+         $isWindowsServer = Get-vlIsWindowsServer -ErrorAction Stop
 
          $bitlockerStatus = [PSCustomObject]@{
             Status = "Bitlocker is not installed on this system."
@@ -192,7 +200,7 @@ function Get-vlBitlockerEnabled {
    }
    catch {
       if ($_.Exception -is [System.Management.Automation.CommandNotFoundException]) {
-         return New-vlErrorObject -message "Status could not be determined because Bitlocker was not set up for this system." -errorCode 1 -context $_
+         return New-vlErrorObject -message "Status could not be determined because Bitlocker was not set up for this system." -errorCode 1 -context $null
       }
       else {
          return New-vlErrorObject -context $_
@@ -220,7 +228,7 @@ function Get-COMHijacking {
 
       $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Classes\mscfile\shell\open\command"
 
-      if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
+      if ($value -and ($value.ToLower()) -eq ($expectedValue.ToLower())) {
          $result = [PSCustomObject]@{
             isDefault = $true
          }
@@ -258,7 +266,7 @@ function Get-vlTimeProviderHijacking {
 
       $value = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer" -Value "DllName"
 
-      if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
+      if ($value -and ($value.ToLower()) -eq ($expectedValue.ToLower())) {
          $result = [PSCustomObject]@{
             isDefault = $true
          }
@@ -428,8 +436,8 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDYru/IeM+Gjj0E
-# 95N6Qd9yzVrjqNgRFkIimvCjzfZjc6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBPEXG7phmLq+fb
+# AhTskANISz+ycq+9/jrh0/uX2Gqx4KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -506,17 +514,17 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgT4UurhdUDwsB
-# msZv3t2ruVfUfJq0g0QtdwLC0L6NP5YwDQYJKoZIhvcNAQEBBQAEggIAUh5dJdzU
-# 1bapoAnqd5VA8SgS3BNNnO8Lno6T56NRmvKTDPDKW9hDeRU5rfW7ERHGHXVL3vEr
-# 3TSfG5taWQYOOE33TDq70LWVae+gfyuLf7MRWm2Us/lGPGwvbChoQnAJI0Nldk5i
-# WMcDGpyxNmkwBlawysKGJyTbZvNXfbCPzWQ0MyRdH+lskFqZNCZ9TXAwGF3U/pm8
-# S/j2qk/ZemgWFr+v6I/7Dn89UbgdyQJVxjD9jfoC3+Ja9sLNPIJgWkBYeWUFcMIZ
-# j4/k7d3AISMP6/q9ClDnIocx+7X28zaXSzWxPGfV/2SJJYaZoXUdoFrsrp3Uq7yO
-# ijUTddXkqWEZrinM7prfuFCWOcys/B0AO6rQjRYro4PcVWYdvUKJ0SksFWbnHaI8
-# N68dRe/ZtrTVSFY5KCNnf9zZ7bMECgnbGSAWJVTNUjknnyvQBgTus3sl5u/IYncs
-# tCv5+PoWq5FfsNNbyMBm8tpwKJC1d8sKj/xzJdwXfCKtVNPyU7WR87s7FYkUBnLM
-# 4IEj/bqyYkc3C88myOl3Mri/kjLcVq4VUTqGBjppFTNEl54nr5Ps2e4m+z1tyyMY
-# wcMCwHfv+bkABTn+JdLto4ZWVJ86QF5BNPkJj+eXFmW0/Lczrroo65VcnNBueaIQ
-# aaj587UUYVhlV/BLREc0tc2KBXImtCdDSPA=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgzXoWoGH1A4hE
+# GqnVln2q/4l5uYLIYq0Vvp/+/T0n1mswDQYJKoZIhvcNAQEBBQAEggIAzpkCuRHr
+# WZrmX5YMB7HaJN4lgkmzG1boSK8Nq7LQPYzH2cHS9BD/ImMFpRW+9tuXY1zbQDxr
+# bammQR2A0cKesv0mgbNSLc46scYJba2r4CvSGzyE4z620WGkl0eDgwGd3aGAF9+A
+# Qtw4KWD7S1kOkPzo3mqvVd8DhEm2eO6CYH3fazBfmW5Amu2GFv90aR1xPzknMWxc
+# fmv5NkliXrByCjG0as6IYvRu5CrsW5ZUv8B0LZp77LJr1bZXhuXsuor+QyZjpOnk
+# 07l5/pMh/JXCnS7JGkd0rWSYtU9FPRWOnw+Wg/4HplEb5VmC0ZxzJ/XhwBKYGgsE
+# ZpTC2EwirF/epQ5BDlpmj17YYquKrSkYV1W6s2Cg4vj2rXKzfDA6irCDF+MR9bq1
+# f7eSOVDkND0IQKqTB/AFF0y8s07l7ChTjnRKjjxH3pblBcdD1ZEAcKfkW3aF/RaR
+# p4lxkj73AZejOXR8opd6tVRlXUD+ciWdVluPKI8MCa4oobIzLOYPs+nn80buHtlj
+# QtQVpYou210uCUtkq/kHdA3dcARZ9CwX6YA9Gb/wO0/xJ81Jpa51YJWJh5C7yKHn
+# 9XI3pxWpxrEDB7nIfZi5rmiYApM88VDO8oWMiRiqw0XfVCrMZMD6gf3bw5bc7WfY
+# 5KRmKMPn9Zi1DWWRlrC9U3Ye5TVIJd/Vf+I=
 # SIG # End signature block

@@ -53,7 +53,7 @@ function Get-vlRootCertificateInstallationCheck {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -98,7 +98,7 @@ function Get-vlAutoCertificateUpdateCheck {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -121,7 +121,7 @@ function Get-vlExpiredCertificateCheck {
       $score = 10
       $riskScore = 20
 
-      $certs = Get-ChildItem -Path Cert:\LocalMachine -Recurse
+      $certs = Get-ChildItem -Path Cert:\LocalMachine -Recurse -ErrorAction Stop
       $expCets = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and $_.NotAfter -lt (Get-Date) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
       $willExpire30 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date) -and $_.NotAfter -lt (Get-Date).AddDays(30)) } | Select-Object -Property FriendlyName, Issuer, NotBefore, NotAfter, Thumbprint
       $willExpire60 = $certs | Where-Object { $_ -is [System.Security.Cryptography.X509Certificates.X509Certificate2] -and ($_.NotAfter -gt (Get-Date).AddDays(30) -and $_.NotAfter -lt (Get-Date).AddDays(60)) } | Select-Object -Property FriendlyName, NotBefore, Issuer, NotAfter, Thumbprint
@@ -167,7 +167,7 @@ function Get-vlExpiredCertificateCheck {
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -197,7 +197,7 @@ function Get-vlLastGetSyncTimeByKey {
       $lastSyncTimeBytes = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot\AutoUpdate" -Value $syncKey
 
       #check if $lastSyncTimeBytes is a byte array and has a length of 8
-      if ($lastSyncTimeBytes.Length -eq 8) {
+      if ($null -ne $lastSyncTimeBytes -and $lastSyncTimeBytes.Length -eq 8) {
          # Convert bytes to datetime
          $fileTime = [System.BitConverter]::ToInt64($lastSyncTimeBytes, 0)
          $lastSyncTime = [System.DateTime]::FromFileTimeUtc($fileTime)
@@ -230,14 +230,14 @@ function Get-vlStlFromRegistryToMemory {
       $authRootStl = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\SystemCertificates\AuthRoot\AutoUpdate" -Value "EncodedCtl"
 
       #check if $authRootStl is not empty
-      if ($authRootStl.Length -gt 0) {
+      if ($null -ne $authRootStl -and $authRootStl.Length -gt 0) {
          return $authRootStl
       }
 
-      return ""
+      return $null
    }
    catch {
-      return ""
+      return $null
    }
 }
 
@@ -301,8 +301,12 @@ function Get-vlGetCTLCheck {
       #Load Stl
       $localAuthRootStl = Get-vlStlFromRegistryToMemory #Get-vlStlFromRegistry
 
+      if ($null -eq $localAuthRootStl) {
+         throw "Could not load AuthRoot.stl from registry"
+      }
+
       #get all certificates from the local machine
-      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
+      $localMachineCerts = Get-ChildItem cert:\LocalMachine\Root -ErrorAction Stop | Select-Object -Property Thumbprint, Issuer, Subject, NotAfter, NotBefore
 
       # convert NotAfter and NotBefore to string iso format
       $localMachineCerts = $localMachineCerts | ForEach-Object {
@@ -327,7 +331,7 @@ function Get-vlGetCTLCheck {
       $localMachineCerts = $localMachineCerts | Where-Object { $_.Thumbprint -notin $allowList }
 
       #extract CTL
-      $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl
+      $trustedCertList = Get-vlCertificateTrustListFromBytes -bytes $localAuthRootStl -ErrorAction Stop
 
       # Create the result object
       $UnknownCertificates = (Get-vlCompareCertTrustList -trustList $trustedCertList -certList $localMachineCerts).UnknownCerts
@@ -363,7 +367,7 @@ function Get-vlCheckSyncTime {
    $riskScore = 50
 
    try {
-      $OSVersion = Get-vlOsVersion
+      $OSVersion = Get-vlOsVersion -ErrorAction Stop
 
       $lastCTLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "LastSyncTime" # Gets the last time the AuthRoot.stl file was synced
       $lastCRLSyncTime = Get-vlLastGetSyncTimeByKey -syncKey "DisallowedCertLastSyncTime" # Gets the last time the CRL file was synced
@@ -383,7 +387,7 @@ function Get-vlCheckSyncTime {
       # PRL is available starting with Windows 10
       if ([version]$OSVersion -ge [version]'10.0') {
          $score += Get-vlTimeScore -time $lastPRLSyncTime
-         $result | Add-Member -Type NoteProperty -Name "PRL" -Value (Get-vlTimeString -time $lastPRLSyncTime)
+         $result | Add-Member -Type NoteProperty -Name "PRL" -Value (Get-vlTimeString -time $lastPRLSyncTime) -ErrorAction Stop
       }
 
       return New-vlResultObject -result $result -score $score -riskScore $riskScore
@@ -498,8 +502,8 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBIYRuOtLz/3gmt
-# lzZiQA1900lkHHaW7Pgla87BWiw5sKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDf3a+aasjY+cMe
+# 12b3mwUnt5IRC5N2whhApqas2rlNJqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -576,17 +580,17 @@ Write-Output (Get-vlCertificateCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgiXrfa8IU0U/Q
-# SXbAwUcqsuH2X4eyHd7LtR/z5re9OjkwDQYJKoZIhvcNAQEBBQAEggIAW1Lb7UqN
-# mr1YbCVZH1AKFGGCB79s2TnFz2b0LtA6UOsNm7Llai1cRdBztq7cf/4kejVsJoQd
-# Ki+PNaa/a3dXYAKaKbyfClA9/Nc898ImGRg9Spa7CrI4XlMWQjXYemvNmEWdvaJ9
-# FBa+r19Xzkk25P3jO6i+9Vc82Cu6aSpC1i3mE1jOqoVlC5DqI+3zzEmOvweE+kj7
-# wfo8bpwbuqZ8hHMcBhDrYkVY/55Ycr/MJR3Ui/hLJiaZrYDkJJYf4TijqO5hlSV0
-# Abemtt9P9VixI5psPSSH+YrVHs/1lVftoGkf0L/5ZCA2o2SttmtisD6NvbupE0Us
-# cxtgxN8xW6BGfdxU0Xelewp/CCKm07WzXVDxN7sjHItfD89Taltd5fB6y8uKNgQQ
-# v40Nw3sWJjn03DXHNyMBeDnz9o2kMGp0dzgYfezOaAngtjIDE0/cuIbTu/1Lkehw
-# m1Tze/UrIQuVb4MR986CHIqpvNtuJgesIUPaFJhrwUifFf5zfwJYtSKFdBrNKIqM
-# ct7iXiZLzhlKC9dFl8dNVUizs7x366BeU8Ki2hZ69Q5YkH3MXU9OSqNoLy53IJgD
-# SlvScFF5IQaU5U6sTZqT28FVMlgO++blm6Z1jpH4YwK084GGo3SnPjv5mNn66v9H
-# vllmhwRMIZtQf36URUzmIDC6vjo+DAGsjBQ=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgtUMUDTYFSZDu
+# bZ3pmcJtDOdb6GvAqZyt1NWq1H6VWuQwDQYJKoZIhvcNAQEBBQAEggIAmK/TtJUM
+# LhEYWtMqqhZm56a+oDccIbk0UkhQCrOOzxOM1EIkznUTC/jV8+Yu6atJN+3J9f5G
+# E9j4cUUgH9yiT1+oNi9vt+zIDFhzo8zXzuILk4TXdf8iQewKpXwoFZxepY/zrADF
+# F8l6yU0KPVMKShjjrROH6YbjAQ+LHm0Gi9HTmmTRriwG0EXrmbuGsgMy+DniaCxF
+# C7QKsriXCbspsZHpxtxP/zZ5WjJvMUDhOtrgeBmSB577OQDVfLiAw9hr7hZGsuCJ
+# pkJp0qbH+Aj5Z1xD9jtkfQxKMe06RiD+bDjm7BJNd2xciauNxyOoSvF9pC2vGhf4
+# ht08ZHyfzg2sHvBKIwiFEM+Qi6OsvLtwD5ap0isIVIZ8TNe5Nl7UIzhiCQJwip+M
+# 64N0+x081kjh0aOIOagvc8qqV6VKKtbIYQAiVC1BFDbh9uRhee8x+40MVirb2LhN
+# VXDf5dzaIPIjIurx3cn3GZZ/ppvmm4cyLDaKguPMESwHf3rHeP+/8u0vowqGJk77
+# P+cqBcvT7YNDGA+gHt4DNg91w6PlSPpzZslOf35C0YZ14a2aZ5TCXUGg0A/Z5Ibs
+# nfK+lJzykFdXsP/42w1u5TGuuIMElXQMpJ3Xubv9eoNIi4jf4j2RHP5yMOdCj0CY
+# ZGA2pK+Go/6YCl8O0wvUr/OLqFMJZwTJZU4=
 # SIG # End signature block

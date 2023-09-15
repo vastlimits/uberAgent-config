@@ -20,7 +20,7 @@ function Get-vlNetworkConfigurationSMBv1 {
 
    try {
       $riskScore = 100
-      $OSVersion = Get-vlOsVersion
+      $OSVersion = Get-vlOsVersion -ErrorAction Stop
 
       if ([version]$OSVersion -ge [version]'6.0' -and [version]$OSVersion -lt [version]'6.2') {
          $SMB1ClientServiceDependency = Get-Service -name LanManWorkstation -RequiredServices -ErrorAction Stop | Where-Object -FilterScript { $_.Name -eq 'MrxSmb10' }
@@ -50,11 +50,11 @@ function Get-vlNetworkConfigurationSMBv1 {
          return New-vlResultObject -result $result -score 2 -riskScore $riskScore
       }
       else {
-         return New-vlErrorObject("SMBv1 install state must be 1 or 2 but is $SMBv1")
+         return New-vlErrorObject -message "SMBv1 install state must be 1 or 2 but is $SMBv1" -errorCode 1 -context $null
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -126,12 +126,11 @@ function Get-vlNetworkConfigurationSMBSigning {
 
       }
       else {
-         Throw "Return of Get-vlNetworkConfigurationSMBv1 is invalid"
-         return New-vlErrorObject($Error)
+         return New-vlErrorObject -message "Return of Get-vlNetworkConfigurationSMBv1 is invalid" -errorCode 1 -context $null
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -171,7 +170,7 @@ function Get-vlNetworkConfigurationNetBIOS {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -211,7 +210,7 @@ function Get-vlNetworkConfigurationWINS {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -260,11 +259,11 @@ function Get-vlNetworkConfigurationSSLTLSLocalMachine {
          }
       }
       catch {
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -376,8 +375,8 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAcQXqEEOAWSdWR
-# V54y5L7b6tbVxyoIpnhOBSqOLuIcf6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDB70WyD/xoZOY3
+# a4OQNF1Zby2Q6ZaxLSTe1j8MepngLKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -454,17 +453,17 @@ Write-Output (Get-vlNetworkConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgzwqiCNkmdH+n
-# fQp+EaUQF/7n3VP7V6nGixQn2MI0vIcwDQYJKoZIhvcNAQEBBQAEggIAphov/SCj
-# oeCfyM+zrmBvvCX1TUBJACPV0l3gaOiuH+9SYCl2so9DZj1GzSZFCSQTzCEXdJgl
-# Vov6SO6JCJlqHrCdjkTD64p9scIznjH//9x3gFQtPZEgaO+SJKCwpLIkFimC273R
-# A0k/J/+KAZnUnjlNoMGt0vLCbtPZ6czWtHnPCHjE5ZntJkcxaQXDWCkYY4ThxVXe
-# eToR5Ej1AbR1+tVsRuYtsJXQz15miuYoelu4AhkYLmRQOdZTluyJcRcTX9bJXdZS
-# pXUDsK+5/X4JQK6I00CbPc9Jr0gl3o4AlMcHN+gc0T1JRrSFuqKgk3PlIIRfoIiu
-# TsClzLQaqxQ5YAm6cjwZEFc7c+euCKTBvw6OF9BDOI4bux7kE3l7kOutyjunpV2C
-# nt+zQ6r/rRfAUFo+o36oqZeWKIzkOiF07lHSp6nmaNNYkeqalMBAoHGP8WOXCcx1
-# HtlbnU0VOTVYX9+247OAckF4klj1G/+sCsZyi7yW4KyWYzG9QqRg/XvviTWZQy5P
-# 8m4Ey5d6tHGpUqX2zLDtcFqBEohjc6BzO6XEo2xCgCWJTb6c8ojCMkgXvlFbr361
-# aYF3rhBnfT/9xHwPKm2rmmFfFSCGNHwVCKEM498am1D6ZeR/c9fwgtEMpby1Y1j7
-# x1nJB3DizXx5e/t049qy5NgQh6Q704JULM8=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgQkrxaFTFym2J
+# zvieeVYoXzkZ53Wjh79Yn+eZxeVnFiowDQYJKoZIhvcNAQEBBQAEggIAPsGLWrof
+# cDgvkAMFMpM2YWZ5RMoQGdgdlSiahpcY4Usznc0BK7dI+AJdxKYLrzfyrIljnXFK
+# IGt7B1e0Zg2ovzLMjM0c+JyZD548HNm7Q/Xp584MBX/vGzbuHTTvC+uEMYhERSA1
+# orJo771pdKF2izGAckHX7dd8I4+A7nb1aYELnUkelOkcv0Sil+mgOZtDuzYYb6q6
+# larw57gKu8lFXHAiYYgFHjwFb4SrLfXdadhZI4Poq98tYJ9niTugR+Do1a1teq+B
+# AMhqiyW7isqgqLNoeMWpnv6HztFEyhSmK6FffeDkOnQy9CGcNgaxVEkxXuy6gZGl
+# FmuskDL+6rB7J+LvXj0DtResRHJbz1FSdciYCTdzK8RaE75Brafx5HBcaC2AGGKl
+# HPXMt43sqUu//p2SuI5BdTzzrbevDckEnw+UvMVrCJMBE3+lHXEKOCTn+VvW+1KG
+# bKw+1/qjYMDsK1zq/yv6j5aW68Fy0taVRMknazPJUbLalUW44M+kM1KmYH96hOpW
+# A2k0ZRa7ASHi646LzIpC70q8VP2SyagMFtlEYjiifpDKzHQMSWt7QPEIyUVolRlx
+# hAnDfXFDCiHhx58AFK/hZ/o1hi7Hif6CEbHxmId3sa56CClu/cKbAt+VDBsEOcx0
+# P/2GXpDrtEK5imKIlSENfoqHI6F7LQG515U=
 # SIG # End signature block
