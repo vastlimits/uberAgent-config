@@ -62,7 +62,7 @@ function Get-vlUACState {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -196,7 +196,7 @@ function Get-vlLAPSTestEventLog {
       return New-vlResultObject -result $lapsLog -score 10 -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 
@@ -280,7 +280,7 @@ function Get-vlLAPSSettings {
       return New-vlResultObject -result $lapsSettings -score 6 -riskScore $riskScore
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject-context $_
    }
 }
 
@@ -326,7 +326,7 @@ function Get-vlMachineAvailableFactors () {
 
    $availableFac = @()
    foreach ($factor in $WinBioStatus.GetEnumerator()) {
-      if ($availableFactors -band $factor.value) {
+      if ($availableFactors -and $availableFactors -band $factor.value) {
          $availableFac += $factor.key
       }
    }
@@ -366,7 +366,7 @@ function Get-vlWindowsHelloStatusLocalMachine () {
       }
    }
    catch {
-      return New-vlErrorObject($_)
+      return New-vlErrorObject -context $_
    }
 }
 

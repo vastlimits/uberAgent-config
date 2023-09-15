@@ -44,12 +44,15 @@ function Get-vlAntivirusStatus {
          $score = 0
          $riskScore = 100
 
-         $isWindowsServer = Get-vlIsWindowsServer
-         $isWindows7 = Get-vlIsWindows7
+         $osVersion = Get-vlOsVersion -ErrorAction Stop
+         $isWindows7 = $osVersion -match "^6\.1"
+
+         $isWindowsServer = Get-vlIsWindowsServer -ErrorAction Stop
+         $isMpComputerStatusAvailable = Get-vlIsCmdletAvailable "Get-MpComputerStatus"
          $defenderStatus = [PSCustomObject]@{}
 
-         if ($isWindows7 -ne $true) {
-            $instances = Get-MpComputerStatus
+         if ($isMpComputerStatusAvailable -eq $true) {
+            $instances = Get-MpComputerStatus -ErrorAction Stop
 
             $defenderStatus = [PSCustomObject]@{
                AMEngineVersion                 = if ($instances.AMEngineVersion) { $instances.AMEngineVersion } else { "" }
@@ -66,10 +69,10 @@ function Get-vlAntivirusStatus {
 
          if ($isWindowsServer -eq $false) {
             if ($isWindows7 -eq $true) {
-               $instances = Get-CimInstance -ClassName AntiSpywareProduct -Namespace "root\SecurityCenter2"
+               $instances = Get-CimInstance -ClassName AntiSpywareProduct -Namespace "root\SecurityCenter2" -ErrorAction Stop
             }
             else {
-               $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2"
+               $instances = Get-CimInstance -ClassName AntiVirusProduct -Namespace "root\SecurityCenter2" -ErrorAction Stop
             }
 
             $avEnabledFound = $false
@@ -148,14 +151,14 @@ function Get-vlAntivirusStatus {
                }
             }
             else {
-               return New-vlErrorObject -message "Status could not be determined because SecurityCenter2 is not available on Windows Server." -errorCode 1 -context $_
+               return New-vlErrorObject -message "Status could not be determined because SecurityCenter2 is not available on Windows Server." -errorCode 1 -context $null
             }
          }
 
          return New-vlResultObject -result $result -score $score -riskScore $riskScore
       }
       catch {
-         return New-vlErrorObject($_)
+         return New-vlErrorObject -context $_
       }
    }
 }
@@ -189,7 +192,7 @@ function Get-vlAntivirusCheck {
       $Output += [PSCustomObject]@{
          Name         = "AVState"
          DisplayName  = "Antivirus status"
-         Description  = "This test determines whether an antivirus product is installed and its current status. If the test is performed on a Windows server operating system, due to technical limitations, only the Defender status is evaluated. If Windows Defender is enabled, the test will provide additional information, such as the status of the last signature update and the current signature version."
+         Description  = "This test determines whether an antivirus product is installed and its current status. If the test is performed on a Windows server operating system, due to technical limitations, only the Defender status is evaluated. If Windows Defender is enabled and your operating system is Windows 10, Windows Server 2016 or later, the test will provide additional information, such as the status of the last signature update and the current signature version."
          Score        = $avStatus.Score
          ResultData   = $avStatus.Result
          RiskScore    = $avStatus.RiskScore
@@ -200,7 +203,6 @@ function Get-vlAntivirusCheck {
 
    Write-Output $output
 }
-
 
 try {
    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8

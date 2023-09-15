@@ -90,10 +90,18 @@ function Get-vlIsBitlockerInstalled {
     #>
 
    try {
-      $installed = Get-BitLockerVolume
+      $isBitLockerVolumeAvailable = Get-vlIsCmdletAvailable "Get-BitLockerVolume"
 
-      if ($installed) {
-         return $true
+      if ( $isBitLockerVolumeAvailable -eq $true ) {
+
+         $installed = Get-BitLockerVolume -ErrorAction Stop
+
+         if ($installed) {
+            return $true
+         }
+         else {
+            return $false
+         }
       }
       else {
          return $false
@@ -175,7 +183,7 @@ function Get-vlBitlockerEnabled {
          return New-vlResultObject -result $bitlockerEnabled -score $score -riskScore $riskScore
       }
       else {
-         $isWindowsServer = Get-vlIsWindowsServer
+         $isWindowsServer = Get-vlIsWindowsServer -ErrorAction Stop
 
          $bitlockerStatus = [PSCustomObject]@{
             Status = "Bitlocker is not installed on this system."
@@ -192,7 +200,7 @@ function Get-vlBitlockerEnabled {
    }
    catch {
       if ($_.Exception -is [System.Management.Automation.CommandNotFoundException]) {
-         return New-vlErrorObject -message "Status could not be determined because Bitlocker was not set up for this system." -errorCode 1 -context $_
+         return New-vlErrorObject -message "Status could not be determined because Bitlocker was not set up for this system." -errorCode 1 -context $null
       }
       else {
          return New-vlErrorObject -context $_
@@ -220,7 +228,7 @@ function Get-COMHijacking {
 
       $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Classes\mscfile\shell\open\command"
 
-      if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
+      if ($value -and ($value.ToLower()) -eq ($expectedValue.ToLower())) {
          $result = [PSCustomObject]@{
             isDefault = $true
          }
@@ -258,7 +266,7 @@ function Get-vlTimeProviderHijacking {
 
       $value = Get-vlRegValue -Hive "HKLM" -Path "SYSTEM\CurrentControlSet\Services\W32Time\TimeProviders\NtpServer" -Value "DllName"
 
-      if (($value.ToLower()) -eq ($expectedValue.ToLower())) {
+      if ($value -and ($value.ToLower()) -eq ($expectedValue.ToLower())) {
          $result = [PSCustomObject]@{
             isDefault = $true
          }
