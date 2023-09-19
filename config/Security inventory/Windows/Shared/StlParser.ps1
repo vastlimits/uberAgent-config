@@ -235,7 +235,7 @@ else {
         Add-Type -TypeDefinition $definitionCode -Language CSharp;
     }
     catch {
-        Write-Error "Failed to load StlParser: " + $_.Exception.Message;
+        Write-Error -Message "Failed to load StlParser: $($_.Exception.Message)"
     }
 }
 
@@ -248,7 +248,7 @@ function Get-vlCertificateTrustListFromBytes {
 
     #Check if byte array is not null
     if ($bytes.Length -eq 0) {
-        Write-Error "Invalid byte array (empty)"
+        Write-Error -Message "Invalid byte array (empty)"
         return
     }
 
@@ -258,7 +258,7 @@ function Get-vlCertificateTrustListFromBytes {
         $listOfTrustedCerts = [StlParser]::parseMemory($bytes);
     }
     catch {
-        Write-Error "Error while parsing file CTL: " + $_.Exception.Message
+        Write-Error -Message "Error while parsing file CTL: $($_.Exception.Message)"
         return
     }
 
@@ -267,8 +267,8 @@ function Get-vlCertificateTrustListFromBytes {
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDLHGSlJlK4oZ4u
-# 3k4iCUYi/iQANEHhQJbCaxHD5bRujKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCETZV5JU1vDeFp
+# J1g2YX2bcOHa3d79RMYPA4FGt9DvBqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -345,17 +345,17 @@ function Get-vlCertificateTrustListFromBytes {
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg33FDC0GLMH6V
-# DwrFQzaUnR5PUANKRYP2DxCJ7DYn8dMwDQYJKoZIhvcNAQEBBQAEggIAOZiMFwJ0
-# EGeg5xuz4oja63xE8a0C1MaO5mCzLCsDl2CRueNofHwrZ5c7hpUmsRWEhVPt+ygk
-# pPhnTCumXA51//KGOf43BcJsvqmEHPbqFwFUNDh2K/i6YZUEk5Fpppa05WflWlJr
-# 2nNzxyA/G74B0H+lo59LhcUZdImb0Q5Tqn8v0W3CJTa9C7kFGqkQ8gwTeC8rwUzs
-# 43JgL1ukwgiEBd4wGcXfLYxbGIdhudDcinForPK0TC6xUnn5ONLBwl3FE4BmW44D
-# mruD2KKOC1HuVS0m53WkFSCBYdzXWHdzUU9XwKA6EPbhoC0E4iqW6RBaxDv0FGGw
-# JyrkC8CplK+vN3vd6IZoIjh4NTwoAkyj5AbUC54FUC3fou2rxP3CTk7Y9i4Kxnqn
-# +puo2fh/5qbGkZf2swTlGwmRUHqiIDtycPvY3GGnL6/mp+nenId/Vl4sPVGy8Lo4
-# e5PfDvNc6iHYCqyT4coCGYt2IlHuNCrERY3ruSfuRcGpYjZ7urJV26KoU6QFAaRI
-# OL8u3le50Pw3u1RT0BCd8q5jyXJV3haNUQbrt0vvHSi1FfnUoB1Qq+fZhRWP9Jes
-# UYmk45WKuMu3GkGTAehyftyBfUtvAxGDSZr+3fMGhr3dASB7n4CtW8/LEEL5hCe8
-# Zz5NEqqWypn9z2aWaALp6Gxij0s+U/tIWHI=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgcoT8/cGXSrEn
+# KXd5O1IizqjDij1giFbKt2IrL2NSmaowDQYJKoZIhvcNAQEBBQAEggIAeN5Bao/5
+# FRWpOB9CvdYBNj7kSjNS3GSSbMPZhUigjEYo61cxXLUIJahDwW3H1JVXiHpn4gAm
+# MZqCpr6xkn03w56jRGk2UdH7mEuBxVY2D3+G4UbzmE1KUnevcU7jvYmIeoZsnc7+
+# SrwED84HmwHkJioVJiFy4xT3V1qduQu5UuAc5QSZkni1TjBB3P4HGOCpQlOT2D7s
+# IdZ+fGT9avVuAbV0ZsP6K3tc3xlL8GRrxr6j8XYenD3Qty4LCnrQG3Z2CXsFEKjv
+# HAK4P9HB8l+OIBLnjm9v1P51/QHb4TlZW2D46FaMbr9QWvGIOT4vrTJOgTyYvvbi
+# xVF/ZGAHs1V0Qw8LNjxsnfiuEG00xSNB6+D0ylH6PGlUxQVRWb5OOK9J/gskUCIs
+# W3NeFwfz1Hg50t1qvL2MKmzAkpc5kE4eTlgnjSRl7D/jaytujtuLuef28MWa1cZ/
+# Lz3BV2EyUe+6b2yCeCi3p9uvAv/siaCxEfFpgalKylUl5CrbM7KFkj4jPNtM6ude
+# 8tqao2GeiuvC2UgxvuOUnp0JLN/ZGxj9bTGtc6bI66E9itltXJyiCmuqCmy/Amjk
+# 5HrTEpK0/lLqb7QDcMc2pErBh4Z175B0CJ8QNSlal7zJ+oTb9AakiVF/q2t8C6zY
+# e+ytwmmchoHl1F6zC0C2JBRl6OosoQe0nnQ=
 # SIG # End signature block
