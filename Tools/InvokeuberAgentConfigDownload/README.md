@@ -121,7 +121,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 1 --------------------------
     
-    PS C:\>.\InvokeuberAgentConfigDownload.ps1 -Branch "7.1" -TargetDirectory "\\server\share\uberAgentConfig" 
+    PS C:\>.\InvokeuberAgentConfigDownload.ps1 -Branch "version/7.1" -TargetDirectory "\\server\share\uberAgentConfig" 
     -Excludes "uberAgent.conf" -uAConfigArchive $true -ForceVersionUpdate $true
     
     Download everything except uberAgent.conf. Create an uberAgent.uAConfig archive and update the version string to 
@@ -132,7 +132,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 2 --------------------------
     
-    PS C:\>.\InvokeuberAgentConfigDownload.ps1 -Branch "7.1" -TargetDirectory "\\server\share\uberAgentConfig" 
+    PS C:\>.\InvokeuberAgentConfigDownload.ps1 -Branch "version/7.1" -TargetDirectory "\\server\share\uberAgentConfig" 
     -Includes "uberAgent-ESA-am-*.conf", "uberAgent-ESA-si-*.conf", "Security inventory", "Security inventory\*"
     
     Download only TDE rules and everything relevant to SCI tests
@@ -142,7 +142,7 @@ OUTPUTS
     
     -------------------------- EXAMPLE 3 --------------------------
     
-    PS C:\>.\InvokeuberAgentConfigDownload.ps1 -Branch "7.1" -TargetDirectory "\\server\share\uberAgentConfig" 
+    PS C:\>.\InvokeuberAgentConfigDownload.ps1 -Branch "version/7.1" -TargetDirectory "\\server\share\uberAgentConfig" 
     -Includes "uberAgent-ESA-am-*.conf", -Excludes "uberAgent-ESA-am-sigma-informational-*.conf"
     
     Download all TDE rules except the informational ones from Sigma
