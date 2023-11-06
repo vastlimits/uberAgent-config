@@ -54,12 +54,6 @@ jobs:
       with:
         poetry-version: "1.4.2"
 
-    - name: List
-      run: ls -la
-
-    - name: PWD
-      run: pwd
-
     - name: Install
       working-directory: ./sigma-cli
       run: poetry install
@@ -75,7 +69,7 @@ jobs:
     - name: Create build directory
       run: mkdir build
 
-    - name: Prepare rules to convert
+    - name: Rules
       working-directory: build
       run: |
         # Activate poetry shell from sigma-cli in this shell
@@ -84,6 +78,9 @@ jobs:
         # Copy rules
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules"
+
+        # Convert rules
+        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd)
 
     - name: List
       working-directory: build
