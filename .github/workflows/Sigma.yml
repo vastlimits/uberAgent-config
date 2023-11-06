@@ -23,6 +23,13 @@ jobs:
         token: ${{ secrets.VLSVC_PAT }}
         path: uberAgent-config
 
+    - name: Checkout uberAgent-config [${{ matrix.branch }}]
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.VLSVC_PAT }}
+        ref: ${{ matrix.branch }}
+        path: uberAgent-config-target
+
     - name: Checkout pySigma-backend-uberAgent
       uses: actions/checkout@v2
       with:
@@ -83,6 +90,31 @@ jobs:
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd)
 
-    - name: List
-      working-directory: build
-      run: ls -la
+    - name: Prepare target rules
+      working-directory: uberAgent-config-target
+      env:
+        CURRENT_BRANCH: ${{ matrix.branch }}
+      run: |
+        # Prepare Git environment
+        echo "machine github.com" > "$HOME/.netrc"
+        echo "  login $GITHUB_ACTOR" >> "$HOME/.netrc"
+        echo "  password $GITHUB_TOKEN" >> "$HOME/.netrc"
+
+        echo "machine api.github.com" >> "$HOME/.netrc"
+        echo "  login $GITHUB_ACTOR" >> "$HOME/.netrc"
+        echo "  password $GITHUB_TOKEN" >> "$HOME/.netrc"
+
+        # Delete existing rules instead of simply overwriting it to easily support
+        # name changes or to not keep orphaned files.
+        git rm config/uberAgent-ESA-am-sigma-*.conf || true
+
+        # Copy the just generated configuration.
+        cp -v $GITHUB_WORKSPACE/build/*.conf config/
+
+        # Git add and commit.
+        git add config/*.conf
+        git commit -m "Updated converted sigma rules for version $CURRENT_BRANCH" || true
+
+        git config --global --add --bool push.autoSetupRemote true || true
+        git push
+
