@@ -37,6 +37,13 @@ jobs:
         repository: SigmaHQ/sigma-cli
         path: sigma-cli
 
+    - name: Checkout sigma
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.VLSVC_PAT }}
+        repository: SigmaHQ/sigma
+        path: sigma
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -61,3 +68,14 @@ jobs:
     - name: Shell
       working-directory: ./sigma-cli
       run: poetry run sigma list pipelines
+
+    - name: Create build directory
+      run: mkdir build
+
+    - name: Prepare rules to convert
+      working-directory: build
+      run: $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.sh "$GITHUB_WORKSPACE/sigma/rules"
+
+    - name: List
+      working-directory: build
+      run: ls -la
