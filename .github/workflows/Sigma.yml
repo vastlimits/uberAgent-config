@@ -1,0 +1,57 @@
+name: Update uberAgent ESA sigma rules
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        branch: [ develop ]
+
+    runs-on: ubuntu-latest
+
+    env:
+      PYTHONUNBUFFERED: 1
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets.VLSVC_PAT}}
+
+    steps:
+    - name: Checkout uberAgent-config
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.VLSVC_PAT }}
+        path: uberAgent-config
+
+    - name: Checkout pySigma-backend-uberAgent
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.VLSVC_PAT }}
+        repository: https://github.com/vastlimits/pySigma-backend-uberAgent/
+        path: pySigma-backend-uberAgent
+
+    - name: Checkout sigma-cli
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.VLSVC_PAT }}
+        repository: https://github.com/SigmaHQ/sigma-cli
+        path: sigma-cli
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.10
+
+    - name: Install Poetry
+      uses: abatilo/actions-poetry@v2.0.0
+      with:
+        poetry-version: [ '1.4.2' ]
+
+    - name: List
+      run: ls -la
+        working-directory: ./sigma-cli
+
+    - name: Install
+      run: poetry install
+        working-directory: ./sigma-cli
+
+    - name: Shell
+      run: poetry run sigma --help
+        working-directory: ./sigma-cli
