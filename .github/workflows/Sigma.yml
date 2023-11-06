@@ -80,6 +80,7 @@ jobs:
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules"
 
         # Convert rules
+        chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd)
 
     - name: List
