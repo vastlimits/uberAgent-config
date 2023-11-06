@@ -57,6 +57,9 @@ jobs:
     - name: List
       run: ls -la
 
+    - name: PWD
+      run: pwd
+
     - name: Install
       working-directory: ./sigma-cli
       run: poetry install
