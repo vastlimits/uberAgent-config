@@ -77,7 +77,7 @@ jobs:
 
     - name: Prepare rules to convert
       working-directory: build
-      run: $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.sh "$GITHUB_WORKSPACE/sigma/rules"
+      run: poetry run $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules"
 
     - name: List
       working-directory: build
