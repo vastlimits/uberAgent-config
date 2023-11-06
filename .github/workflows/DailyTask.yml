@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *'
-  
+
 jobs:
   build:
     strategy:
       matrix:
-        branch: [ develop, version/6.2, version/7.0, version/7.1 ]
-    
+        branch: [ version/6.2, version/7.0, version/7.1 ]
+
     runs-on: ubuntu-latest
 
     env:
