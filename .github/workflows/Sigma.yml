@@ -69,14 +69,10 @@ jobs:
       working-directory: ./sigma-cli
       run: poetry add pySigma-backend-uberAgent
 
-    - name: Shell
-      working-directory: ./sigma-cli
-      run: poetry run sigma list pipelines
-
-    - name: Create build directory
+    - name: Prepare Build
       run: mkdir build
 
-    - name: Rules
+    - name: Build
       working-directory: build
       run: |
         # Activate poetry shell from sigma-cli in this shell
@@ -90,12 +86,16 @@ jobs:
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd)
 
-    - name: Prepare target rules
+    - name: Push
       working-directory: uberAgent-config-target
       env:
         CURRENT_BRANCH: ${{ matrix.branch }}
       run: |
         # Prepare Git environment
+        git config --global user.email "github.action@localhost.local"
+        git config --global user.name "vastlimits"
+        git config --global --add safe.directory /github/workspace
+
         echo "machine github.com" > "$HOME/.netrc"
         echo "  login $GITHUB_ACTOR" >> "$HOME/.netrc"
         echo "  password $GITHUB_TOKEN" >> "$HOME/.netrc"
