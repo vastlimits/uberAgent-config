@@ -48,13 +48,16 @@ jobs:
         poetry-version: "1.4.2"
 
     - name: List
-      working-directory: ./sigma-cli
       run: ls -la
 
     - name: Install
       working-directory: ./sigma-cli
       run: poetry install
 
+    - name: Install pySigma-backend-uberAgent from pyPI
+      working-directory: ./sigma-cli
+      run: poetry add pySigma-backend-uberAgent
+
     - name: Shell
       working-directory: ./sigma-cli
-      run: poetry run sigma --help
+      run: poetry run sigma list pipelines
