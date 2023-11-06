@@ -1,4 +1,4 @@
-name: Update uberAgent ESA sigma rules
+name: uberAgent ESA Sigma rules
 
 on:
   workflow_dispatch:
@@ -27,14 +27,14 @@ jobs:
       uses: actions/checkout@v2
       with:
         token: ${{ secrets.VLSVC_PAT }}
-        repository: https://github.com/vastlimits/pySigma-backend-uberAgent/
+        repository: vastlimits/pySigma-backend-uberAgent
         path: pySigma-backend-uberAgent
 
     - name: Checkout sigma-cli
       uses: actions/checkout@v2
       with:
         token: ${{ secrets.VLSVC_PAT }}
-        repository: https://github.com/SigmaHQ/sigma-cli
+        repository: SigmaHQ/sigma-cli
         path: sigma-cli
 
     - name: Set up Python
