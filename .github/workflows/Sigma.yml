@@ -76,8 +76,13 @@ jobs:
       run: mkdir build
 
     - name: Prepare rules to convert
-      working-directory: ./sigma-cli
-      run: poetry run cd $GITHUB_WORKSPACE/build && $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules"
+      working-directory: build
+      run: |
+        # Activate poetry shell from sigma-cli in this shell
+        . $(cd $GITHUB_WORKSPACE/sigma-cli ; poetry env info --path)/bin/activate
+
+        # Copy the rules to be converted to our build directory.
+        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules"
 
     - name: List
       working-directory: build
