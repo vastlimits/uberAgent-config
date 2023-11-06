@@ -45,13 +45,13 @@ jobs:
         poetry-version: [ '1.4.2' ]
 
     - name: List
+      working-directory: ./sigma-cli
       run: ls -la
-        working-directory: ./sigma-cli
 
     - name: Install
+      working-directory: ./sigma-cli
       run: poetry install
-        working-directory: ./sigma-cli
 
     - name: Shell
+      working-directory: ./sigma-cli
       run: poetry run sigma --help
-        working-directory: ./sigma-cli
