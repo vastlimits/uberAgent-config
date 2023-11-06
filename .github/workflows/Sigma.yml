@@ -7,7 +7,15 @@ jobs:
   build:
     strategy:
       matrix:
-        branch: [ develop ]
+        include:
+          - branch: develop
+            pipeline_version: "uberagent-develop"
+          - branch: version/6.2
+            pipeline_version: "uberagent-6.2.0"
+          - branch: version/7.0
+            pipeline_version: "uberagent-7.0.0"
+          - branch: version/7.1
+            pipeline_version: "uberagent-7.1.0"
 
     runs-on: ubuntu-latest
 
@@ -74,6 +82,8 @@ jobs:
 
     - name: Build
       working-directory: build
+      env:
+        CURRENT_PIPELINE_VERSION: ${{ matrix.pipeline_version }}
       run: |
         # Activate poetry shell from sigma-cli in this shell
         . $(cd $GITHUB_WORKSPACE/sigma-cli ; poetry env info --path)/bin/activate
@@ -84,7 +94,7 @@ jobs:
 
         # Convert rules
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh
-        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd)
+        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd) $CURRENT_PIPELINE_VERSION
 
     - name: Push
       working-directory: uberAgent-config-target
