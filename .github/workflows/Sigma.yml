@@ -40,12 +40,12 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.10
+        python-version: "3.10"
 
     - name: Install Poetry
       uses: abatilo/actions-poetry@v2.0.0
       with:
-        poetry-version: 1.4.2
+        poetry-version: "1.4.2"
 
     - name: List
       working-directory: ./sigma-cli
