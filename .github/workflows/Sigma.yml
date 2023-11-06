@@ -81,7 +81,8 @@ jobs:
         # Activate poetry shell from sigma-cli in this shell
         . $(cd $GITHUB_WORKSPACE/sigma-cli ; poetry env info --path)/bin/activate
 
-        # Copy the rules to be converted to our build directory.
+        # Copy rules
+        chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules"
 
     - name: List
