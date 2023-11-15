@@ -10,10 +10,6 @@ jobs:
         include:
           - branch: develop
             pipeline_version: "uberagent-develop"
-          - branch: version/6.0
-            pipeline_version: "uberagent-6.0.0"
-          - branch: version/6.1
-            pipeline_version: "uberagent-6.1.0"
           - branch: version/6.2
             pipeline_version: "uberagent-6.2.0"
           - branch: version/7.0
