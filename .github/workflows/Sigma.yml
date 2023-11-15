@@ -8,14 +8,18 @@ jobs:
     strategy:
       matrix:
         include:
-          - branch: develop
-            pipeline_version: "uberagent-develop"
           - branch: version/6.2
             pipeline_version: "uberagent-6.2.0"
+            copy_rules_args: "--skip_platform"
           - branch: version/7.0
             pipeline_version: "uberagent-7.0.0"
+            copy_rules_args: "--skip_platform"
           - branch: version/7.1
             pipeline_version: "uberagent-7.1.0"
+            copy_rules_args: ""
+          - branch: develop
+            pipeline_version: "uberagent-develop"
+            copy_rules_args: ""
 
     runs-on: ubuntu-latest
 
@@ -84,13 +88,14 @@ jobs:
       working-directory: build
       env:
         CURRENT_PIPELINE_VERSION: ${{ matrix.pipeline_version }}
+        COPY_RULES_ARGS: ${{ matrix.copy_rules_args }}
       run: |
         # Activate poetry shell from sigma-cli in this shell
         . $(cd $GITHUB_WORKSPACE/sigma-cli ; poetry env info --path)/bin/activate
 
         # Copy rules
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py
-        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules"
+        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules" $COPY_RULES_ARGS
 
         # Convert rules
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh
