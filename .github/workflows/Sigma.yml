@@ -13,15 +13,19 @@ jobs:
           - branch: version/6.2
             pipeline_version: "uberagent-6.2.0"
             copy_rules_args: "--skip_platform"
+            pypi-host: "https://test.pypi.org/simple"
           - branch: version/7.0
             pipeline_version: "uberagent-7.0.0"
             copy_rules_args: "--skip_platform"
+            pypi-host: "https://test.pypi.org/simple"
           - branch: version/7.1
             pipeline_version: "uberagent-7.1.0"
             copy_rules_args: ""
+            pypi-host: "https://test.pypi.org/simple"
           - branch: develop
             pipeline_version: "uberagent-develop"
             copy_rules_args: ""
+            pypi-host: "https://test.pypi.org/simple"
 
     runs-on: ubuntu-latest
 
@@ -81,7 +85,11 @@ jobs:
 
     - name: Install pySigma-backend-uberAgent from pyPI
       working-directory: ./sigma-cli
-      run: poetry add pySigma-backend-uberAgent
+      env:
+        PYPI_HOST: ${{ matrix.pypi-host }}
+      run: |
+        poetry source add ua_package_source ${{ matrix.pypi-host }}
+        poetry add --source ua_package_source pySigma-backend-uberAgent
 
     - name: Prepare Build
       run: mkdir build
