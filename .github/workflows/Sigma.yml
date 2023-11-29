@@ -110,7 +110,7 @@ jobs:
       working-directory: build
       env:
         CURRENT_PIPELINE_VERSION: ${{ matrix.pipeline_version }}
-        CURRENT_backend-version: ${{ matrix.backend-version }}
+        CURRENT_BACKEND_VERSION: ${{ matrix.backend-version }}
         COPY_RULES_ARGS: ${{ matrix.copy_rules_args }}
       run: |
         # Activate poetry shell from sigma-cli in this shell
@@ -122,7 +122,7 @@ jobs:
 
         # Convert rules
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh
-        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd) $CURRENT_PIPELINE_VERSION $CURRENT_backend-version
+        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd) $CURRENT_PIPELINE_VERSION $CURRENT_BACKEND_VERSION
 
     - name: Push
       working-directory: uberAgent-config-target
