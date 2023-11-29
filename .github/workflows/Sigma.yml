@@ -12,27 +12,31 @@ jobs:
         include:
           - branch: version/6.2
             pipeline_version: "uberagent-6.2.0"
-            backend_version: ""
+            backend-version: ""
             copy_rules_args: "--skip_platform"
             pypi-host: "https://test.pypi.org/simple"
+            converter-ref: "main"
 
           - branch: version/7.0
             pipeline_version: "uberagent-7.0.0"
+            backend-version: ""
             copy_rules_args: "--skip_platform"
             pypi-host: "https://test.pypi.org/simple"
-            backend_version: ""
+            converter-ref: "main"
 
           - branch: version/7.1
             pipeline_version: "uberagent-7.1.0"
+            backend-version: ""
             copy_rules_args: ""
             pypi-host: "https://test.pypi.org/simple"
-            backend_version: ""
+            converter-ref: "main"
 
           - branch: develop
             pipeline_version: "uberagent-develop"
+            backend-version: "develop"
             copy_rules_args: ""
             pypi-host: "https://test.pypi.org/simple"
-            backend_version: "develop"
+            converter-ref: "develop"
 
     runs-on: ubuntu-latest
 
@@ -55,13 +59,13 @@ jobs:
         ref: ${{ matrix.branch }}
         path: uberAgent-config-target
 
-    - name: Checkout pySigma-backend-uberAgent
+    - name: Checkout pySigma-backend-uberAgent [${{ matrix.converter-ref }}]
       uses: actions/checkout@v4
       with:
         token: ${{ secrets.VLSVC_PAT }}
         repository: vastlimits/pySigma-backend-uberAgent
         path: pySigma-backend-uberAgent
-        ref: "develop"
+        ref: ${{ matrix.converter-ref }}
 
     - name: Checkout sigma-cli
       uses: actions/checkout@v4
@@ -106,7 +110,7 @@ jobs:
       working-directory: build
       env:
         CURRENT_PIPELINE_VERSION: ${{ matrix.pipeline_version }}
-        CURRENT_BACKEND_VERSION: ${{ matrix.backend_version }}
+        CURRENT_backend-version: ${{ matrix.backend-version }}
         COPY_RULES_ARGS: ${{ matrix.copy_rules_args }}
       run: |
         # Activate poetry shell from sigma-cli in this shell
@@ -118,7 +122,7 @@ jobs:
 
         # Convert rules
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh
-        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd) $CURRENT_PIPELINE_VERSION $CURRENT_BACKEND_VERSION
+        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd) $CURRENT_PIPELINE_VERSION $CURRENT_backend-version
 
     - name: Push
       working-directory: uberAgent-config-target
