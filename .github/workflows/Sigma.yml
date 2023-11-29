@@ -12,20 +12,27 @@ jobs:
         include:
           - branch: version/6.2
             pipeline_version: "uberagent-6.2.0"
+            backend_version: ""
             copy_rules_args: "--skip_platform"
             pypi-host: "https://test.pypi.org/simple"
+
           - branch: version/7.0
             pipeline_version: "uberagent-7.0.0"
             copy_rules_args: "--skip_platform"
             pypi-host: "https://test.pypi.org/simple"
+            backend_version: ""
+
           - branch: version/7.1
             pipeline_version: "uberagent-7.1.0"
             copy_rules_args: ""
             pypi-host: "https://test.pypi.org/simple"
+            backend_version: ""
+
           - branch: develop
             pipeline_version: "uberagent-develop"
             copy_rules_args: ""
             pypi-host: "https://test.pypi.org/simple"
+            backend_version: "develop"
 
     runs-on: ubuntu-latest
 
@@ -98,6 +105,7 @@ jobs:
       working-directory: build
       env:
         CURRENT_PIPELINE_VERSION: ${{ matrix.pipeline_version }}
+        CURRENT_BACKEND_VERSION: ${{ matrix.backend_version }}
         COPY_RULES_ARGS: ${{ matrix.copy_rules_args }}
       run: |
         # Activate poetry shell from sigma-cli in this shell
@@ -109,7 +117,7 @@ jobs:
 
         # Convert rules
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh
-        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd) $CURRENT_PIPELINE_VERSION
+        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd) $CURRENT_PIPELINE_VERSION $CURRENT_BACKEND_VERSION
 
     - name: Push
       working-directory: uberAgent-config-target
