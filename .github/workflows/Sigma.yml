@@ -43,34 +43,35 @@ jobs:
 
     steps:
     - name: Checkout uberAgent-config
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         token: ${{ secrets.VLSVC_PAT }}
         path: uberAgent-config
 
     - name: Checkout uberAgent-config [${{ matrix.branch }}]
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         token: ${{ secrets.VLSVC_PAT }}
         ref: ${{ matrix.branch }}
         path: uberAgent-config-target
 
     - name: Checkout pySigma-backend-uberAgent
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         token: ${{ secrets.VLSVC_PAT }}
         repository: vastlimits/pySigma-backend-uberAgent
         path: pySigma-backend-uberAgent
+        ref: "develop"
 
     - name: Checkout sigma-cli
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         token: ${{ secrets.VLSVC_PAT }}
         repository: SigmaHQ/sigma-cli
         path: sigma-cli
 
     - name: Checkout sigma
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         token: ${{ secrets.VLSVC_PAT }}
         repository: SigmaHQ/sigma
