@@ -120,6 +120,27 @@ jobs:
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules" $COPY_RULES_ARGS
 
+    - name: Build (develop extra)
+      if: ${{ matrix.branch == 'develop' }}
+      working-directory: build
+      run: |
+        # Activate poetry shell from sigma-cli in this shell
+        . $(cd $GITHUB_WORKSPACE/sigma-cli ; poetry env info --path)/bin/activate
+
+        # For testing, limited to develop.
+        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules-threat-hunting" --skip_check_directory
+        $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules-emerging-threats" --skip_check_directory
+
+    - name: Convert
+      working-directory: build
+      env:
+        CURRENT_PIPELINE_VERSION: ${{ matrix.pipeline_version }}
+        CURRENT_BACKEND_VERSION: ${{ matrix.backend-version }}
+        COPY_RULES_ARGS: ${{ matrix.copy_rules_args }}
+      run: |
+        # Activate poetry shell from sigma-cli in this shell
+        . $(cd $GITHUB_WORKSPACE/sigma-cli ; poetry env info --path)/bin/activate
+
         # Convert rules
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd) $CURRENT_PIPELINE_VERSION $CURRENT_BACKEND_VERSION
