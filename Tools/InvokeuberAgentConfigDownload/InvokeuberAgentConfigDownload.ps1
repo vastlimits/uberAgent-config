@@ -107,8 +107,8 @@ function Invoke-GitClone {
     $tempDir = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
     New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
 
-    # Clone the specific branch to the temp directory
-    git clone -b $Branch $RepoUrl $tempDir
+    # Clone the latest snapshot from the chosen branch to the temp directory
+    git clone -b $Branch $RepoUrl $tempDir --depth 1
 
 
     # Process the includes
