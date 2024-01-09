@@ -143,7 +143,7 @@ function Get-vlIsFirewallEnabled {
          $publicNetwork = $netConnectionProfile | Where-Object { $_.NetworkCategory -eq "Public" }
          $domainAuthenticatedNetwork = $netConnectionProfile | Where-Object { $_.NetworkCategory -eq "DomainAuthenticated" }
 
-         $firewall = Get-NetFirewallProfile -All -ErrorAction Stop
+         $firewall = Get-NetFirewallProfile -All -PolicyStore ActiveStore -ErrorAction Stop
          $result = [PSCustomObject]@()
 
          $domainStatus = [bool]($firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled)
