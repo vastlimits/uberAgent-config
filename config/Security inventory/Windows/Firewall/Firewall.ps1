@@ -143,7 +143,7 @@ function Get-vlIsFirewallEnabled {
          $publicNetwork = $netConnectionProfile | Where-Object { $_.NetworkCategory -eq "Public" }
          $domainAuthenticatedNetwork = $netConnectionProfile | Where-Object { $_.NetworkCategory -eq "DomainAuthenticated" }
 
-         $firewall = Get-NetFirewallProfile -All -ErrorAction Stop
+         $firewall = Get-NetFirewallProfile -All -PolicyStore ActiveStore -ErrorAction Stop
          $result = [PSCustomObject]@()
 
          $domainStatus = [bool]($firewall | where-object { $_.Profile -eq "Domain" } | select-object -ExpandProperty Enabled)
@@ -299,8 +299,8 @@ function Get-vlOpenFirewallPorts {
 
          $rulesEx = $rulesEx | ForEach-Object {
             $rule = $_
-            $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop
-            $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop
+            $portFilter = Get-NetFirewallPortFilter -PolicyStore ActiveStore -AssociatedNetFirewallRule $rule -ErrorAction Stop
+            $appFilter = Get-NetFirewallApplicationFilter -PolicyStore ActiveStore -AssociatedNetFirewallRule $rule -ErrorAction Stop
 
             $localPorts = if ($portFilter.LocalPort -is [System.Collections.IEnumerable] -and $portFilter.LocalPort -isnot [string]) {
                $portFilter.LocalPort -join ','
@@ -407,8 +407,8 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCkjG6cXweq5pEU
-# JKvJV/yAR1wA1hJO4cHBcya0351n1KCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCUWr1HYAemkBGV
+# UkxoxUgIT2w3CYs2hY1JOfmhZ/fkcaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -485,17 +485,17 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg885Tt7MGOacR
-# GR4xMQzqpqjgBrA+z4XaXpyimLiJMAQwDQYJKoZIhvcNAQEBBQAEggIAXtd9D/y9
-# qilFpgVu09OFjcZiaaFsBgPx4H+1eK9Tk4TsINEGAxD7+H7JmTIJC4NrAV8HCtky
-# fZKuQXvrFg3VWTuhpCTfTh2LQbVPQwmq0veflppPYyvQYAGkVp2Y3Du+sx29Dd/8
-# ErRSmDUOifJS/0wdkeeStT+ysHAT3bm+zKlMBmmmFoDm1yt5375bd1mrLqZ0l5Qm
-# H/gzH8Zgq2gK8Zzr76UB4f0Oiao5IXQ4dIxN4fNH1XD6DeshXY8+xW1sBNYmyqQ3
-# zuAX1jK61CgUnhDWWtTfTO2y0tRL7jL7yEZYOLsnxRABvDcyBcw/ox7viaRoUf0L
-# NxvZPs451eNb5YtOmm8wNBPOQVUx1QwwYHF/3jIXzO3ByRNt64wwPx3hK8gAxsCY
-# EvYwE6AMIZVeaEbO/nPucfEvQ1xCsqax7mr9E2xFq3l+IuO7q/kzl11G80+OrFmg
-# Cwmk8GTz2gIwaY/9//fqkTQrKyRhVQq+WrgJMxnTRIZML5tn9pfi65PFPBr93kXK
-# QJyRR3Bq59St+ClWdHjr7MEijKUCD3FTviI1hLyEL41KGTDWztnHsJPGbHFcY0Eb
-# LpOzbPP1lFRKYGPTdfHAucofEUQTXqNIGjD+yXnny3SX0xBlSCFQAnEZfQJ7bkz4
-# Yb2LgYJppANeeQrqzVtjoAf/AGlUVV3CvVw=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgsNpUWEIugoM3
+# ufjac7Z7BmKeQgfNcJy6cCdTqejhP/wwDQYJKoZIhvcNAQEBBQAEggIADad+WBB5
+# BnoqJrmEKHfD7J8fEBZ0sLtqpNMFH5GzDm7suIlEokLadSWRvJEPC+ZDIRmVXtNK
+# fYf33T+CRfdK9zt/zU/mNboop5m35d4PjMYeKFvWwmkL7yQ5l0S1hxAyjplyiNfj
+# gkzCahc/JSbi1iMoEX9D6DVvOAdYzTDzjX5OS5OedfVR2ZF9jAAToRhoUcSGxxW/
+# 7thESKAT732cLJ2YIlrY6389F9d9VCRxVc2/PffhFoXI5cwZHHYq+o9JnpZfqHyp
+# JrjiJotRWubl+8ieFT06C/Y9OcFhsHvqUk5gvtvlXJMFmlrNEqcNKPW69hDISKGX
+# o7hT2qGPETLJTVpyLjZWPaWQ0XFlyFkalC/WT8gPAA4nv6QXiNDzZIl69txtIKld
+# n4wSMU1jlti8oVsRMdNRDcY63crjgGMml7dQWmkuOWwSFsvPNPZhfpzcBVPffAlY
+# AM6sJeSF3fgpDDUBt/zZGcES8Opcv/ss+OFLymgAQEAOL9cRnhfSnPKD0f08mAeD
+# dXBgEeJUAAXxegA4qtKa5Hp8Lt3CAvMFzWvB8WQGpnWRTgLFEtJioT70urcTXIad
+# 6BmfwHIgNoBg7n9+hqJKoC/ArWc4oeBAs0K/9AwN3kZcbR8vQn9s7Ov+28Q+7j/a
+# aW54x9JZiW/Bf/eEGY/9tzEyuwUsdd+xBag=
 # SIG # End signature block
