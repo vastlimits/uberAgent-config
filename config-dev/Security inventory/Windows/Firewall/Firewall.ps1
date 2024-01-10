@@ -299,8 +299,8 @@ function Get-vlOpenFirewallPorts {
 
          $rulesEx = $rulesEx | ForEach-Object {
             $rule = $_
-            $portFilter = Get-NetFirewallPortFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop
-            $appFilter = Get-NetFirewallApplicationFilter -AssociatedNetFirewallRule $rule -ErrorAction Stop
+            $portFilter = Get-NetFirewallPortFilter -PolicyStore ActiveStore -AssociatedNetFirewallRule $rule -ErrorAction Stop
+            $appFilter = Get-NetFirewallApplicationFilter -PolicyStore ActiveStore -AssociatedNetFirewallRule $rule -ErrorAction Stop
 
             $localPorts = if ($portFilter.LocalPort -is [System.Collections.IEnumerable] -and $portFilter.LocalPort -isnot [string]) {
                $portFilter.LocalPort -join ','
