@@ -8,8 +8,8 @@ vlCheckIsFirewallEnabled()
   local expectedOutput="enabled"
 
   vlCheckIsFeatureEnabledFromCommandOutput \
-    "FWEnabled" \
-    "Firewall enabled" \
+    "mFWEnabled" \
+    "macOS Firewall enabled" \
     "Checks whether the macOS firewall is enabled." \
     "$riskScore" \
     "$expectedOutput" \
@@ -22,8 +22,8 @@ vlCheckIsFirewallBlockallRuleEnabled()
   local expectedOutput="enabled"
 
   vlCheckIsFeatureEnabledFromCommandOutput \
-    "FWBlockAll" \
-    "Firewall block-all rule active" \
+    "mFWBlockAll" \
+    "macOS Firewall block-all rule active" \
     "Checks whether the block-all rule of the macOS firewall is active." \
     "$riskScore" \
     "$expectedOutput" \
@@ -36,8 +36,8 @@ vlCheckIsFirewallStealthModeEnabled()
   local expectedOutput="enabled"
 
   vlCheckIsFeatureEnabledFromCommandOutput \
-    "FWStealthMode" \
-    "Firewall stealth mode active" \
+    "mFWStealthMode" \
+    "macOS Firewall stealth mode active" \
     "Checks whether the stealth mode of the macOS firewall is active." \
     "$riskScore" \
     "$expectedOutput" \
@@ -46,8 +46,8 @@ vlCheckIsFirewallStealthModeEnabled()
 
 vlGetFirewallApprovedApps()
 {
-  local testName="FWApprovedApps"
-  local testDisplayName="Firewall approved applications"
+  local testName="mFWApprovedApps"
+  local testDisplayName="macOS Firewall approved applications"
   local testDescription="Provides a list of applications that may accept incoming connections."
   # This test is only informational and always returns a fixed test score
   local testScore=10
