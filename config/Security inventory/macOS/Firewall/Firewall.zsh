@@ -19,7 +19,7 @@ vlCheckIsFirewallEnabled()
 vlCheckIsFirewallBlockallRuleEnabled()
 {
   local riskScore=70
-  local expectedOutput="enabled"
+  local expectedOutput="Firewall is set to block all non-essential incoming connections"
 
   vlCheckIsFeatureEnabledFromCommandOutput \
     "FWBlockAll" \
