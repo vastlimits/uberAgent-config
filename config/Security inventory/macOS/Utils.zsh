@@ -5,8 +5,9 @@
 # Call this function to initialize the variables required to run the utilities
 vlInit()
 {
-  ## TODO: The uberAgent installation path for jq is still TBD.
-  local uberAgentJq="/Library/uberAgent/uberAgent.app/Contents/Library/jq/jq"
+  ## This logic to use either version of jq is provided only for testing the scripts
+  ## FIXME: Remove this logic before releasing
+  local uberAgentJq="/Library/uberAgent/uberAgent.app/Contents/MacOS/jq-universal"
   local systemJq=$( which jq )
 
   if [ -x "$uberAgentJq" ]; then
