@@ -69,7 +69,8 @@ vlGetFirewallApprovedApps()
     grep -B1 '( Allow incoming connections )' | \
     awk '/^[0-9]* *:/' | \
     sed 's/^[0-9]* *: *//' | \
-    sed 's/[ \t]*$//' | while IFS= read -r appPath
+    awk '{$1=$1};1' | \
+  while IFS= read -r appPath
   do
     approvedApps+=$( "$JQ" $JQFLAGS -n --arg appPath "$appPath" '$appPath' )
   done
