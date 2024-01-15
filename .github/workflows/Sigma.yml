@@ -35,7 +35,7 @@ jobs:
             pipeline_version: "uberagent-develop"
             backend-version: "develop"
             copy_rules_args: ""
-            pypi-host: "https://pypi.org/simple"
+            pypi-host: "https://test.pypi.org/simple"
             converter-ref: "develop"
 
     runs-on: ubuntu-latest
@@ -176,4 +176,3 @@ jobs:
 
         git config --global --add --bool push.autoSetupRemote true || true
         git push
-
