@@ -19,15 +19,16 @@ vlCheckIsAutomaticCheckingForMacOSUpdatesEnabled()
 vlCheckIsAutomaticCheckingForAppStoreUpdatesEnabled()
 {
   local riskScore=80
-  local expectedOutput="1"
+  local plistDefault=0
 
-  vlCheckIsFeatureEnabledFromCommandOutput \
+  vlCheckFeatureEnabledFromPlistDomainKey \
     "SWUAutomaticUpdateAppStoreCheckingEnabled" \
     "Automatic checking for AppStore updates enabled" \
     "Checks whether the automatic check for AppStore updates is enabled." \
     "$riskScore" \
-    "$expectedOutput" \
-    defaults read /Library/Preferences/com.apple.commerce AutoUpdate
+    "/Library/Preferences/com.apple.commerce" \
+    "AutoUpdate" \
+    $plistDefault
 }
 
 vlCheckForRecommendedUpdates()
@@ -67,15 +68,16 @@ vlCheckForRecommendedUpdates()
 vlCheckInstallSecurityResponsesAndSystemFilesEnabled()
 {
   local riskScore=80
-  local expectedOutput="1"
+  local plistDefault=1
 
-  vlCheckIsFeatureEnabledFromCommandOutput \
+  vlCheckFeatureEnabledFromPlistDomainKey \
     "SWUInstallSecurityResponsesAndSystemFilesEnabled" \
     "Install security responses and system files automatically" \
     "Checks whether the automatic installation of security responses and system files is enabled." \
-    "$riskScore" \
-    "$expectedOutput" \
-    defaults read /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall
+    $riskScore \
+    "/Library/Preferences/com.apple.SoftwareUpdate" \
+    "ConfigDataInstall" \
+    $plistDefault
 }
 
 ################################################################################
