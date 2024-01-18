@@ -27,14 +27,11 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     steps:
-#    - name: Check out repo
-#      uses: actions/checkout@v3
-#      with:
-#        ref: ${{ github.ref_name }}
-#        token: ${{ secrets.VLSVC_PAT }}
-    - uses: actions/checkout@v4
+    - name: Check out repo
+      uses: actions/checkout@v3
       with:
-        fetch-depth: 0
+        ref: ${{ github.ref_name }}
+        token: ${{ secrets.VLSVC_PAT }}
         
     - name: Create archive file
       uses: thedoctor0/zip-release@0.7.1
@@ -114,12 +111,10 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: uAConfigCheck
-        #path: uAConfigCheck
     
     - uses: actions/download-artifact@v4
       with:
         name: ConfigArchive
-        #path: uAConfigCheck
     
     - name: 'validate configuration uAConfigCheck'
       run: |
@@ -143,14 +138,12 @@ jobs:
         # Print executed commands
         set -x
         
-        #mkdir -p "$TARGET_DIR_PATH" || true
-        #rm -f "$TARGET_DIR_PATH$TARGET_FILE" || true
         echo "source+target:$SOURCE_DIR_PATH$TARGET_FILE\ntarget:$TARGET_DIR_PATH"
         ls  "$TARGET_DIR_PATH"
     
-#    - name: Commit archive
-#      uses: stefanzweifel/git-auto-commit-action@v4
-#      with:
-#        commit_message: Updated config archive
-#        commit_user_name: vastlimits
-#        commit_user_email: devops@vastlimits.com
+    - name: Commit archive
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Updated config archive
+        commit_user_name: vastlimits
+        commit_user_email: devops@vastlimits.com
