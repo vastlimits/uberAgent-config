@@ -333,3 +333,57 @@ vlCheckIsFeatureDisabledFromNonMatchingCommandOutput()
     "$testResultDataJsonTemplate" \
     $@
 }
+
+vlCheckFeatureEnabledFromPlistDomainKey()
+{
+  local testName="$1"
+  local displayName="$2"
+  local description="$3"
+  local riskScore="$4"
+  local plistDomain="$5"
+  local plistKey="$6"
+  local plistDefaultOnMissingKey="$7"
+
+  vlRunCommand defaults read "$plistDomain" "$plistKey"
+
+  # Attempt to read the plist value, but use the default value if the key domain pair is not found
+  local plistValue="$plistDefaultOnMissingKey"
+  if (( $vlCommandStatus == 0 )); then
+    plistValue="$vlCommandStdout"
+  fi
+
+  local expectedOutput=1
+  printf "$plistValue" | grep "$expectedOutput" >/dev/null 2>&1
+  local grepStatus=$?
+  if (( $grepStatus > 1 )); then
+    vlReportErrorJson \
+      "$testName" \
+      "$displayName" \
+      "$description" \
+      "$grepStatus" \
+      "Interal test error: pattern matching failed."
+    return
+  fi
+
+  # initialize with the negative case, and modify if the matching condition is met
+  local testScore=$( vlGetMinScore "$riskScore" )
+  local testResultDataValue=false
+  local expectedGrepStatus=0
+  if (( $grepStatus == $expectedGrepStatus )); then
+    # positive (expected) case
+    testScore=10
+    testResultDataValue=true
+  fi
+
+  local resultDataJson=$( "$JQ" $JQFLAGS -n -c \
+                        --argjson testResultDataValue $testResultDataValue \
+                        '{ Enabled: $testResultDataValue }' )
+
+  vlReportTestResultJson \
+    "$testName" \
+    "$displayName" \
+    "$description" \
+    "$testScore" \
+    "$riskScore" \
+    "$resultDataJson"
+}
