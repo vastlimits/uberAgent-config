@@ -142,30 +142,37 @@ vlGetMinScore()
   printf "%d" $minScore
 }
 
-#
-# vlCheckIsFeatureEnabledFromCommandOutput - check whether a feature is enabled from a command's output
-#
-# This function runs the command specified as the last argument(s) and matches its output with the specified
-# expectedOutput parameter.
-# Do not quote the command invocation parameters!
-#
-# If the expectedOutput is found, the feature is considered enabled. Otherwise the feature is disabled.
-# Errors are reported using the appropriate JSON schema.
-#
-# The output of this function includes a ResultData field:
-#    "ResultData": {
-#      "Enabled": true/false
-#    }
-#
-vlCheckIsFeatureEnabledFromCommandOutput()
+vlNegateBooleanValue()
+{
+  local val="$1"
+
+  if [ "$val" = "true" ]; then
+    printf "false"
+  elif [ "$val" = "false" ]; then
+    printf "true"
+  else
+    printf "invalid value"
+  fi
+}
+
+# This is the base function for establishing the current state of a feature
+# by running a command and expecting an output.
+# The ResultData is also customizable; pass a valid jq template where the
+# test result boolean value can be referenced by the $testResultDataValue variable,
+# for example:
+#   '{ Enabled: $testResultDataValue }'
+vlCheckFeatureStateFromCommandOutput()
 {
   local testName="$1"
   local displayName="$2"
   local description="$3"
   local riskScore="$4"
   local expectedOutput="$5"
+  local expectedGrepStatus="$6"
+  local expectedTestResultDataValue="$7"
+  local testResultDataJsonTemplate="$8"
 
-  shift 5
+  shift 8
 
   vlRunCommand $@
   if (( $vlCommandStatus != 0 )); then
@@ -192,17 +199,17 @@ vlCheckIsFeatureEnabledFromCommandOutput()
 
   # initialize with the negative case, and modify if the matching condition is met
   local testScore=$( vlGetMinScore "$riskScore" )
-  local testResultDataValue=false
+  local testResultDataValue=$( vlNegateBooleanValue "$expectedTestResultDataValue" )
 
-  if (( $grepStatus == 0 )); then
-    # the matching string was found
+  if (( $grepStatus == $expectedGrepStatus )); then
+    # positive (expected) case
     testScore=10
-    testResultDataValue=true
+    testResultDataValue=$( vlNegateBooleanValue "$testResultDataValue" )
   fi
 
   local resultDataJson=$( "$JQ" $JQFLAGS -n -c \
-                        --argjson testResultDataValue \
-                        "$testResultDataValue" '{ Enabled: $testResultDataValue }' )
+                        --argjson testResultDataValue $testResultDataValue \
+                        "$testResultDataJsonTemplate" )
 
   vlReportTestResultJson \
     "$testName" \
@@ -211,4 +218,118 @@ vlCheckIsFeatureEnabledFromCommandOutput()
     "$testScore" \
     "$riskScore" \
     "$resultDataJson"
+}
+
+# Checks whether a feature is enabled by matching the specified expected output
+# from a command.
+# If the output matches, then the feature is considered enabled.
+# Never quote the command invocation parameters, which must be specified last!
+#
+# The ResultData field is reported accordingly:
+#
+#    "ResultData": {
+#      "Enabled": true/false
+#    }
+#
+# Errors are reported using the appropriate JSON schema.
+vlCheckIsFeatureEnabledFromCommandOutput()
+{
+  local testName="$1"
+  local displayName="$2"
+  local description="$3"
+  local riskScore="$4"
+  local expectedOutput="$5"
+
+  shift 5
+
+  local expectedGrepStatus=0
+  local expectedTestResultDataValue=true
+  local testResultDataJsonTemplate='{ Enabled: $testResultDataValue }'
+
+  vlCheckFeatureStateFromCommandOutput \
+    "$testName" \
+    "$displayName" \
+    "$description" \
+    "$riskScore" \
+    "$expectedOutput" \
+    "$expectedGrepStatus" \
+    "$expectedTestResultDataValue" \
+    "$testResultDataJsonTemplate" \
+    $@
+}
+
+# Checks whether a feature is disabled by matching the specified expected output
+# from a command.
+# If the output matches, then the feature is considered disabled.
+# Never quote the command invocation parameters, which must be specified last!
+#
+# The ResultData field is reported accordingly:
+#
+#    "ResultData": {
+#      "Disabled": true/false
+#    }
+#
+# Errors are reported using the appropriate JSON schema
+vlCheckIsFeatureDisabledFromCommandOutput()
+{
+  local testName="$1"
+  local displayName="$2"
+  local description="$3"
+  local riskScore="$4"
+  local expectedOutput="$5"
+
+  shift 5
+
+  local expectedGrepStatus=0
+  local expectedTestResultDataValue=true
+  local testResultDataJsonTemplate='{ Disabled: $testResultDataValue }'
+
+  vlCheckFeatureStateFromCommandOutput \
+    "$testName" \
+    "$displayName" \
+    "$description" \
+    "$riskScore" \
+    "$expectedOutput" \
+    "$expectedGrepStatus" \
+    "$expectedTestResultDataValue" \
+    "$testResultDataJsonTemplate" \
+    $@
+}
+
+# Checks whether a feature is disabled by ensuring that the output of the specified
+# command does NOT match a specific string.
+# If the command output doesn't match the string, the feature is considered disabled.
+# Never quote the command invocation parameters, which must be specified last!
+#
+# The ResultData field is reported accordingly:
+#
+#    "ResultData": {
+#      "Disabled": true/false
+#    }
+#
+# Errors are reported using the appropriate JSON schema
+vlCheckIsFeatureDisabledFromNonMatchingCommandOutput()
+{
+  local testName="$1"
+  local displayName="$2"
+  local description="$3"
+  local riskScore="$4"
+  local expectedOutput="$5"
+
+  shift 5
+
+  local expectedGrepStatus=1
+  local expectedTestResultDataValue=true
+  local testResultDataJsonTemplate='{ Disabled: $testResultDataValue }'
+
+  vlCheckFeatureStateFromCommandOutput \
+    "$testName" \
+    "$displayName" \
+    "$description" \
+    "$riskScore" \
+    "$expectedOutput" \
+    "$expectedGrepStatus" \
+    "$expectedTestResultDataValue" \
+    "$testResultDataJsonTemplate" \
+    $@
 }
