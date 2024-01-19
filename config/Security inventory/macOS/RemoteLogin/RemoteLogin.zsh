@@ -104,9 +104,13 @@ vlCheckSshPasswordLoginDisabled()
     isDisabled=false
   fi
 
-  local resultDataJson=$( "$JQ" $JQFLAGS -n -c \
-                        --argjson isDisabled $isDisabled \
-                        '{ Disabled: $isDisabled }' )
+  local resultDataJson=$( \
+    vlJsonifyEmbeddedJson $( \
+      "$JQ" $JQFLAGS -n -c \
+        --argjson isDisabled $isDisabled \
+        '{ Disabled: $isDisabled }' \
+    ) \
+  )
 
   vlReportTestResultJson \
     "$testName" \
@@ -190,9 +194,13 @@ vlCheckSshFipsCompliant()
     testScore=10
   fi
 
-  local resultDataJson=$( "$JQ" $JQFLAGS -n -c \
-                          --argjson isFipsCompliant "$isFipsCompliant" \
-                            '{ IsFipsCompliant: $isFipsCompliant }' )
+  local resultDataJson=$( \
+    vlJsonifyEmbeddedJson $( \
+      "$JQ" $JQFLAGS -n -c \
+        --argjson isFipsCompliant "$isFipsCompliant" \
+        '{ IsFipsCompliant: $isFipsCompliant }' \
+    ) \
+  )
 
   vlReportTestResultJson \
     "$testName" \
@@ -281,7 +289,12 @@ vlCheckKeysStrongEncryption()
       "$riskScore" \
     )
 
-  local resultDataJson=$(tr -d '\n' <<<"$matchingAlgosList" | jq -R -s -c '{KexAlgorithms: split(",")}')
+  local resultDataJson=$( \
+    vlJsonifyEmbeddedJson $( \
+      tr -d '\n' <<<"$matchingAlgosList" | \
+        "$JQ" -R -s -c '{KexAlgorithms: split(",")}' \
+    ) \
+  )
 
   vlReportTestResultJson \
     "$testName" \
@@ -324,7 +337,12 @@ vlCheckCiphersStrongEncryption()
       "$riskScore" \
     )
 
-  local resultDataJson=$(tr -d '\n' <<<"$matchingCiphersList" | jq -R -s -c '{Ciphers: split(",")}')
+  local resultDataJson=$( \
+    vlJsonifyEmbeddedJson $( \
+      tr -d '\n' <<<"$matchingCiphersList" | \
+        "$JQ" -R -s -c '{Ciphers: split(",")}' \
+    ) \
+  )
 
   vlReportTestResultJson \
     "$testName" \
@@ -369,7 +387,12 @@ vlCheckMacsStrongEncryption()
       "$riskScore" \
     )
 
-  local resultDataJson=$(tr -d '\n' <<<"$matchingMacsList" | jq -R -s -c '{MACs: split(",")}')
+  local resultDataJson=$( \
+    vlJsonifyEmbeddedJson $( \
+      tr -d '\n' <<<"$matchingMacsList" | \
+        "$JQ" -R -s -c '{MACs: split(",")}' \
+    ) \
+  )
 
   vlReportTestResultJson \
     "$testName" \

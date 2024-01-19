@@ -71,7 +71,7 @@ vlJsonifyEmbeddedJson()
 }
 
 # Reports the result for an SCI in JSON format.
-# Assumes that the ResultData field is a JSON object.
+# Callers must escape the resultData with vlJsonifyEmbeddedJson(), if it contains JSON data.
 vlReportTestResultJson()
 {
     local name="$1"
@@ -81,15 +81,13 @@ vlReportTestResultJson()
     local riskScore="$5"
     local resultData="$6"
 
-    # NOTE: we pass the resultData parameter as argjson so that it is interpreted
-    # as JSON data and not as a string.
     "$JQ" $JQFLAGS -n \
         --arg name "$name" \
         --arg displayName "$displayName" \
         --arg description "$description" \
         --argjson score "$score" \
         --argjson riskScore "$riskScore" \
-        --argjson resultData "$resultData" \
+        --arg resultData "$resultData" \
         $'{ Name: $name, \
             DisplayName: $displayName, \
             Description: $description, \
@@ -207,9 +205,13 @@ vlCheckFeatureStateFromCommandOutput()
     testResultDataValue=$( vlNegateBooleanValue "$testResultDataValue" )
   fi
 
-  local resultDataJson=$( "$JQ" $JQFLAGS -n -c \
-                        --argjson testResultDataValue $testResultDataValue \
-                        "$testResultDataJsonTemplate" )
+  local resultDataJson=$( \
+    vlJsonifyEmbeddedJson $( \
+      "$JQ" $JQFLAGS -n -c \
+        --argjson testResultDataValue $testResultDataValue \
+        "$testResultDataJsonTemplate" \
+    ) \
+  )
 
   vlReportTestResultJson \
     "$testName" \
@@ -375,9 +377,13 @@ vlCheckFeatureEnabledFromPlistDomainKey()
     testResultDataValue=true
   fi
 
-  local resultDataJson=$( "$JQ" $JQFLAGS -n -c \
-                        --argjson testResultDataValue $testResultDataValue \
-                        '{ Enabled: $testResultDataValue }' )
+  local resultDataJson=$( \
+    vlJsonifyEmbeddedJson $( \
+      "$JQ" $JQFLAGS -n -c \
+        --argjson testResultDataValue $testResultDataValue \
+        '{ Enabled: $testResultDataValue }' \
+    ) \
+  )
 
   vlReportTestResultJson \
     "$testName" \
