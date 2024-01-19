@@ -53,16 +53,14 @@ vlCheckForRecommendedUpdates()
     local testScore=10
   fi
 
-  local availableRecommendedUpdatesJson=$( printf '%s\n' "${availableRecommendedUpdates[@]}" | "$JQ" $JQFLAGS -s '{ RecommendedUpdates: . }' )
-  local availableRecommendedUpdatesEmbeddableJson=$( vlJsonifyEmbeddedJson "$availableRecommendedUpdatesJson" )
-
-  vlReportTestResultJson \
+  vlReportTestResultJsonResultDataArray \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$availableRecommendedUpdatesEmbeddableJson"
+    "RecommendedUpdates" \
+    ${availableRecommendedUpdates[@]}
 }
 
 vlCheckInstallSecurityResponsesAndSystemFilesEnabled()

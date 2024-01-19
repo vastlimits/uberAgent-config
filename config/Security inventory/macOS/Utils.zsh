@@ -67,7 +67,18 @@ vlRunCommand()
 vlJsonifyEmbeddedJson()
 {
   local val="$1"
-  "$JQ" $JQFLAGS -n --argjson val "$val" '$val | @json'
+  "$JQ" $JQFLAGS -n -c --arg val "$val" '$val'
+}
+
+# This function expects each input strings to be quoted, like: "string"
+vlJsonifyArrayJson()
+{
+  local arrayName="$1"
+  shift
+  local array=("$@")
+
+  local arrayAsJson=$( printf '%s\n' "${array[@]}" | "$JQ" $JQFLAGS -c -s "{ $arrayName: . }" )
+  "$JQ" $JQFLAGS -n --arg val "$arrayAsJson" '$val'
 }
 
 # Reports the result for an SCI in JSON format.
@@ -87,7 +98,36 @@ vlReportTestResultJson()
         --arg description "$description" \
         --argjson score "$score" \
         --argjson riskScore "$riskScore" \
-        --arg resultData "$resultData" \
+        --argjson resultData "$resultData" \
+        $'{ Name: $name, \
+            DisplayName: $displayName, \
+            Description: $description, \
+            Score: $score, \
+            RiskScore: $riskScore, \
+            ResultData: $resultData \
+          }'
+}
+
+vlReportTestResultJsonResultDataArray()
+{
+    local name="$1"
+    local displayName="$2"
+    local description="$3"
+    local score="$4"
+    local riskScore="$5"
+    local resultDataArrayName="$6"
+    shift 6
+    local resultDataArray=("$@")
+
+    local resultData=$( vlJsonifyArrayJson "$resultDataArrayName" ${resultDataArray[@]} )
+
+    "$JQ" $JQFLAGS -n \
+        --arg name "$name" \
+        --arg displayName "$displayName" \
+        --arg description "$description" \
+        --argjson score "$score" \
+        --argjson riskScore "$riskScore" \
+        --argjson resultData "$resultData" \
         $'{ Name: $name, \
             DisplayName: $displayName, \
             Description: $description, \
