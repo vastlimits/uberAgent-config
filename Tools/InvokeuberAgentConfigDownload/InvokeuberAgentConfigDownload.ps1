@@ -108,7 +108,7 @@ function Invoke-GitClone {
     New-Item -ItemType Directory -Force -Path $tempDir | Out-Null
 
     # Clone the latest snapshot from the chosen branch to the temp directory
-    git clone -b $Branch $RepoUrl $tempDir --depth 1
+    git clone -b $Branch $RepoUrl $tempDir --depth 1 --config core.autocrlf=input
 
 
     # Process the includes
