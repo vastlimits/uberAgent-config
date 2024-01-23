@@ -14,10 +14,15 @@ env:
   TARGET_DIR_PATH:  config-dist/
   TARGET_FILE:      uberAgent.uAConfig
   uAConfigCheck_FEED: uAConfigCheck
+  uAConfigCheck_Organization: https://dev.azure.com/vastlimits
   uAConfigCheck_EXE_Artifact_Version: '*'
   uAConfigCheck_EXE_Artifact_Package: uaconfigcheck
   uAConfigCheck_DLL_Artifact_Version: '*'
-  uAConfigCheck_DLL_Artifact_Package: uberagent-develop
+  uAConfigCheck_DLL_Artifact_ProductVersion: ${{ (github.ref == 'refs/heads/version/6.2' && '6.2.3')
+                                              || (github.ref == 'refs/heads/version/7.0' && '7.0.2')
+                                              || (github.ref == 'refs/heads/version/7.1' && '7.1.1')
+                                              || 'develop' }}
+  uAConfigCheck_DLL_Artifact_Package: uberagent
   
 jobs:
   create-archive:
@@ -71,9 +76,10 @@ jobs:
         inlineScript: |
           az extension add --name azure-devops
           
-          az artifacts universal download --organization https://dev.azure.com/vastlimits \
+          az artifacts universal download --organization $uAConfigCheck_Organization \
                                           --project uAConfigCheck --scope project --feed $uAConfigCheck_FEED \
-                                          --name $uAConfigCheck_EXE_Artifact_Package --version "$uAConfigCheck_EXE_Artifact_Version" \
+                                          --name $uAConfigCheck_EXE_Artifact_Package \
+                                          --version "$uAConfigCheck_EXE_Artifact_Version" \
                                           --path . \
                                           --file-filter 'uAConfigCheck.exe'
           
@@ -84,18 +90,19 @@ jobs:
         inlineScript: |
           az extension add --name azure-devops
           
-          az artifacts universal download --organization https://dev.azure.com/vastlimits \
+          az artifacts universal download --organization $uAConfigCheck_Organization \
                                           --project uAConfigCheck --scope project --feed $uAConfigCheck_FEED \
-                                          --name $uAConfigCheck_DLL_Artifact_Package --version "$uAConfigCheck_DLL_Artifact_Version" \
+                                          --name $uAConfigCheck_DLL_Artifact_Package--$uAConfigCheck_DLL_Artifact_ProductVersion \
+                                          --version "$uAConfigCheck_DLL_Artifact_Version" \
                                           --path ./releases/ \
-                                          --file-filter 'uberAgent-develop.dll'
+                                          --file-filter 'uberAgent-$uAConfigCheck_DLL_Artifact_ProductVersion.dll'
     
     - uses: actions/upload-artifact@v4
       with:
         name: uAConfigCheck
         path: |
           ./uAConfigCheck.exe
-          ./releases/uberAgent-develop.dll
+          ./releases/uberAgent-$uAConfigCheck_DLL_Artifact_ProductVersion.dll
         retention-days: 1
 
 
@@ -119,7 +126,7 @@ jobs:
     - name: 'validate configuration uAConfigCheck'
       run: |
         ls "$TARGET_FILE"
-        .\uAConfigCheck.exe -t -w -v develop -a "${{ env.TARGET_FILE }}"
+        .\uAConfigCheck.exe -t -w -v $uAConfigCheck_DLL_Artifact_ProductVersion -a "${{ env.TARGET_FILE }}"
       continue-on-error: false
 
 
