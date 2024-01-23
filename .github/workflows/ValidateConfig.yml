@@ -89,8 +89,3 @@ jobs:
       run: |
         .\uAConfigCheck.exe -t -w -v develop -f .\config\uberAgent.conf
       continue-on-error: false
-
-    # TODO: maybe it's possible to use github's actions cache instead of upload-artifact/download-artifact,
-    #       But it's not clear yet how it behaves in the face of concurrency.
-    #       Also, one would have to clean the cache at the end of the workflow:
-    #       https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#force-deleting-cache-entries
