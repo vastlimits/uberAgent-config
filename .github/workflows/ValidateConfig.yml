@@ -68,7 +68,7 @@ jobs:
                                           --name $uAConfigCheck_DLL_Artifact_Package-$uAConfigCheck_DLL_Artifact_ProductVersion \
                                           --version "$uAConfigCheck_DLL_Artifact_Version" \
                                           --path ./releases/ \
-                                          --file-filter 'uberAgent-$uAConfigCheck_DLL_Artifact_ProductVersion.dll'
+                                          --file-filter "uberAgent-${{uAConfigCheck_DLL_Artifact_ProductVersion}}.dll"
     
     - uses: actions/upload-artifact@v4
       with:
