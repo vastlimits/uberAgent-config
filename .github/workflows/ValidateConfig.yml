@@ -94,6 +94,6 @@ jobs:
     
     - name: 'validate configuration uAConfigCheck'
       run: |
-        echo ".\uAConfigCheck.exe -t -w -v $uAConfigCheck_DLL_Artifact_ProductVersion -f .\config\uberAgent.conf"
-        .\uAConfigCheck.exe -t -w -v $uAConfigCheck_DLL_Artifact_ProductVersion -f .\config\uberAgent.conf
+        echo ".\uAConfigCheck.exe -t -w -v $env:uAConfigCheck_DLL_Artifact_ProductVersion -f .\config\uberAgent.conf"
+        .\uAConfigCheck.exe -t -w -v $env:uAConfigCheck_DLL_Artifact_ProductVersion -f .\config\uberAgent.conf
       continue-on-error: false
