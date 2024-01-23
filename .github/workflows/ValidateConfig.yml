@@ -17,7 +17,10 @@ env:
   uAConfigCheck_EXE_Artifact_Version: '*'
   uAConfigCheck_EXE_Artifact_Package: uaconfigcheck
   uAConfigCheck_DLL_Artifact_Version: '*'
-  uAConfigCheck_DLL_Artifact_Package: uberagent-develop
+  uAConfigCheck_DLL_Artifact_Package: uberagent-${{ (github.ref == 'refs/heads/version/6.2' && '6.2.3')
+                                                 || (github.ref == 'refs/heads/version/7.0' && '7.0.2')
+                                                 || (github.ref == 'refs/heads/version/7.1' && '7.1.1')
+                                                 || 'develop' }}
 
 jobs:
   download-config:
