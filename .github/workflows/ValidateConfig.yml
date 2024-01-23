@@ -75,7 +75,7 @@ jobs:
         name: uAConfigCheck
         path: |
           ./uAConfigCheck.exe
-          ./releases/uberAgent-${{vars.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll
+          ./releases/uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll
         retention-days: 1
 
 
