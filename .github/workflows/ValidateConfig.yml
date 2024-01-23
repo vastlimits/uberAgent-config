@@ -75,7 +75,7 @@ jobs:
         name: uAConfigCheck
         path: |
           ./uAConfigCheck.exe
-          ./releases/uberAgent-$uAConfigCheck_DLL_Artifact_ProductVersion.dll
+          ./releases/uberAgent-${{vars.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll
         retention-days: 1
 
 
@@ -94,6 +94,5 @@ jobs:
     
     - name: 'validate configuration uAConfigCheck'
       run: |
-        echo ".\uAConfigCheck.exe -t -w -v $env:uAConfigCheck_DLL_Artifact_ProductVersion -f .\config\uberAgent.conf"
         .\uAConfigCheck.exe -t -w -v $env:uAConfigCheck_DLL_Artifact_ProductVersion -f .\config\uberAgent.conf
       continue-on-error: false
