@@ -15,21 +15,16 @@ counter_skipped = 0
 counter_success = 0
 counter_processed = 0
 
-folder_path = os.path.join(working_dir, 'config-dev/Security inventory/Windows')
-include_folder = os.path.join(working_dir, 'config-dev/Security inventory/Windows/Shared')
-output_folder = os.path.join(working_dir, 'config/Security inventory/Windows')
+folder_path = os.path.join(working_dir, 'config/Security inventory/macOS')
 output_csv_mapping_dir = os.path.join(working_dir, 'config-dev/generated')
 output_csv_mapping = os.path.join(output_csv_mapping_dir, 'security_inventory_checknames.csv')
 
 print("-------------------------------------")
 print("Current working dir: ", working_dir)
 print("Using input: ", folder_path)
-print("Using include: ", include_folder)
-print("Using output: ", output_folder)
 print("Using output mapping dir: ", output_csv_mapping_dir)
 print("Using output mapping csv: ", output_csv_mapping)
 print("-------------------------------------")
-print("Cleaning old output...")
 
 if not os.path.exists(folder_path):
     print("Error: Input folder does not exist: ", folder_path)
@@ -48,16 +43,6 @@ if subfolders_count == 0:
     # Exit the script
     exit(1)
 
-# Create the "transpiled" directory-structure if it doesn't exist
-if not os.path.exists(output_folder):
-    try:
-        os.makedirs(output_folder)
-    except:
-        print("Error: Could not create output folder: ", output_folder)
-
-        # Exit the script
-        exit(1)
-
 # Create the "config-dev/generated" directory-structure if it doesn't exist
 if not os.path.exists(output_csv_mapping_dir):
     try:
@@ -67,87 +52,50 @@ if not os.path.exists(output_csv_mapping_dir):
 
         # Exit the script
         exit(1)
-    
-# Clean old output
-for dirpath, dirnames, filenames in os.walk(output_folder):
-    for filename in filenames:
-        file_path = os.path.join(dirpath, filename)
-        # Check if file_path  contains a file
-        if os.path.isfile(file_path):
-            try:
-                # Delete file
-                os.remove(file_path)
-            except:
-                print("Error: Could not delete file: ", file_path)
 
-                # Exit the script
-                exit(1)
-
-# clean old security_inventory_checknames.csv using path output_csv_mapping
-if os.path.isfile(output_csv_mapping):
-    try:
-        # Delete old mapping file
-        os.remove(output_csv_mapping)
-    except:
-        print("Error: Could not delete file: ", output_csv_mapping)
-
-        # Exit the script
-        exit(1)
-
-print("-------------------------------------")
-
-# List of folders to exclude
-exclude_folders = None #['']
-
-print("Excluding folders: ", exclude_folders)
-print("-------------------------------------")
-print("Opening output csv file: ", output_csv_mapping)
-
-try:
-    csv_handle = open(output_csv_mapping, "w", newline='', encoding='utf-8')
-    csv_writer = csv.writer(csv_handle)
-    csv_writer.writerow(["SecurityInventoryName", "SecurityInventoryDisplayName", "SecurityInventoryNameDescription"])
-except:
-    print("Error: Could not open output csv file: ", output_csv_mapping)
+# Since the Windows script is executed frist, we expect the output folder and file is already created
+if not os.path.exists(output_csv_mapping):
+    print("Error: Output file is missing: ", output_csv_mapping)
 
     # Exit the script
     exit(1)
+
+
+# List of folders to exclude
+exclude_folders = None #['']
+exclude_files = ["Utils.zsh"]
+
+print("Excluding folders: ", exclude_folders)
+print("Excluding files: ", exclude_files)
 print("-------------------------------------")
+print("Opening output csv file: ", output_csv_mapping)
 
-####### ENV_WORKFLOW_FILE #######
-env_file = os.getenv('GITHUB_ENV') # Get the path of the runner file
+header = ["SecurityInventoryName", "SecurityInventoryDisplayName", "SecurityInventoryNameDescription"]
 
-def update_key(key, value):
-    data = {}
-    try:
-        with open(env_file, 'r') as file:
-            for line in file:
-                if line.strip():
-                    k, v = line.strip().split('=')
-                    data[k] = v
-    except FileNotFoundError:
-        pass
+try:
+    # Check whether the file exists and whether the header is present
+    file_exists = os.path.exists(output_csv_mapping)
+    header_present = False
+    if file_exists:
+        with open(output_csv_mapping, "r", newline='', encoding='utf-8') as read_handle:
+            reader = csv.reader(read_handle)
+            header_present = next(reader, None) == header
 
-    data[key] = value
+    # Open the file in append mode
+    csv_handle = open(output_csv_mapping, "a", newline='', encoding='utf-8')
+    csv_writer = csv.writer(csv_handle)
 
-    with open(env_file, 'w') as file:
-        for k, v in data.items():
-            file.write(f'{k}={v}\n')
+    # Only write the header if the file is new or has no header
+    if not file_exists or not header_present:
+        csv_writer.writerow(header)
 
+except Exception as e:
+    print(f"Error: Could not open or read output csv file: {output_csv_mapping}, {e}")
 
-def read_key(key):
-    try:
-        with open(env_file, 'r') as file:
-            for line in file:
-                if line.strip():
-                    k, v = line.strip().split('=')
-                    if k == key:
-                        return v
-    except FileNotFoundError:
-        print(f"Error: The file '{env_file}' was not found.")
+    # Exit the script
+    exit(1)
 
-    print(f"Error: The key '{key}' was not found.")
-    return None
+print("-------------------------------------")
 
 def extract_values(data):
     try:
@@ -176,10 +124,14 @@ def append_mapping_info(data):
 # Extracts the DisplayName and Description from a buffer
 def extract_mapping_info(data):
 
-    keywords = ["Name", "DisplayName", "Description", "Score", "ResultData", "RiskScore", "ErrorCode", "ErrorMessage"]
-    
+    keywords = ["testName", "testDisplayName", "testDescription"]
+
     try:
-        pattern = r'\[PSCustomObject\]@\{[^{}]*(((?<=[^{}])\{[^{}]*(((?<=[^{}])\{[^{}]*(((?<=[^{}])\{[^{}]*\})[^{}]*)*\})[^{}]*)*\})[^{}]*)*\}'
+        pattern = (
+            r'local testName="(?!\$[0-9]+)[^"]*"\s+'
+            r'local testDisplayName="(?!\$[0-9]+)[^"]*"\s+'
+            r'local testDescription="(?!\$[0-9]+)[^"]*"'
+        )
         matches = re.finditer(pattern, data, re.MULTILINE | re.DOTALL)
     except:
         print("\tError: Could not find PSCustomObject for pattern")
@@ -208,6 +160,10 @@ def extract_mapping_info(data):
                 except:
                     print("\tError: Could not extract values from block: ", block)
                     raise Exception
+            else:
+                print("\tNot all keywords are present in the block.")
+                print("\tSkipping block: ", block)
+                raise Exception
         except:
             print("\tError: Failed match.group")
             raise Exception
@@ -215,12 +171,17 @@ def extract_mapping_info(data):
 
 # Loop through all files in the folder
 for dirpath, dirnames, filenames in os.walk(folder_path):
-    
+
     for filename in filenames:
         file_path = os.path.join(dirpath, filename)
-            
+
+        if filename in exclude_files:
+            print("Skipping: ", file_path)
+            counter_skipped += 1
+            continue
+
         # Check if it's a .ps1 file and not in an excluded folder
-        if filename.endswith('.ps1') and (exclude_folders is None or not any(exclude_folder in file_path for exclude_folder in exclude_folders)):
+        if filename.endswith('.zsh') and (exclude_folders is None or not any(exclude_folder in file_path for exclude_folder in exclude_folders)):
             print("Processing: ", file_path )
             counter_processed += 1
 
@@ -234,44 +195,13 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                     if not content:
                         print("\tError: Could not read file: ", file_path)
                         continue
-          
+
                     try:
                         # Extract DisplayName and Description
                         extract_mapping_info(content)
                     except:
                         print("\tError: Failed to extract mapping info: ", file_path)
                         continue
-                    
-                    # Extract subfolder name
-                    subfolder = os.path.relpath(os.path.dirname(file_path), folder_path)
-                    
-                    # Write the transpiled contents to a new file in the "transpiled" directory
-                    transpiled_path = os.path.join(output_folder, subfolder, filename)
-                    transpiled_path_dir = os.path.join(output_folder, subfolder)
-                    
-                    # Create subfolders if missing
-                    if not os.path.exists(transpiled_path_dir):
-                        try:
-                            os.makedirs(transpiled_path_dir)
-                        except:
-                            print("\tError: Could not create output folder: ", transpiled_path_dir)
-                            continue
-                        
-                    print("\tWriting file: ", transpiled_path)
-
-                    # Handle exceptions when opening the file
-                    try:
-                        with open(transpiled_path, 'w') as transpiled_file:
-                            #check if the content was successfully written
-                            num_written = transpiled_file.write(content)
-                            if num_written == 0:
-                                print("\tError: Could not write to file: ", transpiled_path)
-                            elif num_written != len(content):
-                                print("\tError: Could not write all content to file: ", transpiled_path)
-                            else:
-                                print("\tSuccess: ", num_written, " bytes written")
-                    except:
-                        print("\tError: Could not open transpiled file: ", transpiled_path)
             except:
                 print("\tError: Could not open file: ", file_path)
 
@@ -286,10 +216,6 @@ print("Processed: ", counter_processed + counter_skipped, " files")
 print("Skipped: ", counter_skipped, " files")
 print("Success: ", counter_success, " files")
 print("Failed: ", counter_processed - counter_success, " files")
-
-update_key("TRANSPILER_SUCCSESS", str(counter_success))
-update_key("TRANSPILER_PROCESSED", str(counter_processed))
-update_key("TRANSPILER_FAILED", str(counter_processed - counter_success))
 
 # Close the CSV file
 csv_handle.close()

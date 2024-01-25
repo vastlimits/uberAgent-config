@@ -4,13 +4,16 @@
 
 vlCheckIsFirewallEnabled()
 {
+  local testName="FWState"
+  local testDisplayName="macOS Firewall enabled"
+  local testDescription="Checks whether the macOS firewall is enabled."
   local riskScore=100
   local expectedOutput="enabled"
 
   vlCheckIsFeatureEnabledFromCommandOutput \
-    "FWState" \
-    "macOS Firewall enabled" \
-    "Checks whether the macOS firewall is enabled." \
+    "$testName" \
+    "$testDisplayName" \
+    "$testDescription" \
     "$riskScore" \
     "$expectedOutput" \
     /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
@@ -18,13 +21,16 @@ vlCheckIsFirewallEnabled()
 
 vlCheckIsFirewallBlockallRuleEnabled()
 {
+  local testName="FWBlockAll"
+  local testDisplayName="macOS Firewall block-all rule active"
+  local testDescription="Checks whether the block-all rule of the macOS firewall is active."
   local riskScore=70
   local expectedOutput="Firewall is set to block all non-essential incoming connections"
 
   vlCheckIsFeatureEnabledFromCommandOutput \
-    "FWBlockAll" \
-    "macOS Firewall block-all rule active" \
-    "Checks whether the block-all rule of the macOS firewall is active." \
+    "$testName" \
+    "$testDisplayName" \
+    "$testDescription" \
     "$riskScore" \
     "$expectedOutput" \
     /usr/libexec/ApplicationFirewall/socketfilterfw --getblockall
@@ -32,13 +38,16 @@ vlCheckIsFirewallBlockallRuleEnabled()
 
 vlCheckIsFirewallStealthModeEnabled()
 {
+  local testName="FWStealthMode"
+  local testDisplayName="macOS Firewall stealth mode active"
+  local testDescription="Checks whether the stealth mode of the macOS firewall is active."
   local riskScore=80
   local expectedOutput="enabled"
 
   vlCheckIsFeatureEnabledFromCommandOutput \
-    "FWStealthMode" \
-    "macOS Firewall stealth mode active" \
-    "Checks whether the stealth mode of the macOS firewall is active." \
+    "$testName" \
+    "$testDisplayName" \
+    "$testDescription" \
     "$riskScore" \
     "$expectedOutput" \
     /usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode

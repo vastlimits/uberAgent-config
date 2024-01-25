@@ -3,9 +3,9 @@ name: Transpile Script
 on:
   push:
     branches-ignore:
-    - "main"
-    - "version/7.0"
-    - "version/6.2"
+      - "main"
+      - "version/7.0"
+      - "version/6.2"
 
 jobs:
   transpile:
@@ -22,9 +22,13 @@ jobs:
         with:
           python-version: 3.11
 
-      - name: Run transpiler script
+      - name: Run transpiler script for Windows
         shell: bash
-        run: python config-dev/transpile.py
+        run: python config-dev/transpile-windows.py
+
+      - name: Run transpiler script for macOS
+        shell: bash
+        run: python config-dev/transpile-macOS.py
 
       - name: Run PSScriptAnalyzer
         uses: microsoft/psscriptanalyzer-action@v1.1

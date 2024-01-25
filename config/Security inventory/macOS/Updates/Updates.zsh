@@ -4,13 +4,16 @@
 
 vlCheckIsAutomaticCheckingForMacOSUpdatesEnabled()
 {
+  local testName="SWUAutomaticUpdateCheckingEnabled"
+  local testDisplayName="Automatic checking for macOS updates enabled"
+  local testDescription="Checks whether the automatic check for macOS updates is enabled."
   local riskScore=100
   local expectedOutput="Automatic checking for updates is turned on"
 
   vlCheckIsFeatureEnabledFromCommandOutput \
-    "SWUAutomaticUpdateCheckingEnabled" \
-    "Automatic checking for macOS updates enabled" \
-    "Checks whether the automatic check for macOS updates is enabled." \
+    "$testName" \
+    "$testDisplayName" \
+    "$testDescription" \
     "$riskScore" \
     "$expectedOutput" \
     softwareupdate --schedule
@@ -18,13 +21,16 @@ vlCheckIsAutomaticCheckingForMacOSUpdatesEnabled()
 
 vlCheckIsAutomaticCheckingForAppStoreUpdatesEnabled()
 {
+  local testName="SWUAutomaticUpdateAppStoreCheckingEnabled"
+  local testDisplayName="Automatic checking for AppStore updates enabled"
+  local testDescription="Checks whether the automatic check for AppStore updates is enabled."
   local riskScore=80
   local plistDefault=0
 
   vlCheckFeatureEnabledFromPlistDomainKey \
-    "SWUAutomaticUpdateAppStoreCheckingEnabled" \
-    "Automatic checking for AppStore updates enabled" \
-    "Checks whether the automatic check for AppStore updates is enabled." \
+    "$testName" \
+    "$testDisplayName" \
+    "$testDescription" \
     "$riskScore" \
     "/Library/Preferences/com.apple.commerce" \
     "AutoUpdate" \
@@ -65,13 +71,16 @@ vlCheckForRecommendedUpdates()
 
 vlCheckInstallSecurityResponsesAndSystemFilesEnabled()
 {
+  local testName="SWUInstallSecurityResponsesAndSystemFilesEnabled"
+  local testDisplayName="Install security responses and system files automatically"
+  local testDescription="Checks whether the automatic installation of security responses and system files is enabled."
   local riskScore=80
   local plistDefault=1
 
   vlCheckFeatureEnabledFromPlistDomainKey \
-    "SWUInstallSecurityResponsesAndSystemFilesEnabled" \
-    "Install security responses and system files automatically" \
-    "Checks whether the automatic installation of security responses and system files is enabled." \
+    "$testName" \
+    "$testDisplayName" \
+    "$testDescription" \
     $riskScore \
     "/Library/Preferences/com.apple.SoftwareUpdate" \
     "ConfigDataInstall" \

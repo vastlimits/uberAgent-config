@@ -4,13 +4,16 @@
 
 vlCheckRemoteLoginDisabled()
 {
+  local testName="SSHLoginDisabled"
+  local testDisplayName="macOS Remote login disabled"
+  local testDescription="Checks whether remote login over ssh is disabled."
   local riskScore=40
   local expectedOutput="Remote Login: Off"
 
   vlCheckIsFeatureDisabledFromCommandOutput \
-    "SSHLoginDisabled" \
-    "macOS Remote login disabled" \
-    "Checks whether remote login over ssh is disabled." \
+    "$testName" \
+    "$testDisplayName" \
+    "$testDescription" \
     "$riskScore" \
     "$expectedOutput" \
     systemsetup -getremotelogin
@@ -18,13 +21,16 @@ vlCheckRemoteLoginDisabled()
 
 vlCheckRootUserDisabled()
 {
+  local testName="SSHRootUserDisabled"
+  local testDisplayName="macOS Root user disabled"
+  local testDescription="Checks whether the macOS root user is disabled."
   local riskScore=60
   local dontMatchOutput="ShadowHashData"
 
   vlCheckIsFeatureDisabledFromNonMatchingCommandOutput \
-    "SSHRootUserDisabled" \
-    "macOS Root user is disabled" \
-    "Checks whether the root user is disabled." \
+    "$testName" \
+    "$testDisplayName" \
+    "$testDescription" \
     "$riskScore" \
     "$dontMatchOutput" \
     plutil -p /var/db/dslocal/nodes/Default/users/root.plist
