@@ -169,7 +169,7 @@ def append_mapping_info(data):
                     print("\tDisplayName and Description are the same, skipping...")
                     return
                 else:
-                    print_error_tab("DisplayName and Description are different, please use unique or same Description and DisplayName")
+                    print_error_tab(f"{data['Name']}: DisplayName and Description are different, please use unique or same Description and DisplayName")
                     raise DisplayNameDescriptionError
 
     # Write the extracted values to a CSV file
