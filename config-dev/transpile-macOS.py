@@ -1,6 +1,7 @@
 import os
 import re
 import csv
+import shutil
 
 try:
     # Path to the folder to search
@@ -15,16 +16,19 @@ counter_skipped = 0
 counter_success = 0
 counter_processed = 0
 
-folder_path = os.path.join(working_dir, 'config/Security inventory/macOS')
+folder_path = os.path.join(working_dir, 'config-dev/Security inventory/macOS')
+output_folder = os.path.join(working_dir, 'config/Security inventory/macOS')
 output_csv_mapping_dir = os.path.join(working_dir, 'config-dev/generated')
 output_csv_mapping = os.path.join(output_csv_mapping_dir, 'security_inventory_checknames.csv')
 
 print("-------------------------------------")
 print("Current working dir: ", working_dir)
 print("Using input: ", folder_path)
+print("Using output: ", output_folder)
 print("Using output mapping dir: ", output_csv_mapping_dir)
 print("Using output mapping csv: ", output_csv_mapping)
 print("-------------------------------------")
+print("Cleaning old output...")
 
 if not os.path.exists(folder_path):
     print("Error: Input folder does not exist: ", folder_path)
@@ -41,6 +45,25 @@ if subfolders_count == 0:
     print("Error: There are no files to Process: ", folder_path)
 
     # Exit the script
+    exit(1)
+
+# Clean old output
+try:
+    if os.path.exists(output_folder):
+        os.remove(output_folder)
+except Exception as e:
+    print("Error: Could not remove old output folder:", output_folder)
+    print("Exception:", e)
+
+    # Exit the script
+    exit(1)
+
+# We currently do only extract the metadata from the .zsh files so copy the scripts to the output folder
+try:
+    shutil.copytree(folder_path, output_folder, )
+    print(f"Folder successfully copied from {folder_path} to {output_folder}")
+except Exception as e:
+    print(f"An error has occurred while copying files: {e}")
     exit(1)
 
 # Create the "config-dev/generated" directory-structure if it doesn't exist
@@ -61,7 +84,7 @@ if not os.path.exists(output_csv_mapping):
     exit(1)
 
 
-# List of folders to exclude
+# List of folders to exclude from metadata extraction
 exclude_folders = None #['']
 exclude_files = ["Utils.zsh"]
 
@@ -134,7 +157,7 @@ def extract_mapping_info(data):
         )
         matches = re.finditer(pattern, data, re.MULTILINE | re.DOTALL)
     except:
-        print("\tError: Could not find PSCustomObject for pattern")
+        print("\tError: Could not find any test descriptions")
         raise Exception
 
     for match in matches:
@@ -145,6 +168,7 @@ def extract_mapping_info(data):
             for keyword in keywords:
                 if keyword not in block:
                     all_keywords_present = False
+                    print("\tKeyword not present: ", keyword)
                     break
             if all_keywords_present:
                 # Regex pattern to find the values of Name, DisplayName and Description
