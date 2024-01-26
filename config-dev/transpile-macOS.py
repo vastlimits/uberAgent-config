@@ -72,7 +72,7 @@ except Exception as e:
 
 # We currently do only extract the metadata from the .zsh files so copy the scripts to the output folder
 try:
-    shutil.copytree(folder_path, output_folder, )
+    shutil.copytree(folder_path, output_folder)
     print(f"Folder successfully copied from {folder_path} to {output_folder}")
 except Exception as e:
     print_error(f"An error has occurred while copying files: {e}")
@@ -290,6 +290,7 @@ print("Failed: ", counter_processed - counter_success, " files")
 # Close the CSV file
 csv_handle.close()
 
+# Check if there were any errors during the processing
 if counter_processed - counter_success > 0:
     # Exit the script and stop the pipeline
     exit(1)
