@@ -50,7 +50,7 @@ if subfolders_count == 0:
 # Clean old output
 try:
     if os.path.exists(output_folder):
-        os.remove(output_folder)
+        shutil.rmtree(output_folder)
 except Exception as e:
     print("Error: Could not remove old output folder:", output_folder)
     print("Exception:", e)
