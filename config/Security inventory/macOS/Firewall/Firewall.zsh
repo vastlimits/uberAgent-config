@@ -5,8 +5,8 @@
 vlCheckIsFirewallEnabled()
 {
   local testName="FWState"
-  local testDisplayName="macOS Firewall enabled"
-  local testDescription="Checks whether the macOS firewall is enabled."
+  local testDisplayName="Firewall status"
+  local testDescription="Windows: This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private).\nmacOS: Checks whether the macOS firewall is enabled."
   local riskScore=100
   local expectedOutput="enabled"
 
