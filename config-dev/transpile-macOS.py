@@ -30,8 +30,20 @@ print("Using output mapping csv: ", output_csv_mapping)
 print("-------------------------------------")
 print("Cleaning old output...")
 
+def print_error(*args):
+    error_message = " ".join(map(str, args))
+    print("\033[91mError: ", error_message, "\033[0m")
+
+def print_error_tab(*args):
+    error_message = " ".join(map(str, args))
+    print("\033[91m\tError: ", error_message, "\033[0m")
+
+# Definition of the user-defined exceptions
+class DisplayNameDescriptionError(Exception):
+    pass
+
 if not os.path.exists(folder_path):
-    print("Error: Input folder does not exist: ", folder_path)
+    print_error("Input folder does not exist: ", folder_path)
 
     # Exit the script
     exit(1)
@@ -42,7 +54,7 @@ subfolders_count = len(subfolders)
 
 # If there are no subfolders, exit the script
 if subfolders_count == 0:
-    print("Error: There are no files to Process: ", folder_path)
+    print_error("There are no files to Process: ", folder_path)
 
     # Exit the script
     exit(1)
@@ -52,7 +64,7 @@ try:
     if os.path.exists(output_folder):
         shutil.rmtree(output_folder)
 except Exception as e:
-    print("Error: Could not remove old output folder:", output_folder)
+    print_error("Could not remove old output folder:", output_folder)
     print("Exception:", e)
 
     # Exit the script
@@ -63,7 +75,7 @@ try:
     shutil.copytree(folder_path, output_folder, )
     print(f"Folder successfully copied from {folder_path} to {output_folder}")
 except Exception as e:
-    print(f"An error has occurred while copying files: {e}")
+    print_error(f"An error has occurred while copying files: {e}")
     exit(1)
 
 # Create the "config-dev/generated" directory-structure if it doesn't exist
@@ -71,14 +83,14 @@ if not os.path.exists(output_csv_mapping_dir):
     try:
         os.makedirs(output_csv_mapping_dir)
     except:
-        print("Error: Could not create output folder: ", output_csv_mapping_dir)
+        print_error("Could not create output folder: ", output_csv_mapping_dir)
 
         # Exit the script
         exit(1)
 
 # Since the Windows script is executed frist, we expect the output folder and file is already created
 if not os.path.exists(output_csv_mapping):
-    print("Error: Output file is missing: ", output_csv_mapping)
+    print_error("Output file is missing: ", output_csv_mapping)
 
     # Exit the script
     exit(1)
@@ -94,26 +106,34 @@ print("-------------------------------------")
 print("Opening output csv file: ", output_csv_mapping)
 
 header = ["SecurityInventoryName", "SecurityInventoryDisplayName", "SecurityInventoryNameDescription"]
+current_csv_data = []  # Variable for saving the CSV data
 
 try:
     # Check whether the file exists and whether the header is present
-    file_exists = os.path.exists(output_csv_mapping)
+    csv_file_exists = os.path.exists(output_csv_mapping)
     header_present = False
-    if file_exists:
+
+    # Read the entire file, if it exists
+    if csv_file_exists:
         with open(output_csv_mapping, "r", newline='', encoding='utf-8') as read_handle:
             reader = csv.reader(read_handle)
-            header_present = next(reader, None) == header
+            current_csv_data = list(reader)
+
+    # Check whether the header is present
+    header_present = False
+    if current_csv_data:
+        header_present = current_csv_data[0] == header
 
     # Open the file in append mode
     csv_handle = open(output_csv_mapping, "a", newline='', encoding='utf-8')
     csv_writer = csv.writer(csv_handle)
 
     # Only write the header if the file is new or has no header
-    if not file_exists or not header_present:
+    if not csv_file_exists or not header_present:
         csv_writer.writerow(header)
 
 except Exception as e:
-    print(f"Error: Could not open or read output csv file: {output_csv_mapping}, {e}")
+    print_error(f"Could not open or read output csv file: {output_csv_mapping}, {e}")
 
     # Exit the script
     exit(1)
@@ -131,18 +151,33 @@ def extract_values(data):
             value = match.group(2)
             extracted_values[key] = value
     except:
-        print("Error: Could not find Name, DisplayName and Description for pattern")
+        print_error("Could not find Name, DisplayName and Description for pattern")
         raise Exception
 
     return extracted_values
 
 def append_mapping_info(data):
+
+    # Check if the data['Name'] is already present in the CSV file, use current_csv_data for this
+    if any(data['Name'] in sublist for sublist in current_csv_data):
+        print("Test Name already present in csv: ", data['Name'])
+
+        # Check if the DisplayName and Description are the same
+        for sublist in current_csv_data:
+            if sublist[0] == data['Name']:
+                if sublist[1] == data['DisplayName'] and sublist[2] == data['Description']:
+                    print("\tDisplayName and Description are the same, skipping...")
+                    return
+                else:
+                    print_error_tab("DisplayName and Description are different, please use unique or same Description and DisplayName")
+                    raise DisplayNameDescriptionError
+
     # Write the extracted values to a CSV file
     try:
         print("\tAppending to csv: ", data['Name'], data['DisplayName'], data['Description'])
         csv_writer.writerow([data['Name'], data['DisplayName'], data['Description']])
     except:
-        print("\tError: Could not write to csv file")
+        print_error_tab("Could not write to csv file")
 
 # Extracts the DisplayName and Description from a buffer
 def extract_mapping_info(data):
@@ -157,8 +192,10 @@ def extract_mapping_info(data):
         )
         matches = re.finditer(pattern, data, re.MULTILINE | re.DOTALL)
     except:
-        print("\tError: Could not find any test descriptions")
+        print_error_tab("Could not find any test descriptions")
         raise Exception
+
+    duplicate_test_names = False
 
     for match in matches:
         try:
@@ -177,20 +214,29 @@ def extract_mapping_info(data):
 
                     #check if all values are present
                     if len(extracted_values) == 3:
-                        append_mapping_info(extracted_values)
+                        try:
+                            append_mapping_info(extracted_values)
+                        except DisplayNameDescriptionError as e:
+                            duplicate_test_names = True
+                        except:
+                            print_error_tab("Could not append mapping info")
+                            raise Exception
                     else:
-                        print("\tNot all keywords are present in the block.")
+                        print_error_tab("Not all keywords are present in the block.")
                         raise Exception
                 except:
-                    print("\tError: Could not extract values from block: ", block)
+                    print_error_tab("Could not extract values from block: ", block)
                     raise Exception
             else:
-                print("\tNot all keywords are present in the block.")
+                print_error_tab("Not all keywords are present in the block.")
                 print("\tSkipping block: ", block)
                 raise Exception
         except:
-            print("\tError: Failed match.group")
+            print_error_tab("Failed match.group")
             raise Exception
+
+    if duplicate_test_names:
+        raise Exception
 
 
 # Loop through all files in the folder
@@ -217,17 +263,17 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                     content = file.read()
 
                     if not content:
-                        print("\tError: Could not read file: ", file_path)
+                        print_error_tab("Could not read file: ", file_path)
                         continue
 
                     try:
                         # Extract DisplayName and Description
                         extract_mapping_info(content)
                     except:
-                        print("\tError: Failed to extract mapping info: ", file_path)
+                        print_error_tab("Failed to extract mapping info: ", file_path)
                         continue
             except:
-                print("\tError: Could not open file: ", file_path)
+                print_error_tab("Could not open file: ", file_path)
 
             counter_success += 1
         else:
@@ -243,3 +289,7 @@ print("Failed: ", counter_processed - counter_success, " files")
 
 # Close the CSV file
 csv_handle.close()
+
+if counter_processed - counter_success > 0:
+    # Exit the script and stop the pipeline
+    exit(1)
