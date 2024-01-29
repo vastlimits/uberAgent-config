@@ -66,7 +66,7 @@ vlRunCommand()
 # JSON Result Data Helpers
 
 # Function for creating a new JSON object
-vlCreateResult() {
+vlNewResultData() {
     echo '{}'
 }
 
@@ -119,6 +119,32 @@ vlAddResultValue() {
             echo "$json" | "$JQ" $JQFLAGS --arg key "$path" --arg value "$value" '. + {($key): $value}'
         fi
     fi
+}
+
+vlCreateResultObject() {
+    local testName="$1"
+    local testDisplayName="$2"
+    local testDescription="$3"
+    local testScore="$4"  # Assuming this is a numeric value
+    local riskScore="$5"  # Assuming this is a numeric value
+    local resultData="$6"
+
+    resultData=$("$JQ" $JQFLAGS -c -n $resultData)
+
+    "$JQ" $JQFLAGS -c -n \
+    --arg name "$testName" \
+    --arg displayName "$testDisplayName" \
+    --arg description "$testDescription" \
+    --argjson score "$testScore" \
+    --argjson riskScore "$riskScore" \
+    --arg resultData "$resultData" \
+    $'{ Name: $name, \
+        DisplayName: $displayName, \
+        Description: $description, \
+        Score: $score, \
+        RiskScore: $riskScore, \
+        ResultData: $resultData \
+      }'
 }
 
 # Encodes JSON to be included embedded as an attribute within another JSON document
