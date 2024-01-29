@@ -69,6 +69,8 @@ vlAddResultValue() {
     local path=$2
     local value=$3
 
+    shift 3
+
     # Check if json is empty, and initialize it as an empty JSON object if it is
     if [[ -z "$json" ]]; then
         json='{}'
@@ -119,6 +121,7 @@ vlAddResultValue() {
     fi
 }
 
+# Reports the result for an SCI in JSON format.
 vlCreateResultObject() {
     local testName="$1"
     local testDisplayName="$2"
@@ -126,6 +129,8 @@ vlCreateResultObject() {
     local testScore="$4"  # Assuming this is a numeric value
     local riskScore="$5"  # Assuming this is a numeric value
     local resultData="$6"
+
+    shift 6
 
     "$JQ" $JQFLAGS -c -n \
         --arg name "$testName" \
@@ -143,13 +148,6 @@ vlCreateResultObject() {
           }'
 }
 
-# Encodes JSON to be included embedded as an attribute within another JSON document
-vlJsonifyEmbeddedJson()
-{
-  local val="$1"
-  "$JQ" $JQFLAGS -n -c --arg val "$val" '$val'
-}
-
 # This function expects each input strings to be quoted, like: "string"
 vlJsonifyArrayJson()
 {
@@ -159,62 +157,6 @@ vlJsonifyArrayJson()
 
   local arrayAsJson=$( printf '%s\n' "${array[@]}" | "$JQ" $JQFLAGS -c -s "{ $arrayName: . }" )
   "$JQ" $JQFLAGS -n --arg val "$arrayAsJson" '$val'
-}
-
-# Reports the result for an SCI in JSON format.
-# Callers must escape the resultData with vlJsonifyEmbeddedJson(), if it contains JSON data.
-vlReportTestResultJson()
-{
-    local name="$1"
-    local displayName="$2"
-    local description="$3"
-    local score="$4"
-    local riskScore="$5"
-    local resultData="$6"
-
-    "$JQ" $JQFLAGS -n \
-        --arg name "$name" \
-        --arg displayName "$displayName" \
-        --arg description "$description" \
-        --argjson score "$score" \
-        --argjson riskScore "$riskScore" \
-        --argjson resultData "$resultData" \
-        $'{ Name: $name, \
-            DisplayName: $displayName, \
-            Description: $description, \
-            Score: $score, \
-            RiskScore: $riskScore, \
-            ResultData: $resultData \
-          }'
-}
-
-vlReportTestResultJsonResultDataArray()
-{
-    local name="$1"
-    local displayName="$2"
-    local description="$3"
-    local score="$4"
-    local riskScore="$5"
-    local resultDataArrayName="$6"
-    shift 6
-    local resultDataArray=("$@")
-
-    local resultData=$( vlJsonifyArrayJson "$resultDataArrayName" ${resultDataArray[@]} )
-
-    "$JQ" $JQFLAGS -n \
-        --arg name "$name" \
-        --arg displayName "$displayName" \
-        --arg description "$description" \
-        --argjson score "$score" \
-        --argjson riskScore "$riskScore" \
-        --argjson resultData "$resultData" \
-        $'{ Name: $name, \
-            DisplayName: $displayName, \
-            Description: $description, \
-            Score: $score, \
-            RiskScore: $riskScore, \
-            ResultData: $resultData \
-          }'
 }
 
 vlReportErrorJson()
@@ -288,7 +230,7 @@ vlCheckFeatureStateFromCommandOutput()
   local expectedOutput="$5"
   local expectedGrepStatus="$6"
   local expectedTestResultDataValue="$7"
-  local testResultDataJsonTemplate="$8"
+  local testResultVarName="$8"
 
   shift 8
 
@@ -325,21 +267,15 @@ vlCheckFeatureStateFromCommandOutput()
     testResultDataValue=$( vlNegateBooleanValue "$testResultDataValue" )
   fi
 
-  local resultDataJson=$( \
-    vlJsonifyEmbeddedJson $( \
-      "$JQ" $JQFLAGS -n -c \
-        --argjson testResultDataValue $testResultDataValue \
-        "$testResultDataJsonTemplate" \
-    ) \
-  )
+  local resultData=$(vlAddResultValue "" "$testResultVarName" $testResultDataValue)
 
-  vlReportTestResultJson \
+  vlCreateResultObject \
     "$testName" \
     "$displayName" \
     "$description" \
     "$testScore" \
     "$riskScore" \
-    "$resultDataJson"
+    "$resultData"
 }
 
 # Checks whether a feature is enabled by matching the specified expected output
@@ -366,7 +302,7 @@ vlCheckIsFeatureEnabledFromCommandOutput()
 
   local expectedGrepStatus=0
   local expectedTestResultDataValue=true
-  local testResultDataJsonTemplate='{ Enabled: $testResultDataValue }'
+  local testResultVarName='Enabled'
 
   vlCheckFeatureStateFromCommandOutput \
     "$testName" \
@@ -376,7 +312,7 @@ vlCheckIsFeatureEnabledFromCommandOutput()
     "$expectedOutput" \
     "$expectedGrepStatus" \
     "$expectedTestResultDataValue" \
-    "$testResultDataJsonTemplate" \
+    "$testResultVarName" \
     $@
 }
 
@@ -404,7 +340,7 @@ vlCheckIsFeatureDisabledFromCommandOutput()
 
   local expectedGrepStatus=0
   local expectedTestResultDataValue=true
-  local testResultDataJsonTemplate='{ Disabled: $testResultDataValue }'
+  local testResultVarName='Disabled'
 
   vlCheckFeatureStateFromCommandOutput \
     "$testName" \
@@ -414,7 +350,7 @@ vlCheckIsFeatureDisabledFromCommandOutput()
     "$expectedOutput" \
     "$expectedGrepStatus" \
     "$expectedTestResultDataValue" \
-    "$testResultDataJsonTemplate" \
+    "$testResultVarName" \
     $@
 }
 
@@ -442,7 +378,7 @@ vlCheckIsFeatureDisabledFromNonMatchingCommandOutput()
 
   local expectedGrepStatus=1
   local expectedTestResultDataValue=true
-  local testResultDataJsonTemplate='{ Disabled: $testResultDataValue }'
+  local testResultVarName='Disabled'
 
   vlCheckFeatureStateFromCommandOutput \
     "$testName" \
@@ -452,7 +388,7 @@ vlCheckIsFeatureDisabledFromNonMatchingCommandOutput()
     "$expectedOutput" \
     "$expectedGrepStatus" \
     "$expectedTestResultDataValue" \
-    "$testResultDataJsonTemplate" \
+    "$testResultVarName" \
     $@
 }
 
@@ -497,19 +433,13 @@ vlCheckFeatureEnabledFromPlistDomainKey()
     testResultDataValue=true
   fi
 
-  local resultDataJson=$( \
-    vlJsonifyEmbeddedJson $( \
-      "$JQ" $JQFLAGS -n -c \
-        --argjson testResultDataValue $testResultDataValue \
-        '{ Enabled: $testResultDataValue }' \
-    ) \
-  )
+  local resultData=$(vlAddResultValue "" "Enabled" $testResultDataValue)
 
-  vlReportTestResultJson \
+  vlCreateResultObject \
     "$testName" \
     "$displayName" \
     "$description" \
     "$testScore" \
     "$riskScore" \
-    "$resultDataJson"
+    "$resultData"
 }
