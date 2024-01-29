@@ -51,7 +51,7 @@ vlCheckForRecommendedUpdates()
     | grep 'Recommended: YES' | cut -d"," -f1 | cut -d":" -f2 | awk '{$1=$1};1' \
     | while IFS= read -r availableUpdate
   do
-    resultData=$(vlAddResultValue "$resultData" "ApprovedApplications" '["$availableUpdate"]')
+    resultData=$(vlAddResultValue "$resultData" "ApprovedApplications" "[\"$availableUpdate\"]")
   done
 
   local testScore=$( vlGetMinScore "$riskScore" )

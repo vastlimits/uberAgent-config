@@ -82,7 +82,7 @@ vlGetFirewallApprovedApps()
     awk '{$1=$1};1' | \
   while IFS= read -r appPath
   do
-    resultData=$(vlAddResultValue "$resultData" "ApprovedApplications" '["$appPath"]')
+    resultData=$(vlAddResultValue "$resultData" "ApprovedApplications" "[\"$appPath\"]")
   done
 
   vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
