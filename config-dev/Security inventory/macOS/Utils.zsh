@@ -63,60 +63,58 @@ vlRunCommand()
     return __zrc
 }
 
-# JSON Result Data Helpers
-
-# Function for creating a new JSON object
-vlNewResultData() {
-    echo '{}'
-}
-
 # Function to add a single value, number, boolean, or append to an array in the JSON, supports both flat and nested paths
 vlAddResultValue() {
     local json=$1
     local path=$2
     local value=$3
 
+    # Check if json is empty, and initialize it as an empty JSON object if it is
+    if [[ -z "$json" ]]; then
+        json='{}'
+    fi
+
     # Determine the type of the value
     if [[ $value =~ ^[0-9]+$ ]]; then
         # Value is a number
         if [[ $path == *.* ]]; then
             # Nested path
-            echo "$json" | "$JQ" $JQFLAGS --arg path "$path" --argjson value $value '
+            echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --argjson value $value '
                 setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
         else
             # Flat path
-            echo "$json" | "$JQ" $JQFLAGS --arg key "$path" --argjson value $value '. + {($key): $value}'
+            echo "$json" | "$JQ" $JQFLAGS -c --arg key "$path" --argjson value $value '. + {($key): $value}'
         fi
     elif [[ $value == "true" || $value == "false" ]]; then
         # Value is a boolean
-        local boolValue=$(echo "$value" | "$JQ" $JQFLAGS .)
+        local boolValue=$(echo "$value" | "$JQ" $JQFLAGS -c .)
         if [[ $path == *.* ]]; then
             # Nested path
-            echo "$json" | "$JQ" $JQFLAGS --arg path "$path" --argjson value $boolValue '
+            echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --argjson value $boolValue '
                 setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
         else
             # Flat path
-            echo "$json" | "$JQ" $JQFLAGS --arg key "$path" --argjson value $boolValue '. + {($key): $value}'
+            echo "$json" | "$JQ" $JQFLAGS -c --arg key "$path" --argjson value $boolValue '. + {($key): $value}'
         fi
     elif [[ $value == \[*\] ]]; then
         # Value is an array
         if [[ $path == *.* ]]; then
             # Nested array
-            echo "$json" | "$JQ" $JQFLAGS --arg path "$path" --argjson value "$value" '
+            echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --argjson value "$value" '
                 getpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end)) += $value'
         else
             # Flat array
-            echo "$json" | "$JQ" $JQFLAGS --arg key "$path" --argjson value "$value" '.[$key] += $value'
+            echo "$json" | "$JQ" $JQFLAGS -c --arg key "$path" --argjson value "$value" '.[$key] += $value'
         fi
     else
         # Value is a string
         if [[ $path == *.* ]]; then
             # Nested path
-            echo "$json" | "$JQ" $JQFLAGS --arg path "$path" --arg value "$value" '
+            echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --arg value "$value" '
                 setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
         else
             # Flat path
-            echo "$json" | "$JQ" $JQFLAGS --arg key "$path" --arg value "$value" '. + {($key): $value}'
+            echo "$json" | "$JQ" $JQFLAGS -c --arg key "$path" --arg value "$value" '. + {($key): $value}'
         fi
     fi
 }
@@ -129,22 +127,20 @@ vlCreateResultObject() {
     local riskScore="$5"  # Assuming this is a numeric value
     local resultData="$6"
 
-    resultData=$("$JQ" $JQFLAGS -c -n $resultData)
-
     "$JQ" $JQFLAGS -c -n \
-    --arg name "$testName" \
-    --arg displayName "$testDisplayName" \
-    --arg description "$testDescription" \
-    --argjson score "$testScore" \
-    --argjson riskScore "$riskScore" \
-    --arg resultData "$resultData" \
-    $'{ Name: $name, \
-        DisplayName: $displayName, \
-        Description: $description, \
-        Score: $score, \
-        RiskScore: $riskScore, \
-        ResultData: $resultData \
-      }'
+        --arg name "$testName" \
+        --arg displayName "$testDisplayName" \
+        --arg description "$testDescription" \
+        --argjson score "$testScore" \
+        --argjson riskScore "$riskScore" \
+        --arg resultData "$resultData" \
+        $'{ Name: $name, \
+            DisplayName: $displayName, \
+            Description: $description, \
+            Score: $score, \
+            RiskScore: $riskScore, \
+            ResultData: $resultData \
+          }'
 }
 
 # Encodes JSON to be included embedded as an attribute within another JSON document
