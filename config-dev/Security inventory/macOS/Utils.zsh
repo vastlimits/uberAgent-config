@@ -70,25 +70,46 @@ vlCreateResult() {
     echo '{}'
 }
 
-# Function to add a single value or append to an array in the JSON, supports both flat and nested paths
+# Function to add a single value, number, boolean, or append to an array in the JSON, supports both flat and nested paths
 vlAddResultValue() {
     local json=$1
     local path=$2
     local value=$3
 
-    # Check if the value is an array
-    if [[ $value == \[*\] ]]; then
-        # Handling array values
+    # Determine the type of the value
+    if [[ $value =~ ^[0-9]+$ ]]; then
+        # Value is a number
         if [[ $path == *.* ]]; then
-            # Append to a nested array
+            # Nested path
+            echo "$json" | "$JQ" $JQFLAGS --arg path "$path" --argjson value $value '
+                setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
+        else
+            # Flat path
+            echo "$json" | "$JQ" $JQFLAGS --arg key "$path" --argjson value $value '. + {($key): $value}'
+        fi
+    elif [[ $value == "true" || $value == "false" ]]; then
+        # Value is a boolean
+        local boolValue=$(echo "$value" | "$JQ" $JQFLAGS .)
+        if [[ $path == *.* ]]; then
+            # Nested path
+            echo "$json" | "$JQ" $JQFLAGS --arg path "$path" --argjson value $boolValue '
+                setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
+        else
+            # Flat path
+            echo "$json" | "$JQ" $JQFLAGS --arg key "$path" --argjson value $boolValue '. + {($key): $value}'
+        fi
+    elif [[ $value == \[*\] ]]; then
+        # Value is an array
+        if [[ $path == *.* ]]; then
+            # Nested array
             echo "$json" | "$JQ" $JQFLAGS --arg path "$path" --argjson value "$value" '
                 getpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end)) += $value'
         else
-            # Append to a flat array
+            # Flat array
             echo "$json" | "$JQ" $JQFLAGS --arg key "$path" --argjson value "$value" '.[$key] += $value'
         fi
     else
-        # Add single values
+        # Value is a string
         if [[ $path == *.* ]]; then
             # Nested path
             echo "$json" | "$JQ" $JQFLAGS --arg path "$path" --arg value "$value" '

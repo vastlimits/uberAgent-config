@@ -4,8 +4,9 @@ vlUtils="./Utils.zsh"
 
 
 resultData=$(vlCreateResult)
+resultData=$(vlAddResultValue "$resultData" "Enabled" true)
 resultData=$(vlAddResultValue "$resultData" "Person.Name" "John")
-resultData=$(vlAddResultValue "$resultData" "Person.Age" "30")
+resultData=$(vlAddResultValue "$resultData" "Person.Age" 30)
 resultData=$(vlAddResultValue "$resultData" "Person.Colors" '["blue"]')
 resultData=$(vlAddResultValue "$resultData" "Person.Colors" '["red","yellow"]')
 
