@@ -70,22 +70,35 @@ vlCreateResult() {
     echo '{}'
 }
 
-# Function for adding a single value, supports both flat and nested paths
+# Function to add a single value or append to an array in the JSON, supports both flat and nested paths
 vlAddResultValue() {
     local json=$1
     local path=$2
     local value=$3
 
-    # Check whether the path is nested
-    if [[ $path == *.* ]]; then
-        echo "$json" | jq --arg path "$path" --arg value "$value" '
-            setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
+    # Check if the value is an array
+    if [[ $value == \[*\] ]]; then
+        # Handling array values
+        if [[ $path == *.* ]]; then
+            # Append to a nested array
+            echo "$json" | "$JQ" $JQFLAGS --arg path "$path" --argjson value "$value" '
+                getpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end)) += $value'
+        else
+            # Append to a flat array
+            echo "$json" | "$JQ" $JQFLAGS --arg key "$path" --argjson value "$value" '.[$key] += $value'
+        fi
     else
-        # Process flat path
-        echo "$json" | jq --arg key "$path" --arg value "$value" '. + {($key): $value}'
+        # Add single values
+        if [[ $path == *.* ]]; then
+            # Nested path
+            echo "$json" | "$JQ" $JQFLAGS --arg path "$path" --arg value "$value" '
+                setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
+        else
+            # Flat path
+            echo "$json" | "$JQ" $JQFLAGS --arg key "$path" --arg value "$value" '. + {($key): $value}'
+        fi
     fi
 }
-
 
 # Encodes JSON to be included embedded as an attribute within another JSON document
 vlJsonifyEmbeddedJson()
