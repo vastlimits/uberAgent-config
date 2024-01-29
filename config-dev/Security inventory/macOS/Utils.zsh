@@ -63,6 +63,30 @@ vlRunCommand()
     return __zrc
 }
 
+# JSON Result Data Helpers
+
+# Function for creating a new JSON object
+vlCreateResult() {
+    echo '{}'
+}
+
+# Function for adding a single value, supports both flat and nested paths
+vlAddResultValue() {
+    local json=$1
+    local path=$2
+    local value=$3
+
+    # Check whether the path is nested
+    if [[ $path == *.* ]]; then
+        echo "$json" | jq --arg path "$path" --arg value "$value" '
+            setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
+    else
+        # Process flat path
+        echo "$json" | jq --arg key "$path" --arg value "$value" '. + {($key): $value}'
+    fi
+}
+
+
 # Encodes JSON to be included embedded as an attribute within another JSON document
 vlJsonifyEmbeddedJson()
 {
