@@ -49,8 +49,14 @@ if not os.path.exists(folder_path):
     exit(1)
 
 # Count subfolders
-subfolders = [f.path for f in os.scandir(folder_path) if f.is_dir()]
-subfolders_count = len(subfolders)
+try:
+    subfolders = [f.path for f in os.scandir(folder_path) if f.is_dir()]
+    subfolders_count = len(subfolders)
+except:
+    print_error("Could not count subfolders: ", folder_path)
+
+    # Exit the script
+    exit(1)
 
 # If there are no subfolders, exit the script
 if subfolders_count == 0:
@@ -88,14 +94,6 @@ if not os.path.exists(output_csv_mapping_dir):
         # Exit the script
         exit(1)
 
-# Since the Windows script is executed frist, we expect the output folder and file is already created
-if not os.path.exists(output_csv_mapping):
-    print_error("Output file is missing: ", output_csv_mapping)
-
-    # Exit the script
-    exit(1)
-
-
 # List of folders to exclude from metadata extraction
 exclude_folders = None #['']
 exclude_files = ["Utils.zsh"]
@@ -111,7 +109,6 @@ current_csv_data = []  # Variable for saving the CSV data
 try:
     # Check whether the file exists and whether the header is present
     csv_file_exists = os.path.exists(output_csv_mapping)
-    header_present = False
 
     # Read the entire file, if it exists
     if csv_file_exists:
@@ -120,9 +117,7 @@ try:
             current_csv_data = list(reader)
 
     # Check whether the header is present
-    header_present = False
-    if current_csv_data:
-        header_present = current_csv_data[0] == header
+    header_present = bool(current_csv_data) and current_csv_data[0] == header
 
     # Open the file in append mode
     csv_handle = open(output_csv_mapping, "a", newline='', encoding='utf-8')
@@ -141,18 +136,14 @@ except Exception as e:
 print("-------------------------------------")
 
 def extract_values(data):
-    try:
-        pattern = r'(Name|DisplayName|Description)\s*=\s*["\'](.*?)["\']'
-        matches = re.finditer(pattern, data, re.MULTILINE)
+    pattern = r'(Name|DisplayName|Description)\s*=\s*["\'](.*?)["\']'
+    matches = re.finditer(pattern, data, re.MULTILINE)
 
-        extracted_values = {}
-        for match in matches:
-            key = match.group(1)
-            value = match.group(2)
-            extracted_values[key] = value
-    except:
-        print_error("Could not find Name, DisplayName and Description for pattern")
-        raise Exception
+    extracted_values = {}
+    for match in matches:
+        key = match.group(1)
+        value = match.group(2)
+        extracted_values[key] = value
 
     return extracted_values
 
@@ -184,16 +175,13 @@ def extract_mapping_info(data):
 
     keywords = ["testName", "testDisplayName", "testDescription"]
 
-    try:
-        pattern = (
-            r'local testName="(?!\$[0-9]+)[^"]*"\s+'
-            r'local testDisplayName="(?!\$[0-9]+)[^"]*"\s+'
-            r'local testDescription="(?!\$[0-9]+)[^"]*"'
-        )
-        matches = re.finditer(pattern, data, re.MULTILINE | re.DOTALL)
-    except:
-        print_error_tab("Could not find any test descriptions")
-        raise Exception
+    pattern = (
+        r'local testName="(?!\$[0-9]+)[^"]*"\s+'
+        r'local testDisplayName="(?!\$[0-9]+)[^"]*"\s+'
+        r'local testDescription="(?!\$[0-9]+)[^"]*"'
+    )
+
+    matches = re.finditer(pattern, data, re.MULTILINE | re.DOTALL)
 
     duplicate_test_names = False
 
@@ -201,35 +189,24 @@ def extract_mapping_info(data):
         try:
             block = match.group()
 
-            all_keywords_present = True
-            for keyword in keywords:
-                if keyword not in block:
-                    all_keywords_present = False
-                    print("\tKeyword not present: ", keyword)
-                    break
-            if all_keywords_present:
-                # Regex pattern to find the values of Name, DisplayName and Description
-                try:
-                    extracted_values = extract_values(block)
+            # Regex pattern to find the values of Name, DisplayName and Description
+            try:
+                extracted_values = extract_values(block)
 
-                    #check if all values are present
-                    if len(extracted_values) == 3:
-                        try:
-                            append_mapping_info(extracted_values)
-                        except DisplayNameDescriptionError as e:
-                            duplicate_test_names = True
-                        except:
-                            print_error_tab("Could not append mapping info")
-                            raise Exception
-                    else:
-                        print_error_tab("Not all keywords are present in the block.")
+                #check if all values are present
+                if len(extracted_values) == 3:
+                    try:
+                        append_mapping_info(extracted_values)
+                    except DisplayNameDescriptionError as e:
+                        duplicate_test_names = True
+                    except:
+                        print_error_tab("Could not append mapping info")
                         raise Exception
-                except:
-                    print_error_tab("Could not extract values from block: ", block)
+                else:
+                    print_error_tab("Not all keywords are present in the block.")
                     raise Exception
-            else:
-                print_error_tab("Not all keywords are present in the block.")
-                print("\tSkipping block: ", block)
+            except:
+                print_error_tab("Could not extract values from block: ", block)
                 raise Exception
         except:
             print_error_tab("Failed match.group")
@@ -250,7 +227,7 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
             counter_skipped += 1
             continue
 
-        # Check if it's a .ps1 file and not in an excluded folder
+        # Check if it's a .zsh file and not in an excluded folder
         if filename.endswith('.zsh') and (exclude_folders is None or not any(exclude_folder in file_path for exclude_folder in exclude_folders)):
             print("Processing: ", file_path )
             counter_processed += 1
@@ -272,10 +249,10 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                     except:
                         print_error_tab("Failed to extract mapping info: ", file_path)
                         continue
+
+                counter_success += 1
             except:
                 print_error_tab("Could not open file: ", file_path)
-
-            counter_success += 1
         else:
             counter_skipped += 1
             print("Skipping: ", file_path)
