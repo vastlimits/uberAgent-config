@@ -19,15 +19,16 @@ vlCheckIsAutomaticCheckingForMacOSUpdatesEnabled()
 vlCheckIsAutomaticCheckingForAppStoreUpdatesEnabled()
 {
   local riskScore=80
-  local expectedOutput="1"
+  local plistDefault=0
 
-  vlCheckIsFeatureEnabledFromCommandOutput \
+  vlCheckFeatureEnabledFromPlistDomainKey \
     "SWUAutomaticUpdateAppStoreCheckingEnabled" \
     "Automatic checking for AppStore updates enabled" \
     "Checks whether the automatic check for AppStore updates is enabled." \
     "$riskScore" \
-    "$expectedOutput" \
-    defaults read /Library/Preferences/com.apple.commerce AutoUpdate
+    "/Library/Preferences/com.apple.commerce" \
+    "AutoUpdate" \
+    $plistDefault
 }
 
 vlCheckForRecommendedUpdates()
@@ -52,30 +53,29 @@ vlCheckForRecommendedUpdates()
     local testScore=10
   fi
 
-  local availableRecommendedUpdatesJson=$( printf '%s\n' "${availableRecommendedUpdates[@]}" | "$JQ" $JQFLAGS -s '{ RecommendedUpdates: . }' )
-  local availableRecommendedUpdatesEmbeddableJson=$( vlJsonifyEmbeddedJson "$availableRecommendedUpdatesJson" )
-
-  vlReportTestResultJson \
+  vlReportTestResultJsonResultDataArray \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$availableRecommendedUpdatesEmbeddableJson"
+    "RecommendedUpdates" \
+    ${availableRecommendedUpdates[@]}
 }
 
 vlCheckInstallSecurityResponsesAndSystemFilesEnabled()
 {
   local riskScore=80
-  local expectedOutput="1"
+  local plistDefault=1
 
-  vlCheckIsFeatureEnabledFromCommandOutput \
+  vlCheckFeatureEnabledFromPlistDomainKey \
     "SWUInstallSecurityResponsesAndSystemFilesEnabled" \
     "Install security responses and system files automatically" \
     "Checks whether the automatic installation of security responses and system files is enabled." \
-    "$riskScore" \
-    "$expectedOutput" \
-    defaults read /Library/Preferences/com.apple.SoftwareUpdate ConfigDataInstall
+    $riskScore \
+    "/Library/Preferences/com.apple.SoftwareUpdate" \
+    "ConfigDataInstall" \
+    $plistDefault
 }
 
 ################################################################################
@@ -83,7 +83,7 @@ vlCheckInstallSecurityResponsesAndSystemFilesEnabled()
 ################################################################################
 
 # Initialize the vl* utility functions
-vlUtils="$( realpath "$( dirname $0 )/.." )/Utils.zsh"
+vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 . "$vlUtils" && vlInit
 
 # Run the tests

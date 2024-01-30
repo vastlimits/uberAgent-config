@@ -75,16 +75,14 @@ vlGetFirewallApprovedApps()
     approvedApps+=$( "$JQ" $JQFLAGS -n --arg appPath "$appPath" '$appPath' )
   done
 
-  local approvedAppsJson=$( printf '%s\n' "${approvedApps[@]}" | "$JQ" $JQFLAGS -s '{ ApprovedApplications: . }' )
-  local approvedAppsEmbeddableJson=$( vlJsonifyEmbeddedJson "$approvedAppsJson" )
-
-  vlReportTestResultJson \
+  vlReportTestResultJsonResultDataArray \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$approvedAppsEmbeddableJson"
+    "ApprovedApplications" \
+    ${approvedApps[@]}
 }
 
 ################################################################################
@@ -92,7 +90,7 @@ vlGetFirewallApprovedApps()
 ################################################################################
 
 # Initialize the vl* utility functions
-vlUtils="$( realpath "$( dirname $0 )/.." )/Utils.zsh"
+vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 . "$vlUtils" && vlInit
 
 # Run the tests
