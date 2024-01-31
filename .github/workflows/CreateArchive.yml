@@ -76,10 +76,10 @@ jobs:
         inlineScript: |
           az extension add --name azure-devops
           
-          az artifacts universal download --organization $uAConfigCheck_Organization \
-                                          --project uAConfigCheck --scope project --feed $uAConfigCheck_FEED \
-                                          --name $uAConfigCheck_EXE_Artifact_Package \
-                                          --version "$uAConfigCheck_EXE_Artifact_Version" \
+          az artifacts universal download --organization ${{env.uAConfigCheck_Organization}} \
+                                          --project uAConfigCheck --scope project --feed ${{env.uAConfigCheck_FEED}} \
+                                          --name ${{env.uAConfigCheck_EXE_Artifact_Package}} \
+                                          --version "${{env.uAConfigCheck_EXE_Artifact_Version}}" \
                                           --path . \
                                           --file-filter 'uAConfigCheck.exe'
           
@@ -90,19 +90,19 @@ jobs:
         inlineScript: |
           az extension add --name azure-devops
           
-          az artifacts universal download --organization $uAConfigCheck_Organization \
-                                          --project uAConfigCheck --scope project --feed $uAConfigCheck_FEED \
-                                          --name $uAConfigCheck_DLL_Artifact_Package--$uAConfigCheck_DLL_Artifact_ProductVersion \
-                                          --version "$uAConfigCheck_DLL_Artifact_Version" \
+          az artifacts universal download --organization ${{env.uAConfigCheck_Organization}} \
+                                          --project uAConfigCheck --scope project --feed ${{env.uAConfigCheck_FEED}} \
+                                          --name ${{env.uAConfigCheck_DLL_Artifact_Package}}-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} \
+                                          --version "${{env.uAConfigCheck_DLL_Artifact_Version}}" \
                                           --path ./releases/ \
-                                          --file-filter 'uberAgent-$uAConfigCheck_DLL_Artifact_ProductVersion.dll'
+                                          --file-filter "uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll"
     
     - uses: actions/upload-artifact@v4
       with:
         name: uAConfigCheck
         path: |
           ./uAConfigCheck.exe
-          ./releases/uberAgent-$uAConfigCheck_DLL_Artifact_ProductVersion.dll
+          ./releases/uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll
         retention-days: 1
 
 
@@ -125,8 +125,7 @@ jobs:
     
     - name: 'validate configuration uAConfigCheck'
       run: |
-        ls "$TARGET_FILE"
-        .\uAConfigCheck.exe -t -w -v $uAConfigCheck_DLL_Artifact_ProductVersion -a "${{ env.TARGET_FILE }}"
+        .\uAConfigCheck.exe -t -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_FILE}}"
       continue-on-error: false
 
 
