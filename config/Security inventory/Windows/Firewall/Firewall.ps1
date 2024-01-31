@@ -368,7 +368,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWState"
          DisplayName  = "Firewall status"
-         Description  = "This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private)."
+         Description  = "Windows: This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private).\nmacOS: Checks whether the macOS firewall is enabled."
          Score        = $firewallEnabled.Score
          ResultData   = $firewallEnabled.Result
          RiskScore    = $firewallEnabled.RiskScore
@@ -407,8 +407,8 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCUWr1HYAemkBGV
-# UkxoxUgIT2w3CYs2hY1JOfmhZ/fkcaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBj2eJ5haMwNNff
+# wwIYJUSudnZ/Vlt70aiI2NuxkB8Ot6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -485,17 +485,17 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgsNpUWEIugoM3
-# ufjac7Z7BmKeQgfNcJy6cCdTqejhP/wwDQYJKoZIhvcNAQEBBQAEggIADad+WBB5
-# BnoqJrmEKHfD7J8fEBZ0sLtqpNMFH5GzDm7suIlEokLadSWRvJEPC+ZDIRmVXtNK
-# fYf33T+CRfdK9zt/zU/mNboop5m35d4PjMYeKFvWwmkL7yQ5l0S1hxAyjplyiNfj
-# gkzCahc/JSbi1iMoEX9D6DVvOAdYzTDzjX5OS5OedfVR2ZF9jAAToRhoUcSGxxW/
-# 7thESKAT732cLJ2YIlrY6389F9d9VCRxVc2/PffhFoXI5cwZHHYq+o9JnpZfqHyp
-# JrjiJotRWubl+8ieFT06C/Y9OcFhsHvqUk5gvtvlXJMFmlrNEqcNKPW69hDISKGX
-# o7hT2qGPETLJTVpyLjZWPaWQ0XFlyFkalC/WT8gPAA4nv6QXiNDzZIl69txtIKld
-# n4wSMU1jlti8oVsRMdNRDcY63crjgGMml7dQWmkuOWwSFsvPNPZhfpzcBVPffAlY
-# AM6sJeSF3fgpDDUBt/zZGcES8Opcv/ss+OFLymgAQEAOL9cRnhfSnPKD0f08mAeD
-# dXBgEeJUAAXxegA4qtKa5Hp8Lt3CAvMFzWvB8WQGpnWRTgLFEtJioT70urcTXIad
-# 6BmfwHIgNoBg7n9+hqJKoC/ArWc4oeBAs0K/9AwN3kZcbR8vQn9s7Ov+28Q+7j/a
-# aW54x9JZiW/Bf/eEGY/9tzEyuwUsdd+xBag=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg5iTxeDM27WbH
+# nM18O8YtUYuJmIizJzg+Uxc6AxLCtRkwDQYJKoZIhvcNAQEBBQAEggIAJO9HIvx/
+# ZgxkxoO5f0mzrPzCBaI3jj8G5DoiI9p2+/hrj5KuJJcb0ZKXsBT0sDLfjhGlIkfI
+# XQrJNroAW0zoUOwHJ0cCHFZF8VjvhknAq3+niSKLenptt/M1TlXrI9QXIjWPlvLF
+# BG5mhWrYb64HmUtp4f+/GW3PGp/bdf6x5gfIP/3or6jFygt0fntsSJ0r7u9bSzqj
+# /kuyDmnQam9ny9UTKNtSytjf9OlqoWX0/bwyXE+Rswalg4bla9suO3nyuU1TekCd
+# Apkwmn6dYw0RUbAWeRUJ8KXZhnhyDpwA/YJkOFiNYE8fpCcq3BsRVFItzy/ab1N+
+# LkQslI10E/VySAAxxFG/WLndv85fHU6sHt0NbWQlX59JXVGBfKe8NB3Dgpuxc0D/
+# dlxhGWkb4lTTrgVFQHPEblzUeAUQ1gkGy1N0FRcRflxO9ISCZpx6cOCbTlVljU3D
+# 3Gw5FVYfQB1mfp5qVVFVxMv2LQql4hdvQjiKZ7BZ+/p6JjUEgBL8RJh2vgljNTov
+# yR90KaqPq80WUc9OxzjwRunTc0hOq9/skDV4e5y5yaVnr49/1gUhLN/oYQ+inprU
+# PFvG3AEvUsFaE41KBlK6WM4jsBKNiShJXxx5WcdoEzw6avBcxonQXESMveq/DqiW
+# A8bTAY3xLiDuLBSoXBXFBfH/ptDrb2WxuMw=
 # SIG # End signature block
