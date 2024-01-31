@@ -11,7 +11,7 @@ vlSimpleExample()
    riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk score).
 
    # Add your test logic here
-   $result=true
+   result="true"
 
    # Create simple Result, pass on $resultData to add values to the result
    resultData=$(vlAddResultValue "" "Enabled" $result)
@@ -27,6 +27,9 @@ vlComplexExample()
    testName="vlComplexExample" # give the test a unique name
    testDisplayName="Complex result" # give the test a human-readable name, this will be displayed at the dashboard
    testDescription="This test returns a complex result." # give the test a description
+
+   testScore=3 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
+   riskScore=70 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk score).
 
    # Add your test logic here
    # ...

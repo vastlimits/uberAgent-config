@@ -63,48 +63,50 @@ vlRunCommand()
     return __zrc
 }
 
-# Function to add a single value, number, boolean, or append to an array in the JSON, supports both flat and nested paths
+# Function to add a key value based attribute to the assed json string. Supports nested pathes.
 vlAddResultValue() {
     local json=$1
     local path=$2
     local value=$3
+
+    shift 3
 
     # Check if json is empty, and initialize it as an empty JSON object if it is
     if [[ -z "$json" ]]; then
         json='{}'
     fi
 
-    # Function to split path and set value
-    set_json_value() {
+    # Helper function for JQ command
+    jq_command() {
         local type=$1
-        local val=$2
-        if [[ $path == *.* ]]; then
-            # Nested path
-            echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --arg$type val "
-                setpath(\$path | split(\".\") | map(if test(\"^[0-9]+\$\") then tonumber else . end); \$val)"
-        else
-            # Flat path
-            echo "$json" | "$JQ" $JQFLAGS -c --arg key "$path" --arg$type val ". + {(\$key): \$val}"
-        fi
+        local path=$2
+        local value=$3
+        case $type in
+            number | boolean)
+                echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --argjson value $value '
+                    setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
+                ;;
+            array)
+                echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --argjson value "$value" '
+                    getpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end)) += $value'
+                ;;
+            string)
+                echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --arg value "$value" '
+                    setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
+                ;;
+        esac
     }
 
-    # Determine the type of the value and set it in JSON
+    # Determine the type of the value and call the helper function
     if [[ $value =~ ^[0-9]+$ ]]; then
-        set_json_value json $value
+        jq_command number "$path" $value
     elif [[ $value == "true" || $value == "false" ]]; then
         local boolValue=$(echo "$value" | "$JQ" $JQFLAGS -c .)
-        set_json_value json $boolValue
+        jq_command boolean "$path" $boolValue
     elif [[ $value == \[*\] ]]; then
-        if [[ $path == *.* ]]; then
-            # Nested array
-            echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --argjson value "$value" '
-                getpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end)) += $value'
-        else
-            # Flat array
-            echo "$json" | "$JQ" $JQFLAGS -c --arg key "$path" --argjson value "$value" '.[$key] += $value'
-        fi
+        jq_command array "$path" "$value"
     else
-        set_json_value value "$value"
+        jq_command string "$path" "$value"
     fi
 }
 
