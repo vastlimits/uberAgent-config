@@ -63,7 +63,7 @@ vlRunCommand()
     return __zrc
 }
 
-# Function to add a key value based attribute to the assed json string. Supports nested pathes.
+# Function to add a key value based attribute to the given json string. Supports nested paths.
 vlAddResultValue() {
     local json=$1
     local path=$2
