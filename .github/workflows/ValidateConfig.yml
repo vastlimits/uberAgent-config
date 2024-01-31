@@ -1,5 +1,4 @@
-name: Create config archive
-
+name: Validate configuration
 on:
   push:
     branches-ignore:
@@ -8,11 +7,12 @@ on:
     - "version/6.2"
     paths-ignore:
     - "config-dist/**"    # avoid recursion
-    
+  pull_request:
+    branches:
+    - develop
+
+
 env:
-  SOURCE_DIR_PATH:  config/
-  TARGET_DIR_PATH:  config-dist/
-  TARGET_FILE:      uberAgent.uAConfig
   uAConfigCheck_FEED: uAConfigCheck
   uAConfigCheck_Organization: https://dev.azure.com/vastlimits
   uAConfigCheck_EXE_Artifact_Version: '*'
@@ -23,44 +23,17 @@ env:
                                               || (github.ref == 'refs/heads/version/7.1' && '7.1.1')
                                               || 'develop' }}
   uAConfigCheck_DLL_Artifact_Package: uberagent
-  
+
 jobs:
-  create-archive:
+  download-config:
     # Add "id-token" with the intended permissions.
     permissions:
       id-token: write
       contents: read
+
     runs-on: ubuntu-latest
     steps:
-    - name: Check out repo
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.ref_name }}
-        token: ${{ secrets.VLSVC_PAT }}
-        
-    - name: Create archive file
-      uses: thedoctor0/zip-release@0.7.1
-      with:
-        type: "zip"
-        directory: "${{ env.SOURCE_DIR_PATH }}"
-        filename: "${{ env.TARGET_FILE }}"
     
-    # also upload the archive separately, so that we can commit it
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ConfigArchive
-        path: "${{ env.SOURCE_DIR_PATH }}${{ env.TARGET_FILE }}"
-        retention-days: 1
-        
-    - name: Move archive to target dir
-      run: |
-        # Print executed commands
-        set -x
-        
-        mkdir -p "$TARGET_DIR_PATH"
-        rm -f "$TARGET_DIR_PATH$TARGET_FILE"
-        mv "$SOURCE_DIR_PATH$TARGET_FILE" "$TARGET_DIR_PATH"
-
     - name: 'Login via azure/login@v1'
       uses: azure/login@v1
       with:
@@ -106,8 +79,8 @@ jobs:
         retention-days: 1
 
 
-  validate-archive:
-    needs: [create-archive]
+  validate-config:
+    needs: [download-config]
     runs-on: windows-latest
     steps:
     
@@ -119,37 +92,7 @@ jobs:
       with:
         name: uAConfigCheck
     
-    - uses: actions/download-artifact@v4
-      with:
-        name: ConfigArchive
-    
     - name: 'validate configuration uAConfigCheck'
       run: |
-        .\uAConfigCheck.exe -t -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_FILE}}"
+        .\uAConfigCheck.exe -t -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -f .\config\uberAgent.conf
       continue-on-error: false
-
-
-  publish-archive:
-    needs: [validate-archive]
-    runs-on: ubuntu-latest
-    steps:
-    
-    - uses: actions/download-artifact@v4
-      with:
-        name: ConfigArchive
-        path: ${{ env.TARGET_DIR_PATH }}
-        
-    - name: Check archive is in the target dir
-      run: |
-        # Print executed commands
-        set -x
-        
-        echo "source+target:$SOURCE_DIR_PATH$TARGET_FILE\ntarget:$TARGET_DIR_PATH"
-        ls  "$TARGET_DIR_PATH"
-    
-    - name: Commit archive
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: Updated config archive
-        commit_user_name: vastlimits
-        commit_user_email: devops@vastlimits.com
