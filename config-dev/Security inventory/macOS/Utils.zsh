@@ -69,37 +69,32 @@ vlAddResultValue() {
     local path=$2
     local value=$3
 
-    shift 3
-
     # Check if json is empty, and initialize it as an empty JSON object if it is
     if [[ -z "$json" ]]; then
         json='{}'
     fi
 
-    # Determine the type of the value
+    # Function to split path and set value
+    set_json_value() {
+        local type=$1
+        local val=$2
+        if [[ $path == *.* ]]; then
+            # Nested path
+            echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --arg$type val "
+                setpath(\$path | split(\".\") | map(if test(\"^[0-9]+\$\") then tonumber else . end); \$val)"
+        else
+            # Flat path
+            echo "$json" | "$JQ" $JQFLAGS -c --arg key "$path" --arg$type val ". + {(\$key): \$val}"
+        fi
+    }
+
+    # Determine the type of the value and set it in JSON
     if [[ $value =~ ^[0-9]+$ ]]; then
-        # Value is a number
-        if [[ $path == *.* ]]; then
-            # Nested path
-            echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --argjson value $value '
-                setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
-        else
-            # Flat path
-            echo "$json" | "$JQ" $JQFLAGS -c --arg key "$path" --argjson value $value '. + {($key): $value}'
-        fi
+        set_json_value json $value
     elif [[ $value == "true" || $value == "false" ]]; then
-        # Value is a boolean
         local boolValue=$(echo "$value" | "$JQ" $JQFLAGS -c .)
-        if [[ $path == *.* ]]; then
-            # Nested path
-            echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --argjson value $boolValue '
-                setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
-        else
-            # Flat path
-            echo "$json" | "$JQ" $JQFLAGS -c --arg key "$path" --argjson value $boolValue '. + {($key): $value}'
-        fi
+        set_json_value json $boolValue
     elif [[ $value == \[*\] ]]; then
-        # Value is an array
         if [[ $path == *.* ]]; then
             # Nested array
             echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --argjson value "$value" '
@@ -109,15 +104,7 @@ vlAddResultValue() {
             echo "$json" | "$JQ" $JQFLAGS -c --arg key "$path" --argjson value "$value" '.[$key] += $value'
         fi
     else
-        # Value is a string
-        if [[ $path == *.* ]]; then
-            # Nested path
-            echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --arg value "$value" '
-                setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
-        else
-            # Flat path
-            echo "$json" | "$JQ" $JQFLAGS -c --arg key "$path" --arg value "$value" '. + {($key): $value}'
-        fi
+        set_json_value value "$value"
     fi
 }
 
