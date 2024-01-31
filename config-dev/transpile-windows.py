@@ -16,7 +16,6 @@ counter_success = 0
 counter_processed = 0
 
 folder_path = os.path.join(working_dir, 'config-dev/Security inventory/Windows')
-include_folder = os.path.join(working_dir, 'config-dev/Security inventory/Windows/Shared')
 output_folder = os.path.join(working_dir, 'config/Security inventory/Windows')
 output_csv_mapping_dir = os.path.join(working_dir, 'config-dev/generated')
 output_csv_mapping = os.path.join(output_csv_mapping_dir, 'security_inventory_checknames.csv')
@@ -24,7 +23,6 @@ output_csv_mapping = os.path.join(output_csv_mapping_dir, 'security_inventory_ch
 print("-------------------------------------")
 print("Current working dir: ", working_dir)
 print("Using input: ", folder_path)
-print("Using include: ", include_folder)
 print("Using output: ", output_folder)
 print("Using output mapping dir: ", output_csv_mapping_dir)
 print("Using output mapping csv: ", output_csv_mapping)
@@ -67,7 +65,7 @@ if not os.path.exists(output_csv_mapping_dir):
 
         # Exit the script
         exit(1)
-    
+
 # Clean old output
 for dirpath, dirnames, filenames in os.walk(output_folder):
     for filename in filenames:
@@ -177,7 +175,7 @@ def append_mapping_info(data):
 def extract_mapping_info(data):
 
     keywords = ["Name", "DisplayName", "Description", "Score", "ResultData", "RiskScore", "ErrorCode", "ErrorMessage"]
-    
+
     try:
         pattern = r'\[PSCustomObject\]@\{[^{}]*(((?<=[^{}])\{[^{}]*(((?<=[^{}])\{[^{}]*(((?<=[^{}])\{[^{}]*\})[^{}]*)*\})[^{}]*)*\})[^{}]*)*\}'
         matches = re.finditer(pattern, data, re.MULTILINE | re.DOTALL)
@@ -215,10 +213,10 @@ def extract_mapping_info(data):
 
 # Loop through all files in the folder
 for dirpath, dirnames, filenames in os.walk(folder_path):
-    
+
     for filename in filenames:
         file_path = os.path.join(dirpath, filename)
-            
+
         # Check if it's a .ps1 file and not in an excluded folder
         if filename.endswith('.ps1') and (exclude_folders is None or not any(exclude_folder in file_path for exclude_folder in exclude_folders)):
             print("Processing: ", file_path )
@@ -234,21 +232,21 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                     if not content:
                         print("\tError: Could not read file: ", file_path)
                         continue
-          
+
                     try:
                         # Extract DisplayName and Description
                         extract_mapping_info(content)
                     except:
                         print("\tError: Failed to extract mapping info: ", file_path)
                         continue
-                    
+
                     # Extract subfolder name
                     subfolder = os.path.relpath(os.path.dirname(file_path), folder_path)
-                    
+
                     # Write the transpiled contents to a new file in the "transpiled" directory
                     transpiled_path = os.path.join(output_folder, subfolder, filename)
                     transpiled_path_dir = os.path.join(output_folder, subfolder)
-                    
+
                     # Create subfolders if missing
                     if not os.path.exists(transpiled_path_dir):
                         try:
@@ -256,7 +254,7 @@ for dirpath, dirnames, filenames in os.walk(folder_path):
                         except:
                             print("\tError: Could not create output folder: ", transpiled_path_dir)
                             continue
-                        
+
                     print("\tWriting file: ", transpiled_path)
 
                     # Handle exceptions when opening the file

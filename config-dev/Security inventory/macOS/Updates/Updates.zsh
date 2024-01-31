@@ -92,7 +92,7 @@ vlCheckInstallSecurityResponsesAndSystemFilesEnabled()
 ################################################################################
 
 # Initialize the vl* utility functions
-vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
+vlUtils="$( realpath "$( dirname $0 )/.." )/Utils.zsh"
 . "$vlUtils" && vlInit
 
 # Run the tests

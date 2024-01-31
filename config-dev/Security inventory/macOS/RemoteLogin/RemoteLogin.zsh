@@ -414,7 +414,7 @@ vlCheckMacsStrongEncryption()
 ################################################################################
 
 # Initialize the vl* utility functions
-vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
+vlUtils="$( realpath "$( dirname $0 )/.." )/Utils.zsh"
 . "$vlUtils" && vlInit
 
 [ "$(id -u)" = "0" ] || { printf "Error: This script must be run as root.\n" >&2; exit 64; }
