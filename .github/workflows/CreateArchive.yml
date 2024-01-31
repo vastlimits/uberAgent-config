@@ -128,28 +128,3 @@ jobs:
         .\uAConfigCheck.exe -t -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_FILE}}"
       continue-on-error: false
 
-
-  publish-archive:
-    needs: [validate-archive]
-    runs-on: ubuntu-latest
-    steps:
-    
-    - uses: actions/download-artifact@v4
-      with:
-        name: ConfigArchive
-        path: ${{ env.TARGET_DIR_PATH }}
-        
-    - name: Check archive is in the target dir
-      run: |
-        # Print executed commands
-        set -x
-        
-        echo "source+target:$SOURCE_DIR_PATH$TARGET_FILE\ntarget:$TARGET_DIR_PATH"
-        ls  "$TARGET_DIR_PATH"
-    
-    - name: Commit archive
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: Updated config archive
-        commit_user_name: vastlimits
-        commit_user_email: devops@vastlimits.com
