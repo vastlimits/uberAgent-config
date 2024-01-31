@@ -7,7 +7,7 @@ CMLaSync,Certificate last sync,"This test determines the last time the Certifica
 CMTrByWin,Certificates trusted by Windows - Machine,This test relies on the Microsoft maintained Certificate Trust List (CTL) to validate the status of certificates found in the machine
 CUExpCerts,Expired certificates,Checks if there are expired certificates installed within the CurrentUser store.
 CUTrByWin,Certificates trusted by Windows - User,This test relies on the Microsoft maintained Certificate Trust List (CTL) to validate the status of certificates found in the users trusted root certificate store. Any certificate that is not recognized or included in the trusted list is flagged as an unknown certificate.
-FWState,Firewall status,"This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private)."
+FWState,Firewall status,"Windows: This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private).\nmacOS: Checks whether the macOS firewall is enabled."
 FWPorts,Open firewall ports,This test evaluates the presence of open inbound firewall rules on the system and provides a list of open ports. Open ports are entry points and can expose the system to unauthorized access. Rules marked as default are filtered out.
 LUMUac,User account control,"This test examines the status of User Account Control (UAC). User Account Control prevents unauthorized installation of new software, changes to system settings, or system files by requiring administrator-level privileges."
 LUMLaps,Local administrator password solution - Settings,This test verifies that the Local Administrator Password Solution (LAPS) is set up and enabled. LAPS is a Windows feature that automatically manages and backs up the password of a local administrator account on devices connected to Azure Active Directory or Windows Server Active Directory.
@@ -33,3 +33,17 @@ WCBitlocker,WindowsConfiguration Bitlocker,"This test verifies the status of Bit
 WCComHijacking,WindowsConfiguration COM hijacking,This test determines whether the mmc.exe executable file is set as the default program for .msc (Microsoft Management Console) files.
 WCTimeProvHijacking,WindowsConfiguration time provider hijacking,"This test verifies whether the w32time.dll file is set as the default time provider in the Windows operating system. The w32time.dll file is a crucial component responsible for time synchronization and accuracy within the system. Accurate timekeeping is essential for various system functionalities, including security protocols, authentication processes, and event logging."
 WCHta,WindowsConfiguration HTA,This test validates whether HTA (HTML Application) execution is enabled for the current user. HTA files can be used to execute malicious scripts or actions if not properly controlled.
+FWBlockAll,macOS Firewall block-all rule active,Checks whether the block-all rule of the macOS firewall is active.
+FWStealthMode,macOS Firewall stealth mode active,Checks whether the stealth mode of the macOS firewall is active.
+FWApprovedApps,macOS Firewall approved applications,Provides a list of applications that may accept incoming connections.
+SSHLoginDisabled,macOS Remote login disabled,Checks whether remote login over ssh is disabled.
+SSHRootUserDisabled,macOS Root user disabled,Checks whether the macOS root user is disabled.
+SSHPasswordLoginDisabled,macOS Remote password login disabled,Checks whether remote password logins are disabled on macOS.
+SSHFipsCompliantConfig,macOS Remote login configuration is FIPS compliant,Checks whether the remote login configuration is FIPS compliant.
+SSHKeysUseStrongEncryption,macOS Remote login keys use strong encryption,Checks whether the symmetric key algorithms that are used for remote login are strong.
+SSHCiphersUseStrongEncryption,macOS Remote login ciphers use strong encryption,Checks whether the cipher algorithms that are used for remote login are strong.
+SSHMacsUseStrongEncryption,macOS Remote login MACs use strong encryption,Checks whether the MAC algorithms that are used for remote login are strong.
+SWUAutomaticUpdateCheckingEnabled,Automatic checking for macOS updates enabled,Checks whether the automatic check for macOS updates is enabled.
+SWUAutomaticUpdateAppStoreCheckingEnabled,Automatic checking for AppStore updates enabled,Checks whether the automatic check for AppStore updates is enabled.
+SWURecommendedUpdatesAvailable,Checks whether there are recommended software updates pending,Provides a list of pending recommended software updates.
+SWUInstallSecurityResponsesAndSystemFilesEnabled,Install security responses and system files automatically,Checks whether the automatic installation of security responses and system files is enabled.
