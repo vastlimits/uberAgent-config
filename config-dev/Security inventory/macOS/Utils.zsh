@@ -64,6 +64,10 @@ vlRunCommand()
 }
 
 # Function to add a key value based attribute to the given json string. Supports nested paths.
+# The parameters for vlAddResultValue are: $resultData, $key, $value
+#  $resultData should be passed from call to call and contains the result object, if empty a new result object will be created
+#  $key is the key of the value you want to add
+#  $value is the value you want to add
 vlAddResultValue() {
     local json=$1
     local path=$2
