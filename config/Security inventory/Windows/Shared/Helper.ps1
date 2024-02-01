@@ -183,6 +183,7 @@ function New-vlResultObject {
       }
    }
 
+   # -Depth 3 cuts off any nested objects after 3 levels
    return [PSCustomObject]@{
       Result       = ConvertTo-Json $result -Compress -Depth 3
       ErrorCode    = 0

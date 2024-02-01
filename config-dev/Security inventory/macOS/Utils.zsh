@@ -63,11 +63,78 @@ vlRunCommand()
     return __zrc
 }
 
-# Encodes JSON to be included embedded as an attribute within another JSON document
-vlJsonifyEmbeddedJson()
-{
-  local val="$1"
-  "$JQ" $JQFLAGS -n -c --arg val "$val" '$val'
+# Function to add a key value based attribute to the given json string. Supports nested paths.
+vlAddResultValue() {
+    local json=$1
+    local path=$2
+    local value=$3
+
+    shift 3
+
+    # Check if json is empty, and initialize it as an empty JSON object if it is
+    if [[ -z "$json" ]]; then
+        json='{}'
+    fi
+
+    # Helper function for JQ command
+    jq_command() {
+        local type=$1
+        local path=$2
+        local value=$3
+        case $type in
+            number | boolean)
+                echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --argjson value $value '
+                    setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
+                ;;
+            array)
+                echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --argjson value "$value" '
+                    getpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end)) += $value'
+                ;;
+            string)
+                echo "$json" | "$JQ" $JQFLAGS -c --arg path "$path" --arg value "$value" '
+                    setpath($path | split(".") | map(if test("^[0-9]+$") then tonumber else . end); $value)'
+                ;;
+        esac
+    }
+
+    # Determine the type of the value and call the helper function
+    if [[ $value =~ ^[0-9]+$ ]]; then
+        jq_command number "$path" $value
+    elif [[ $value == "true" || $value == "false" ]]; then
+        local boolValue=$(echo "$value" | "$JQ" $JQFLAGS -c .)
+        jq_command boolean "$path" $boolValue
+    elif [[ $value == \[*\] ]]; then
+        jq_command array "$path" "$value"
+    else
+        jq_command string "$path" "$value"
+    fi
+}
+
+# Reports the result for an SCI in JSON format.
+vlCreateResultObject() {
+    local testName="$1"
+    local testDisplayName="$2"
+    local testDescription="$3"
+    local testScore="$4"  # Assuming this is a numeric value
+    local riskScore="$5"  # Assuming this is a numeric value
+    local resultData="$6"
+
+    shift 6
+
+    "$JQ" $JQFLAGS -c -n \
+        --arg name "$testName" \
+        --arg displayName "$testDisplayName" \
+        --arg description "$testDescription" \
+        --argjson score "$testScore" \
+        --argjson riskScore "$riskScore" \
+        --arg resultData "$resultData" \
+        $'{ Name: $name, \
+            DisplayName: $displayName, \
+            Description: $description, \
+            Score: $score, \
+            RiskScore: $riskScore, \
+            ResultData: $resultData \
+          }'
 }
 
 # This function expects each input strings to be quoted, like: "string"
@@ -79,62 +146,6 @@ vlJsonifyArrayJson()
 
   local arrayAsJson=$( printf '%s\n' "${array[@]}" | "$JQ" $JQFLAGS -c -s "{ $arrayName: . }" )
   "$JQ" $JQFLAGS -n --arg val "$arrayAsJson" '$val'
-}
-
-# Reports the result for an SCI in JSON format.
-# Callers must escape the resultData with vlJsonifyEmbeddedJson(), if it contains JSON data.
-vlReportTestResultJson()
-{
-    local name="$1"
-    local displayName="$2"
-    local description="$3"
-    local score="$4"
-    local riskScore="$5"
-    local resultData="$6"
-
-    "$JQ" $JQFLAGS -n \
-        --arg name "$name" \
-        --arg displayName "$displayName" \
-        --arg description "$description" \
-        --argjson score "$score" \
-        --argjson riskScore "$riskScore" \
-        --argjson resultData "$resultData" \
-        $'{ Name: $name, \
-            DisplayName: $displayName, \
-            Description: $description, \
-            Score: $score, \
-            RiskScore: $riskScore, \
-            ResultData: $resultData \
-          }'
-}
-
-vlReportTestResultJsonResultDataArray()
-{
-    local name="$1"
-    local displayName="$2"
-    local description="$3"
-    local score="$4"
-    local riskScore="$5"
-    local resultDataArrayName="$6"
-    shift 6
-    local resultDataArray=("$@")
-
-    local resultData=$( vlJsonifyArrayJson "$resultDataArrayName" ${resultDataArray[@]} )
-
-    "$JQ" $JQFLAGS -n \
-        --arg name "$name" \
-        --arg displayName "$displayName" \
-        --arg description "$description" \
-        --argjson score "$score" \
-        --argjson riskScore "$riskScore" \
-        --argjson resultData "$resultData" \
-        $'{ Name: $name, \
-            DisplayName: $displayName, \
-            Description: $description, \
-            Score: $score, \
-            RiskScore: $riskScore, \
-            ResultData: $resultData \
-          }'
 }
 
 vlReportErrorJson()
@@ -208,7 +219,7 @@ vlCheckFeatureStateFromCommandOutput()
   local expectedOutput="$5"
   local expectedGrepStatus="$6"
   local expectedTestResultDataValue="$7"
-  local testResultDataJsonTemplate="$8"
+  local testResultVarName="$8"
 
   shift 8
 
@@ -245,21 +256,15 @@ vlCheckFeatureStateFromCommandOutput()
     testResultDataValue=$( vlNegateBooleanValue "$testResultDataValue" )
   fi
 
-  local resultDataJson=$( \
-    vlJsonifyEmbeddedJson $( \
-      "$JQ" $JQFLAGS -n -c \
-        --argjson testResultDataValue $testResultDataValue \
-        "$testResultDataJsonTemplate" \
-    ) \
-  )
+  local resultData=$(vlAddResultValue "" "$testResultVarName" $testResultDataValue)
 
-  vlReportTestResultJson \
+  vlCreateResultObject \
     "$testName" \
     "$displayName" \
     "$description" \
     "$testScore" \
     "$riskScore" \
-    "$resultDataJson"
+    "$resultData"
 }
 
 # Checks whether a feature is enabled by matching the specified expected output
@@ -286,7 +291,7 @@ vlCheckIsFeatureEnabledFromCommandOutput()
 
   local expectedGrepStatus=0
   local expectedTestResultDataValue=true
-  local testResultDataJsonTemplate='{ Enabled: $testResultDataValue }'
+  local testResultVarName='Enabled'
 
   vlCheckFeatureStateFromCommandOutput \
     "$testName" \
@@ -296,7 +301,7 @@ vlCheckIsFeatureEnabledFromCommandOutput()
     "$expectedOutput" \
     "$expectedGrepStatus" \
     "$expectedTestResultDataValue" \
-    "$testResultDataJsonTemplate" \
+    "$testResultVarName" \
     $@
 }
 
@@ -324,7 +329,7 @@ vlCheckIsFeatureDisabledFromCommandOutput()
 
   local expectedGrepStatus=0
   local expectedTestResultDataValue=true
-  local testResultDataJsonTemplate='{ Disabled: $testResultDataValue }'
+  local testResultVarName='Disabled'
 
   vlCheckFeatureStateFromCommandOutput \
     "$testName" \
@@ -334,7 +339,7 @@ vlCheckIsFeatureDisabledFromCommandOutput()
     "$expectedOutput" \
     "$expectedGrepStatus" \
     "$expectedTestResultDataValue" \
-    "$testResultDataJsonTemplate" \
+    "$testResultVarName" \
     $@
 }
 
@@ -362,7 +367,7 @@ vlCheckIsFeatureDisabledFromNonMatchingCommandOutput()
 
   local expectedGrepStatus=1
   local expectedTestResultDataValue=true
-  local testResultDataJsonTemplate='{ Disabled: $testResultDataValue }'
+  local testResultVarName='Disabled'
 
   vlCheckFeatureStateFromCommandOutput \
     "$testName" \
@@ -372,7 +377,7 @@ vlCheckIsFeatureDisabledFromNonMatchingCommandOutput()
     "$expectedOutput" \
     "$expectedGrepStatus" \
     "$expectedTestResultDataValue" \
-    "$testResultDataJsonTemplate" \
+    "$testResultVarName" \
     $@
 }
 
@@ -417,19 +422,13 @@ vlCheckFeatureEnabledFromPlistDomainKey()
     testResultDataValue=true
   fi
 
-  local resultDataJson=$( \
-    vlJsonifyEmbeddedJson $( \
-      "$JQ" $JQFLAGS -n -c \
-        --argjson testResultDataValue $testResultDataValue \
-        '{ Enabled: $testResultDataValue }' \
-    ) \
-  )
+  local resultData=$(vlAddResultValue "" "Enabled" $testResultDataValue)
 
-  vlReportTestResultJson \
+  vlCreateResultObject \
     "$testName" \
     "$displayName" \
     "$description" \
     "$testScore" \
     "$riskScore" \
-    "$resultDataJson"
+    "$resultData"
 }

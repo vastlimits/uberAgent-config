@@ -44,14 +44,14 @@ vlCheckForRecommendedUpdates()
   local testDescription="Provides a list of pending recommended software updates."
   local riskScore=90
 
-  local availableRecommendedUpdates=()
+  local resultData=$(vlAddResultValue "" "RecommendedUpdates" '[]')
 
   ## The softwareupdate doesn't use return codes to indicate sucess or failure.
   softwareupdate -l 2>/dev/null \
     | grep 'Recommended: YES' | cut -d"," -f1 | cut -d":" -f2 | awk '{$1=$1};1' \
     | while IFS= read -r availableUpdate
   do
-    availableRecommendedUpdates+=$( "$JQ" $JQFLAGS -n --arg availableUpdate "$availableUpdate" '$availableUpdate' )
+    resultData=$(vlAddResultValue "$resultData" "ApprovedApplications" "[\"$availableUpdate\"]")
   done
 
   local testScore=$( vlGetMinScore "$riskScore" )
@@ -59,14 +59,7 @@ vlCheckForRecommendedUpdates()
     local testScore=10
   fi
 
-  vlReportTestResultJsonResultDataArray \
-    "$testName" \
-    "$testDisplayName" \
-    "$testDescription" \
-    "$testScore" \
-    "$riskScore" \
-    "RecommendedUpdates" \
-    ${availableRecommendedUpdates[@]}
+  vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
 }
 
 vlCheckInstallSecurityResponsesAndSystemFilesEnabled()
@@ -92,7 +85,7 @@ vlCheckInstallSecurityResponsesAndSystemFilesEnabled()
 ################################################################################
 
 # Initialize the vl* utility functions
-vlUtils="$( realpath "$( dirname $0 )/.." )/Utils.zsh"
+vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 . "$vlUtils" && vlInit
 
 # Run the tests

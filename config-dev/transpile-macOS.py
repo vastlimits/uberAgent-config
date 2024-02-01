@@ -76,12 +76,36 @@ except Exception as e:
     # Exit the script
     exit(1)
 
-# We currently do only extract the metadata from the .zsh files so copy the scripts to the output folder
+# Normalize the paths for cross-platform compatibility
+exclude_folders_cpy = [os.path.normpath('Examples')]  # Use forward slash and normpath for cross-platform paths for subfolder e.g. os.path.normpath('Examples/Test')
+exclude_files_cpy = None
+
+print("Excluding folders from cpy: ", exclude_folders_cpy)
+print("Excluding files from cpy: ", exclude_files_cpy)
+print("-------------------------------------")
+print("Copying files...")
+
+# Function to exclude files and folders from being processed
+def exclude_function(directory, contents):
+    excluded = set()
+    for item in contents:
+        relative_path = os.path.relpath(os.path.join(directory, item), folder_path)
+        normalized_path = os.path.normpath(relative_path)  # Normalize the path for cross-platform compatibility
+
+        if (exclude_folders_cpy and normalized_path in exclude_folders_cpy):
+            excluded.add(item)
+            print("\tSkipped folder: ", item)
+        if (exclude_files_cpy and normalized_path in exclude_files_cpy):
+            excluded.add(item)
+            print("\tSkipped file: ", item)
+    return excluded
+
+# Copy the files to the output folder. Exclude specified files and folders.
 try:
-    shutil.copytree(folder_path, output_folder)
+    shutil.copytree(folder_path, output_folder, ignore=exclude_function)
     print(f"Folder successfully copied from {folder_path} to {output_folder}")
 except Exception as e:
-    print_error(f"An error has occurred while copying files: {e}")
+    print(f"An error has occurred while copying files: {e}")
     exit(1)
 
 # Create the "config-dev/generated" directory-structure if it doesn't exist
@@ -94,14 +118,15 @@ if not os.path.exists(output_csv_mapping_dir):
         # Exit the script
         exit(1)
 
-# List of folders to exclude from metadata extraction
-exclude_folders = None #['']
-exclude_files = ["Utils.zsh"]
-
-print("Excluding folders: ", exclude_folders)
-print("Excluding files: ", exclude_files)
 print("-------------------------------------")
 print("Opening output csv file: ", output_csv_mapping)
+
+# List of folders to exclude from metadata processing
+exclude_folders = None
+exclude_files = ["Utils.zsh"]
+
+print("Excluding folders from metadata extraction: ", exclude_folders)
+print("Excluding files from metadata extraction: ", exclude_files)
 
 header = ["SecurityInventoryName", "SecurityInventoryDisplayName", "SecurityInventoryNameDescription"]
 current_csv_data = []  # Variable for saving the CSV data
@@ -217,7 +242,7 @@ def extract_mapping_info(data):
 
 
 # Loop through all files in the folder
-for dirpath, dirnames, filenames in os.walk(folder_path):
+for dirpath, dirnames, filenames in os.walk(output_folder):
 
     for filename in filenames:
         file_path = os.path.join(dirpath, filename)
