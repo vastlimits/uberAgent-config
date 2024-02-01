@@ -2,10 +2,10 @@ name: Create config archive
 
 on:
   push:
-    branches-ignore:
-    - "main"
-    - "version/7.0"
-    - "version/6.2"
+    branches:
+    - develop
+    - "version/7.1"       # don't use a glob-pattern here! Config-archives 
+                          # are only supported starting uberAgent 7.1
     paths-ignore:
     - "config-dist/**"    # avoid recursion
   pull_request:
