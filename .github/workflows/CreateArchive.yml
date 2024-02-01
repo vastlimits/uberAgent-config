@@ -136,6 +136,7 @@ jobs:
 
 
   publish-archive:
+    if: ${{ github.event_name == "push" }}
     needs: [validate-archive]
     runs-on: ubuntu-latest
     steps:
