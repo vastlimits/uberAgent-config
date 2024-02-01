@@ -47,7 +47,13 @@ vlSimpleArrayExample()
    # The parameters for vlAddResultValue are: $resultData, $key, $value
    #  $resultData should be passed from call to call and contains the result object, use "{}" to create a new result object or "[]" to create a new result array
    #  $value is the value you want to add
-   resultData=$(vlAddResultValue "[]" "[$resultObj1, $resultObj2]" $result)
+
+   # Option 1 all at once. Use "[]" to create a new array, since there is no key within an array leave key empty.
+   resultData=$(vlAddResultValue "[]" "" "[$resultObj1, $resultObj2]")
+
+   # Option 2 one by one. Use "[]" to create a new array, then pass $resultData. Since there is no key within an array leave key empty.
+   resultData=$(vlAddResultValue "[]" "" "[$resultObj1]")
+   resultData=$(vlAddResultValue "$resultData" "" "[$resultObj2]")
 
    # Create the result object
    vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
