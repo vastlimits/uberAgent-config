@@ -12,6 +12,8 @@ on:
     branches:
     - develop
     - "version/7.1"
+    paths-ignore:
+    - "config-dist/**"    # avoid recursion
     
 env:
   SOURCE_DIR_PATH:  config/
