@@ -1,15 +1,11 @@
 name: Validate configuration
 on:
-  push:
-    branches-ignore:
-    - "main"
-    - "version/7.0"
-    - "version/6.2"
-    paths-ignore:
-    - "config-dist/**"    # avoid recursion
   pull_request:
     branches:
     - develop
+    - "main"
+    - "version/7.0"
+    - "version/6.2"
 
 
 env:

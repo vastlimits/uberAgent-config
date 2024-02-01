@@ -8,6 +8,9 @@ on:
     - "version/6.2"
     paths-ignore:
     - "config-dist/**"    # avoid recursion
+  pull_request:
+    branches:
+    - develop
     
 env:
   SOURCE_DIR_PATH:  config/
