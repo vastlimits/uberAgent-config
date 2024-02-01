@@ -75,7 +75,7 @@ vlNestedExample()
    resultData=$(vlAddResultValue "$resultData" "Person.Name" "John")
    resultData=$(vlAddResultValue "$resultData" "Person.Age" 30)
 
-   # While adding arrays to an object is technically possible, the dashboard will not display this correctly so please avoid this.
+   # While it is technically possible to add arrays to an object, the dashboard cannot display them correctly, so please avoid doing so.
    # resultData=$(vlAddResultValue "$resultData" "Person.Colors" '["blue"]')
    # resultData=$(vlAddResultValue "$resultData" "Person.Colors" '["red","yellow"]')
 
