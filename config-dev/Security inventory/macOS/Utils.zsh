@@ -75,11 +75,6 @@ vlAddResultValue() {
 
     shift 3
 
-    # Check if json is empty, and initialize it as an empty JSON object if it is
-    if [[ -z "$json" ]]; then
-        json='{}'
-    fi
-
     # Helper function for JQ command
     jq_command() {
         local type=$1
