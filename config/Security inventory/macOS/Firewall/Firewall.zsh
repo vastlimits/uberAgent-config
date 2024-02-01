@@ -73,7 +73,8 @@ vlGetFirewallApprovedApps()
     return
   fi
 
-  local approvedApps=()
+  local resultData=$(vlAddResultValue "" "ApprovedApplications" '[]')
+
   printf "$vlCommandStdout" | \
     grep -B1 '( Allow incoming connections )' | \
     awk '/^[0-9]* *:/' | \
@@ -81,17 +82,10 @@ vlGetFirewallApprovedApps()
     awk '{$1=$1};1' | \
   while IFS= read -r appPath
   do
-    approvedApps+=$( "$JQ" $JQFLAGS -n --arg appPath "$appPath" '$appPath' )
+    resultData=$(vlAddResultValue "$resultData" "ApprovedApplications" "[\"$appPath\"]")
   done
 
-  vlReportTestResultJsonResultDataArray \
-    "$testName" \
-    "$testDisplayName" \
-    "$testDescription" \
-    "$testScore" \
-    "$riskScore" \
-    "ApprovedApplications" \
-    ${approvedApps[@]}
+  vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
 }
 
 ################################################################################
@@ -99,7 +93,7 @@ vlGetFirewallApprovedApps()
 ################################################################################
 
 # Initialize the vl* utility functions
-vlUtils="$( realpath "$( dirname $0 )/.." )/Utils.zsh"
+vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 . "$vlUtils" && vlInit
 
 # Run the tests
