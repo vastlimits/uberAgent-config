@@ -68,17 +68,13 @@ vlRunCommand()
 #  $resultData should be passed from call to call and contains the result object, if empty a new result object will be created
 #  $key is the key of the value you want to add
 #  $value is the value you want to add
+# For examples have a look at Examples/Template.zsh
 vlAddResultValue() {
     local json=$1
     local path=$2
     local value=$3
 
     shift 3
-
-    # Check if json is empty, and initialize it as an empty JSON object if it is
-    if [[ -z "$json" ]]; then
-        json='{}'
-    fi
 
     # Helper function for JQ command
     jq_command() {
