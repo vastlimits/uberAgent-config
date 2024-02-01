@@ -8,7 +8,8 @@ on:
                           # are only supported starting uberAgent 7.1
     paths-ignore:
     - "config-dist/**"    # avoid recursion
-  pull_request:
+  pull_request_target:
+    types: [opened, synchronize, reopened, auto_merge_enabled]
     branches:
     - develop
     - "version/7.1"
