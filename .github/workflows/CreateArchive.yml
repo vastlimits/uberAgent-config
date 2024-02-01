@@ -11,6 +11,7 @@ on:
   pull_request:
     branches:
     - develop
+    - "version/7.1"
     
 env:
   SOURCE_DIR_PATH:  config/

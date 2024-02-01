@@ -4,8 +4,7 @@ on:
     branches:
     - develop
     - "main"
-    - "version/7.0"
-    - "version/6.2"
+    - "version/*"
 
 
 env:
