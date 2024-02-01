@@ -82,9 +82,8 @@ exclude_files_cpy = None
 
 print("Excluding folders from cpy: ", exclude_folders_cpy)
 print("Excluding files from cpy: ", exclude_files_cpy)
-
-# Global list to store names of excluded files and folders
-excluded_items_cpy = []
+print("-------------------------------------")
+print("Copying files...")
 
 # Function to exclude files and folders from being processed
 def exclude_function(directory, contents):
@@ -93,19 +92,18 @@ def exclude_function(directory, contents):
         relative_path = os.path.relpath(os.path.join(directory, item), folder_path)
         normalized_path = os.path.normpath(relative_path)  # Normalize the path for cross-platform compatibility
 
-        if (exclude_folders_cpy and normalized_path in exclude_folders_cpy) or (exclude_files_cpy and normalized_path in exclude_files_cpy):
+        if (exclude_folders_cpy and normalized_path in exclude_folders_cpy):
             excluded.add(item)
-            excluded_items_cpy.append(normalized_path)
+            print("\tSkipped folder: ", item)
+        if (exclude_files_cpy and normalized_path in exclude_files_cpy):
+            excluded.add(item)
+            print("\tSkipped file: ", item)
     return excluded
 
 # Copy the files to the output folder. Exclude specified files and folders.
 try:
     shutil.copytree(folder_path, output_folder, ignore=exclude_function)
     print(f"Folder successfully copied from {folder_path} to {output_folder}")
-    if excluded_items_cpy:
-        print("The following items were not copied:")
-        for item in excluded_items_cpy:
-            print("\t", item)
 except Exception as e:
     print(f"An error has occurred while copying files: {e}")
     exit(1)

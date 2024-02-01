@@ -36,7 +36,7 @@ vlComplexExample()
 
    # Create complex Result, pass on $resultData to add values to the result
    resultData=$(vlAddResultValue "" "Enabled" true)
-   resultData=$(vlAddResultValue "$resultData" "CmdLine" "/bin/bash -c \"if [ 2 -eq 2 ]; then echo equals; fi;\"")
+   resultData=$(vlAddResultValue "$resultData" "CmdLine" "/bin/zsh -c \"if [ 2 -eq 2 ]; then echo equals; fi;\"")
 
    # Add a nested object
    resultData=$(vlAddResultValue "$resultData" "Person.Name" "John")
