@@ -66,7 +66,6 @@ jobs:
         mv "$SOURCE_DIR_PATH$TARGET_FILE" "$TARGET_DIR_PATH"
 
     - name: 'Login via azure/login@v1'
-      if: ${{ github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || contains(github.ref, 'refs/heads/version/') }}
       uses: azure/login@v1
       with:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -75,7 +74,6 @@ jobs:
         environment: azurecloud
 
     - name: download uAConfigCheck exe
-      if: ${{ github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || contains(github.ref, 'refs/heads/version/') }}
       uses: azure/CLI@v1
       with:
         azcliversion: 2.55.0
@@ -90,7 +88,6 @@ jobs:
                                           --file-filter 'uAConfigCheck.exe'
           
     - name: download uAConfigCheck dll
-      if: ${{ github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || contains(github.ref, 'refs/heads/version/') }}
       uses: azure/CLI@v1
       with:
         azcliversion: 2.55.0
@@ -105,7 +102,6 @@ jobs:
                                           --file-filter "uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll"
     
     - uses: actions/upload-artifact@v4
-      if: ${{ github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || contains(github.ref, 'refs/heads/version/') }}
       with:
         name: uAConfigCheck
         path: |
@@ -115,7 +111,6 @@ jobs:
 
 
   validate-archive:
-    if: ${{ github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main' || contains(github.ref, 'refs/heads/version/') }}
     needs: [create-archive]
     runs-on: windows-latest
     steps:
