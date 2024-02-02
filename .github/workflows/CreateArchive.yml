@@ -2,10 +2,16 @@ name: Create config archive
 
 on:
   push:
-    branches-ignore:
-    - "main"
-    - "version/7.0"
-    - "version/6.2"
+    branches:
+    - develop
+    - "version/7.1"       # don't use a glob-pattern here! Config-archives 
+                          # are only supported starting uberAgent 7.1
+    paths-ignore:
+    - "config-dist/**"    # avoid recursion
+  pull_request:
+    branches:
+    - develop
+    - "version/7.1"
     paths-ignore:
     - "config-dist/**"    # avoid recursion
     
@@ -33,10 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check out repo
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ github.ref_name }}
-        token: ${{ secrets.VLSVC_PAT }}
+      uses: actions/checkout@v4
         
     - name: Create archive file
       uses: thedoctor0/zip-release@0.7.1
@@ -130,6 +133,7 @@ jobs:
 
 
   publish-archive:
+    if: ${{ github.event_name == 'push' }}
     needs: [validate-archive]
     runs-on: ubuntu-latest
     steps:
