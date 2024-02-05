@@ -1,32 +1,4 @@
 
-# JSON - Dashboard Support Matrix
-
-# Legend:
-# [+] Supported
-# [-] Not Supported
-
-# Structure                                                                         | Status
-# ----------------------------------------------------------------------------------|--------
-# Simple Object                                                                     | [+]
-#   {"Enabled": true, "Mode": "Auto"}
-# ----------------------------------------------------------------------------------|--------
-# Array of Objects                                                                  | [+]
-#   [{"Name":"John","Age":30, "City":"New York"},
-#    {"Name":"Alice","Age":25, "City":"Los Angeles"}]
-# ----------------------------------------------------------------------------------|--------
-# Object with simple Array (Strings, Numbers)                                       | [+]
-#   {"Applications":["App1", "App2", "App3"], "Status": "Active"}
-# ----------------------------------------------------------------------------------|--------
-# Complex Object                                                                    | [+]
-#   {"Enabled":true, "Config": {"Path":"/usr/bin", "Timeout":30},
-#    "User":{"Name":"John", "Role":"Admin"}}
-# ----------------------------------------------------------------------------------|--------
-# Object with Array of Objects                                                      | [-]
-#   {"Team": "Developers",
-#    "Members": [{"Name":"John","Skill":"Java"},
-#                {"Name":"Alice","Skill":"Python"}
-#               ]}
-# ----------------------------------------------------------------------------------|--------
 
 vlSimpleExample()
 {
@@ -201,6 +173,100 @@ vlCheckFeatureEnabledFromPlistDomainKeyExample()
       $plistDefault
 }
 
+vlSupportMatrixExample()
+{
+   # Please always use this block, which consists of testName, testDisplayName, and testDescription.
+   # Important for the pipeline, these values are parsed and displayed on the dashboard.
+   testName="vlSupportMatrixExample" # give the test a unique name
+   testDisplayName="Matrix example" # give the test a human-readable name, this will be displayed on the dashboard
+   testDescription="This test returns a Matrix example." # give the test a description
+
+   # JSON - Dashboard Support Matrix
+   # The dashboard supports the following structures. Please use this example to check if your result can be displayed correctly.
+
+   # Legend:
+   # [+] Supported
+   # [-] Not Supported
+
+   # Structure                                                                         | Status
+   # ----------------------------------------------------------------------------------|--------
+   # Simple Object                                                                     | [+]
+   #   {"Enabled": true, "Mode": "Auto"}
+   # Code:
+
+   # Create result object, pass on $resultData to add values to the result.
+   # Use "{}" to create a new result object.
+   # Use "[]" to create a new result array.
+   resultData=$(vlAddResultValue "{}" "Enabled" true)
+   # resultData after call: {"Enabled": true}
+
+   resultData=$(vlAddResultValue "$resultData" "Mode" "Auto")
+   # resultData after call: {"Enabled": true, "Mode": "Auto"}
+
+   # ----------------------------------------------------------------------------------|--------
+   # Array of Objects                                                                  | [+]
+   #   [{"Name":"John","Age":30, "City":"New York"},
+   #    {"Name":"Alice","Age":25, "City":"Los Angeles"}]
+   # Code:
+
+   # Create result object, pass on $resultData to add values to the result.
+   resultData=$(vlAddResultValue "[]" "" '{"Name":"John","Age":30, "City":"New York"}') 
+   # resultData after call: [{"Name":"John","Age":30, "City":"New York"}]
+
+   resultData=$(vlAddResultValue "$resultData" "" '{"Name":"Alice","Age":25, "City":"Los Angeles"}')
+   # resultData after call: [{"Name":"John","Age":30, "City":"New York"}, {"Name":"Alice","Age":25, "City":"Los Angeles"}]
+
+   # ----------------------------------------------------------------------------------|--------
+   # Object with simple Array (Strings, Numbers)                                       | [+]
+   #   {"Applications":["App1", "App2", "App3"], "Status": "Active"}
+   # Code:
+
+   # Create result object, pass on $resultData to add values to the result.
+   resultData=$(vlAddResultValue "{}" "Applications" '["App1", "App2", "App3"]')
+   # resultData after call: {"Applications":["App1", "App2", "App3"]}
+
+   resultData=$(vlAddResultValue "$resultData" "Status" "Active")
+   # resultData after call: {"Applications":["App1", "App2", "App3"], "Status": "Active"}
+
+   # ----------------------------------------------------------------------------------|--------
+   # Complex Object                                                                    | [+]
+   #   {"Enabled":true, "Config": {"Path":"/usr/bin", "Timeout":30},
+   #    "User":{"Name":"John", "Role":"Admin"}}
+   # Code:
+
+   # Create result object, pass on $resultData to add values to the result.
+   resultData=$(vlAddResultValue "{}" "Enabled" true)
+   # resultData after call: {"Enabled": true}
+
+   resultData=$(vlAddResultValue "$resultData" "Config.Path" "/usr/bin")
+   # resultData after call: {"Enabled": true, "Config": {"Path":"/usr/bin"}}
+
+   resultData=$(vlAddResultValue "$resultData" "Config.Timeout" 30)
+   # resultData after call: {"Enabled": true, "Config": {"Path":"/usr/bin", "Timeout":30}}
+
+   resultData=$(vlAddResultValue "$resultData" "User.Name" "John")
+   # resultData after call: {"Enabled": true, "Config": {"Path":"/usr/bin", "Timeout":30}, "User.Name": "John"}
+
+   resultData=$(vlAddResultValue "$resultData" "User.Role" "Admin")
+   # resultData after call: {"Enabled": true, "Config": {"Path":"/usr/bin", "Timeout":30}, "User.Name": "John", "User.Role": "Admin"}
+
+   # ----------------------------------------------------------------------------------|--------
+   # Object with Array of Objects                                                      | [-]
+   #   {"Team": "Developers",
+   #    "Members": [{"Name":"John","Skill":"Java"},
+   #                {"Name":"Alice","Skill":"Python"}
+   #               ]}
+   
+   # While it is technically possible to add arrays to an nested object, the dashboard cannot display them correctly, so please avoid doing so.
+   # Code to create such a result:
+   resultData=$(vlAddResultValue "{}" "Team" "Developers")
+   resultData=$(vlAddResultValue "$resultData" "Members" '[]')
+   resultData=$(vlAddResultValue "$resultData" "Members" '[{"Name":"John","Skill":"Java"}]')
+   resultData=$(vlAddResultValue "$resultData" "Members" '[{"Name":"Alice","Skill":"Python"}]')
+
+   # ----------------------------------------------------------------------------------|--------
+}
+
 vlErrorExample()
 {
    # Please always use this block, which consists of testName, testDisplayName, and testDescription.
@@ -226,7 +292,6 @@ vlErrorExample()
       return
    fi
 }
-
 
 # Initialize the vl* utility functions
 vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
