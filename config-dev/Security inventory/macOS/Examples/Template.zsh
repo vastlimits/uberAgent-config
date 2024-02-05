@@ -104,6 +104,101 @@ vlNestedExample()
    vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
 }
 
+vlCheckFeatureStateFromCommandOutputExample()
+{
+   # Please always use this block, which consists of testName, testDisplayName, and testDescription.
+   # Important for the pipeline, these values are parsed and displayed on the dashboard.
+   testName="vlCheckFeatureStateFromCommandOutputExample" # give the test a unique name
+   testDisplayName="Check feature state from command output" # give the test a human-readable name, this will be displayed at the dashboard
+   testDescription="This test checks the state of a feature from the command output." # give the test a description
+
+   testScore=10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
+   riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
+
+   # Define the expected output
+   local expectedOutput="enabled"
+
+   # Define the expected grep status (0 for success, 1 for failure)
+   local expectedGrepStatus=0
+
+   # Define the expected test result data value
+   local expectedTestResultDataValue=true
+
+   # Define the variable name that will be used in the result object
+   local testResultVarName='Enabled'
+
+   # Run the command, the last parameter is the command to run.
+   # The function automatically generates the result object and reports an error if the command failed.
+   vlCheckFeatureStateFromCommandOutput \
+      "$testName" \
+      "$testDisplayName" \
+      "$testDescription" \
+      "$riskScore" \
+      "$expectedOutput" \
+      "$expectedGrepStatus" \
+      "$expectedTestResultDataValue" \
+      "$testResultVarName" \
+      /usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode
+}
+
+vlCheckFeatureEnabledFromPlistDomainKeyExample()
+{
+   # Please always use this block, which consists of testName, testDisplayName, and testDescription.
+   # Important for the pipeline, these values are parsed and displayed on the dashboard.
+   testName="vlCheckFeatureEnabledFromPlistDomainKeyExample" # give the test a unique name
+   testDisplayName="Check feature enabled from plist domain key" # give the test a human-readable name, this will be displayed at the dashboard
+   testDescription="This test checks the state of a feature from a plist domain key." # give the test a description
+
+   testScore=10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
+   riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
+
+   # Define the plist domain
+   local plistDomain="/Library/Preferences/com.apple.commerce"
+
+   # Define the plist key
+   local plistKey="AutoUpdate"
+
+   # Define the default value if the key is not found
+   local plistDefault=0
+
+   # The function automatically generates the result object and reports an error if the command failed.
+   vlCheckFeatureEnabledFromPlistDomainKey \
+      "$testName" \
+      "$testDisplayName" \
+      "$testDescription" \
+      "$riskScore" \
+      "$plistDomain" \
+      "$plistKey" \
+      $plistDefault
+}
+
+vlErrorExample()
+{
+   # Please always use this block, which consists of testName, testDisplayName, and testDescription.
+   # Important for the pipeline, these values are parsed and displayed on the dashboard.
+   testName="vlErrorExample" # give the test a unique name
+   testDisplayName="Error result" # give the test a human-readable name, this will be displayed at the dashboard
+   testDescription="This test is made to fail to demonstrate how to handle errors." # give the test a description
+
+   # Add your test logic here
+   # ...
+
+   # Try to run a command that does not exist
+   vlRunCommand /run/not/existing/command
+
+   # Check if the command was successful and report an error if not
+   if (( $vlCommandStatus != 0 )); then
+      vlReportErrorJson \
+         "$testName" \
+         "$testDisplayName" \
+         "$testDescription" \
+         "$vlCommandStatus" \
+         "$vlCommandStderr"
+      return
+   fi
+}
+
+
 # Initialize the vl* utility functions
 vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 . "$vlUtils" && vlInit
@@ -113,6 +208,9 @@ results=()
 results+="$( vlSimpleExample )"
 results+="$( vlSimpleArrayExample )"
 results+="$( vlNestedExample )"
+results+="$( vlCheckFeatureStateFromCommandOutputExample )"
+results+="$( vlCheckFeatureEnabledFromPlistDomainKeyExample )"
+results+="$( vlErrorExample )"
 
 # Print the results as JSON
 vlPrintJsonReport "${results[@]}"

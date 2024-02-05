@@ -8,14 +8,21 @@ vlCheckRemoteLoginDisabled()
   local testDisplayName="macOS Remote login disabled"
   local testDescription="Checks whether remote login over ssh is disabled."
   local riskScore=40
-  local expectedOutput="Remote Login: Off"
 
-  vlCheckIsFeatureDisabledFromCommandOutput \
+  local expectedOutput="Remote Login: Off"
+  local expectedGrepStatus=0
+  local expectedTestResultDataValue=true
+  local testResultVarName='Disabled'
+
+    vlCheckFeatureStateFromCommandOutput \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$riskScore" \
     "$expectedOutput" \
+    "$expectedGrepStatus" \
+    "$expectedTestResultDataValue" \
+    "$testResultVarName" \
     systemsetup -getremotelogin
 }
 
@@ -25,14 +32,21 @@ vlCheckRootUserDisabled()
   local testDisplayName="macOS Root user disabled"
   local testDescription="Checks whether the macOS root user is disabled."
   local riskScore=60
+  
   local dontMatchOutput="ShadowHashData"
+  local expectedGrepStatus=1
+  local expectedTestResultDataValue=true
+  local testResultVarName='Disabled'
 
-  vlCheckIsFeatureDisabledFromNonMatchingCommandOutput \
+  vlCheckFeatureStateFromCommandOutput \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$riskScore" \
     "$dontMatchOutput" \
+    "$expectedGrepStatus" \
+    "$expectedTestResultDataValue" \
+    "$testResultVarName" \
     plutil -p /var/db/dslocal/nodes/Default/users/root.plist
 }
 
@@ -68,12 +82,15 @@ vlEnsureValidSshdConfig()
 # This function relies on the global variable ${SSHEFFECTIVECONFIG} being set.
 vlGetSshdConfigOpt()
 {
-  local configOpt="$1"
-  local testName="$2"
-  local testDisplayName="$3"
-  local testDescription="$4"
+  local configOpt="$1"                # The configuration option to look for
+  local testName="$2"                 # The name of the test being performed
+  local testDisplayName="$3"          # The display name of the test
+  local testDescription="$4"          # A description of the test
 
-  local configOptValue=$( printf "${SSHEFFECTIVECONFIG}\n" | grep -i "$configOpt" | awk '{ print $2 }' )
+  # Use grep -i for case-insensitive search and awk to extract the value
+  local configOptValue=$(printf "${SSHEFFECTIVECONFIG}\n" | grep -i "$configOpt" | awk '{ print $2 }')
+
+  # Check if configOptValue is empty
   if [ -z "$configOptValue" ]; then
     vlReportErrorJson \
       "$testName" \
@@ -84,8 +101,10 @@ vlGetSshdConfigOpt()
     return
   fi
 
-  printf $( vlGetComparableOptionString "$configOptValue" )
+  # Safely call vlGetComparableOptionString with quotes to handle spaces or special characters
+  printf "%s" "$(vlGetComparableOptionString "$configOptValue")"
 }
+
 
 vlCheckSshPasswordLoginDisabled()
 {
@@ -110,21 +129,15 @@ vlCheckSshPasswordLoginDisabled()
     isDisabled=false
   fi
 
-  local resultDataJson=$( \
-    vlJsonifyEmbeddedJson $( \
-      "$JQ" $JQFLAGS -n -c \
-        --argjson isDisabled $isDisabled \
-        '{ Disabled: $isDisabled }' \
-    ) \
-  )
+  local resultData=$(vlAddResultValue "{}" "Disabled" $isDisabled)
 
-  vlReportTestResultJson \
+  vlCreateResultObject \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$resultDataJson"
+    "$resultData"
 }
 
 vlCheckSshFipsCompliant()
@@ -200,66 +213,71 @@ vlCheckSshFipsCompliant()
     testScore=10
   fi
 
-  local resultDataJson=$( \
-    vlJsonifyEmbeddedJson $( \
-      "$JQ" $JQFLAGS -n -c \
-        --argjson isFipsCompliant "$isFipsCompliant" \
-        '{ IsFipsCompliant: $isFipsCompliant }' \
-    ) \
-  )
+  local resultData=$(vlAddResultValue "{}" "IsFipsCompliant" $isFipsCompliant)
 
-  vlReportTestResultJson \
+  vlCreateResultObject \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$resultDataJson"
+    "$resultData"
 }
 
 # Returns the comma-separated values in inputString that match a value in expectedString.
-# If any value in inputString is not in expectedString, the function fails.
-vlGetMatchingValuesAndRejectNonMatching()
+vlGetMatchingAndNonMatchingValues()
 {
   local inputString=$1
   local expectedString=$2
-  local inputValues=(${(s/,/)inputString})
-  local expectedValues=(${(s/,/)expectedString})
-  local matchedValues
 
-  for inputValue in "${inputValues[@]}"; do
+  shift 2
+
+  local -a inputValues=(${(s:,:)inputString})
+  local -a expectedValues=(${(s:,:)expectedString})
+  local matchedValues=""
+  local unmatchedValues=""
+
+  local missingValue=0
+
+  for expectedValue in "${expectedValues[@]}"; do
     local valueExists=0
-    for expectedValue in "${expectedValues[@]}"; do
+    for inputValue in "${inputValues[@]}"; do
       if [[ $inputValue == $expectedValue ]]; then
-        matchedValues+="${inputValue},"
+        matchedValues+="\"${inputValue}\","
         valueExists=1
         break
       fi
     done
 
     if (( valueExists == 0 )); then
-      return 1
+      unmatchedValues+="\"${expectedValue}\","
+      missingValue=1
     fi
   done
 
-  printf "%s\n" $( printf "%s\n" "$matchedValues" | sed 's/,$//g' )
-  return 0
+  MATCHED_VALUES=$(printf "%s" "$matchedValues" | sed 's/,$//')
+  UNMATCHED_VALUES=$(printf "%s" "$unmatchedValues" | sed 's/,$//')
 }
 
 vlGetTestScoreOnMatchingValues()
 {
   local matches=$1
-  local expectedString=$2
+  local unmached=$2
   local riskScore=$3
 
-  local matchingValues=(${(s/,/)matches})
-  local expectedValues=(${(s/,/)expectedString})
+  shift 3
+
+  local -a matchingValues=(${(s:,:)matches})
+  local -a unmatchingValues=(${(s:,:)unmached})
+
+  local expectedValuesCount=$(( ${#matchingValues[@]} + ${#unmatchingValues[@]} ))
 
   local minScore=$( vlGetMinScore $riskScore )
-  local testScore=$( printf "scale=2; ($minScore + ((10 - $minScore) * ${#matchingValues} / ${#expectedValues}))" | bc )
-  ## This unusual construction is required for bc to round the score as one would expect.
-  local roundedTestScore=$( printf "scale=2; ($testScore + 0.5)/1" | bc )
 
+  local testScore=$(echo "scale=2; ($minScore + ((10 - $minScore) * ${#matchingValues[@]} / $expectedValuesCount))" | bc -l)
+  ## This unusual construction is required for bc to round the score as one would expect.
+  local roundedTestScore=$(echo "scale=2; ($testScore + 0.5)/1" | bc -l)
+  
   printf "%d" $roundedTestScore
 }
 
@@ -282,33 +300,27 @@ vlCheckKeysStrongEncryption()
   ## see https://infosec.mozilla.org/guidelines/openssh
   local expectedAlgos="curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256"
 
-  local matchingAlgosList=$( \
-    vlGetMatchingValuesAndRejectNonMatching \
-      "$kexAlgos" \
-      "$expectedAlgos" \
-    )
+  vlGetMatchingAndNonMatchingValues \
+    "$kexAlgos" \
+    "$expectedAlgos"
 
   local testScore=$( \
     vlGetTestScoreOnMatchingValues \
-      "$matchingAlgosList" \
-      "$expectedAlgos" \
+      "$MATCHED_VALUES" \
+      "$UNMATCHED_VALUES" \
       "$riskScore" \
     )
 
-  local resultDataJson=$( \
-    vlJsonifyEmbeddedJson $( \
-      tr -d '\n' <<<"$matchingAlgosList" | \
-        "$JQ" -R -s -c '{KexAlgorithms: split(",")}' \
-    ) \
-  )
+  resultData=$(vlAddResultValue "{}" "matched" "[$MATCHED_VALUES]")
+  resultData=$(vlAddResultValue $resultData "unmatched" "[$UNMATCHED_VALUES]")
 
-  vlReportTestResultJson \
+  vlCreateResultObject \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$resultDataJson"
+    "$resultData"
 }
 
 vlCheckCiphersStrongEncryption()
@@ -330,33 +342,27 @@ vlCheckCiphersStrongEncryption()
   ## see https://infosec.mozilla.org/guidelines/openssh
   local expectedCiphers="curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256"
 
-  local matchingCiphersList=$( \
-    vlGetMatchingValuesAndRejectNonMatching \
+  vlGetMatchingAndNonMatchingValues \
       "$ciphers" \
-      "$expectedCiphers" \
-    )
+      "$expectedCiphers"
 
-  local testScore=$( \
+    local testScore=$( \
     vlGetTestScoreOnMatchingValues \
-      "$matchingCiphersList" \
-      "$expectedCiphers" \
+      "$MATCHED_VALUES" \
+      "$UNMATCHED_VALUES" \
       "$riskScore" \
     )
 
-  local resultDataJson=$( \
-    vlJsonifyEmbeddedJson $( \
-      tr -d '\n' <<<"$matchingCiphersList" | \
-        "$JQ" -R -s -c '{Ciphers: split(",")}' \
-    ) \
-  )
+  resultData=$(vlAddResultValue "{}" "matched" "[$MATCHED_VALUES]")
+  resultData=$(vlAddResultValue $resultData "unmatched" "[$UNMATCHED_VALUES]")
 
-  vlReportTestResultJson \
+  vlCreateResultObject \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$resultDataJson"
+    "$resultData"
 }
 
 vlCheckMacsStrongEncryption()
@@ -380,33 +386,27 @@ vlCheckMacsStrongEncryption()
   ## see https://infosec.mozilla.org/guidelines/openssh
   local expectedMacs="hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com"
 
-  local matchingMacsList=$( \
-    vlGetMatchingValuesAndRejectNonMatching \
+  vlGetMatchingAndNonMatchingValues \
       "$macs" \
-      "$expectedMacs" \
-    )
+      "$expectedMacs"
 
   local testScore=$( \
-    vlGetTestScoreOnMatchingValues \
-      "$matchingMacsList" \
-      "$expectedMacs" \
-      "$riskScore" \
-    )
-
-  local resultDataJson=$( \
-    vlJsonifyEmbeddedJson $( \
-      tr -d '\n' <<<"$matchingMacsList" | \
-        "$JQ" -R -s -c '{MACs: split(",")}' \
-    ) \
+  vlGetTestScoreOnMatchingValues \
+    "$MATCHED_VALUES" \
+    "$UNMATCHED_VALUES" \
+    "$riskScore" \
   )
 
-  vlReportTestResultJson \
+  resultData=$(vlAddResultValue "{}" "matched" "[$MATCHED_VALUES]")
+  resultData=$(vlAddResultValue $resultData "unmatched" "[$UNMATCHED_VALUES]")
+
+  vlCreateResultObject \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$resultDataJson"
+    "$resultData"
 }
 
 ################################################################################
