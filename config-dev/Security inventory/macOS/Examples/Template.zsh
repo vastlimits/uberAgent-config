@@ -1,4 +1,33 @@
 
+# JSON - Dashboard Support Matrix
+
+# Legend:
+# [+] Supported
+# [-] Not Supported
+
+# Structure                                                                         | Status
+# ----------------------------------------------------------------------------------|--------
+# Simple Object                                                                     | [+]
+#   {"Enabled": true, "Mode": "Auto"}
+# ----------------------------------------------------------------------------------|--------
+# Array of Objects                                                                  | [+]
+#   [{"Name":"John","Age":30, "City":"New York"},
+#    {"Name":"Alice","Age":25, "City":"Los Angeles"}]
+# ----------------------------------------------------------------------------------|--------
+# Object with simple Array (Strings, Numbers)                                       | [+]
+#   {"Applications":["App1", "App2", "App3"], "Status": "Active"}
+# ----------------------------------------------------------------------------------|--------
+# Complex Object                                                                    | [+]
+#   {"Enabled":true, "Config": {"Path":"/usr/bin", "Timeout":30},
+#    "User":{"Name":"John", "Role":"Admin"}}
+# ----------------------------------------------------------------------------------|--------
+# Object with Array of Objects                                                      | [-]
+#   {"Team": "Developers",
+#    "Members": [{"Name":"John","Skill":"Java"},
+#                {"Name":"Alice","Skill":"Python"}
+#               ]}
+# ----------------------------------------------------------------------------------|--------
+
 vlSimpleExample()
 {
    # Please always use this block, which consists of testName, testDisplayName, and testDescription.
