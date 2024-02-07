@@ -8,14 +8,21 @@ vlCheckIsAutomaticCheckingForMacOSUpdatesEnabled()
   local testDisplayName="Automatic checking for macOS updates enabled"
   local testDescription="Checks whether the automatic check for macOS updates is enabled."
   local riskScore=100
-  local expectedOutput="Automatic checking for updates is turned on"
 
-  vlCheckIsFeatureEnabledFromCommandOutput \
+  local expectedOutput="Automatic checking for updates is turned on"
+  local expectedGrepStatus=0
+  local expectedTestResultDataValue=true
+  local testResultVarName='Enabled'
+
+  vlCheckFeatureStateFromCommandOutput \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$riskScore" \
     "$expectedOutput" \
+    "$expectedGrepStatus" \
+    "$expectedTestResultDataValue" \
+    "$testResultVarName" \
     softwareupdate --schedule
 }
 
@@ -44,14 +51,14 @@ vlCheckForRecommendedUpdates()
   local testDescription="Provides a list of pending recommended software updates."
   local riskScore=90
 
-  local resultData=$(vlAddResultValue "" "RecommendedUpdates" '[]')
+  local resultData=$(vlAddResultValue "{}" "RecommendedUpdates" '[]')
 
   ## The softwareupdate doesn't use return codes to indicate sucess or failure.
   softwareupdate -l 2>/dev/null \
     | grep 'Recommended: YES' | cut -d"," -f1 | cut -d":" -f2 | awk '{$1=$1};1' \
     | while IFS= read -r availableUpdate
   do
-    resultData=$(vlAddResultValue "$resultData" "ApprovedApplications" "[\"$availableUpdate\"]")
+    resultData=$(vlAddResultValue "$resultData" "RecommendedUpdates" "[\"$availableUpdate\"]")
   done
 
   local testScore=$( vlGetMinScore "$riskScore" )
