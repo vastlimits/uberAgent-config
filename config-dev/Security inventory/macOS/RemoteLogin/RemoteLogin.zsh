@@ -32,7 +32,7 @@ vlCheckRootUserDisabled()
   local testDisplayName="macOS Root user disabled"
   local testDescription="Checks whether the macOS root user is disabled."
   local riskScore=60
-  
+
   local dontMatchOutput="ShadowHashData"
   local expectedGrepStatus=1
   local expectedTestResultDataValue=true
@@ -262,13 +262,13 @@ vlGetMatchingAndNonMatchingValues()
 vlGetTestScoreOnMatchingValues()
 {
   local matches=$1
-  local unmached=$2
+  local unmatched=$2
   local riskScore=$3
 
   shift 3
 
   local -a matchingValues=(${(s:,:)matches})
-  local -a unmatchingValues=(${(s:,:)unmached})
+  local -a unmatchingValues=(${(s:,:)unmatched})
 
   local expectedValuesCount=$(( ${#matchingValues[@]} + ${#unmatchingValues[@]} ))
 
@@ -277,7 +277,7 @@ vlGetTestScoreOnMatchingValues()
   local testScore=$(echo "scale=2; ($minScore + ((10 - $minScore) * ${#matchingValues[@]} / $expectedValuesCount))" | bc -l)
   ## This unusual construction is required for bc to round the score as one would expect.
   local roundedTestScore=$(echo "scale=2; ($testScore + 0.5)/1" | bc -l)
-  
+
   printf "%d" $roundedTestScore
 }
 
