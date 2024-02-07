@@ -8,14 +8,21 @@ vlCheckIsFirewallEnabled()
   local testDisplayName="Firewall status"
   local testDescription="Windows: This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private).\nmacOS: Checks whether the macOS firewall is enabled."
   local riskScore=100
-  local expectedOutput="enabled"
 
-  vlCheckIsFeatureEnabledFromCommandOutput \
+  local expectedOutput="enabled"
+  local expectedGrepStatus=0
+  local expectedTestResultDataValue=true
+  local testResultVarName='Enabled'
+
+  vlCheckFeatureStateFromCommandOutput \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$riskScore" \
     "$expectedOutput" \
+    "$expectedGrepStatus" \
+    "$expectedTestResultDataValue" \
+    "$testResultVarName" \
     /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
 }
 
@@ -27,12 +34,20 @@ vlCheckIsFirewallBlockallRuleEnabled()
   local riskScore=70
   local expectedOutput="Firewall is set to block all non-essential incoming connections"
 
-  vlCheckIsFeatureEnabledFromCommandOutput \
+  local expectedOutput="enabled"
+  local expectedGrepStatus=0
+  local expectedTestResultDataValue=true
+  local testResultVarName='Enabled'
+
+  vlCheckFeatureStateFromCommandOutput \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$riskScore" \
     "$expectedOutput" \
+    "$expectedGrepStatus" \
+    "$expectedTestResultDataValue" \
+    "$testResultVarName" \
     /usr/libexec/ApplicationFirewall/socketfilterfw --getblockall
 }
 
@@ -42,14 +57,21 @@ vlCheckIsFirewallStealthModeEnabled()
   local testDisplayName="macOS Firewall stealth mode active"
   local testDescription="Checks whether the stealth mode of the macOS firewall is active."
   local riskScore=80
-  local expectedOutput="enabled"
 
-  vlCheckIsFeatureEnabledFromCommandOutput \
+  local expectedOutput="enabled"
+  local expectedGrepStatus=0
+  local expectedTestResultDataValue=true
+  local testResultVarName='Enabled'
+
+  vlCheckFeatureStateFromCommandOutput \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$riskScore" \
     "$expectedOutput" \
+    "$expectedGrepStatus" \
+    "$expectedTestResultDataValue" \
+    "$testResultVarName" \
     /usr/libexec/ApplicationFirewall/socketfilterfw --getstealthmode
 }
 
@@ -73,7 +95,7 @@ vlGetFirewallApprovedApps()
     return
   fi
 
-  local resultData=$(vlAddResultValue "" "ApprovedApplications" '[]')
+  local resultData=$(vlAddResultValue "{}" "ApprovedApplications" '[]')
 
   printf "$vlCommandStdout" | \
     grep -B1 '( Allow incoming connections )' | \

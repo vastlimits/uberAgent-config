@@ -137,17 +137,6 @@ vlCreateResultObject() {
           }'
 }
 
-# This function expects each input strings to be quoted, like: "string"
-vlJsonifyArrayJson()
-{
-  local arrayName="$1"
-  shift
-  local array=("$@")
-
-  local arrayAsJson=$( printf '%s\n' "${array[@]}" | "$JQ" $JQFLAGS -c -s "{ $arrayName: . }" )
-  "$JQ" $JQFLAGS -n --arg val "$arrayAsJson" '$val'
-}
-
 vlReportErrorJson()
 {
     local name="$1"
@@ -179,6 +168,8 @@ vlPrintJsonReport()
 vlGetMinScore()
 {
   local riskScore="$1"
+
+  shift 1
 
   if (( $riskScore < 0 )); then
     riskScore=0
@@ -256,7 +247,7 @@ vlCheckFeatureStateFromCommandOutput()
     testResultDataValue=$( vlNegateBooleanValue "$testResultDataValue" )
   fi
 
-  local resultData=$(vlAddResultValue "" "$testResultVarName" $testResultDataValue)
+  local resultData=$(vlAddResultValue "{}" "$testResultVarName" $testResultDataValue)
 
   vlCreateResultObject \
     "$testName" \
@@ -265,120 +256,6 @@ vlCheckFeatureStateFromCommandOutput()
     "$testScore" \
     "$riskScore" \
     "$resultData"
-}
-
-# Checks whether a feature is enabled by matching the specified expected output
-# from a command.
-# If the output matches, then the feature is considered enabled.
-# Never quote the command invocation parameters, which must be specified last!
-#
-# The ResultData field is reported accordingly:
-#
-#    "ResultData": {
-#      "Enabled": true/false
-#    }
-#
-# Errors are reported using the appropriate JSON schema.
-vlCheckIsFeatureEnabledFromCommandOutput()
-{
-  local testName="$1"
-  local displayName="$2"
-  local description="$3"
-  local riskScore="$4"
-  local expectedOutput="$5"
-
-  shift 5
-
-  local expectedGrepStatus=0
-  local expectedTestResultDataValue=true
-  local testResultVarName='Enabled'
-
-  vlCheckFeatureStateFromCommandOutput \
-    "$testName" \
-    "$displayName" \
-    "$description" \
-    "$riskScore" \
-    "$expectedOutput" \
-    "$expectedGrepStatus" \
-    "$expectedTestResultDataValue" \
-    "$testResultVarName" \
-    $@
-}
-
-# Checks whether a feature is disabled by matching the specified expected output
-# from a command.
-# If the output matches, then the feature is considered disabled.
-# Never quote the command invocation parameters, which must be specified last!
-#
-# The ResultData field is reported accordingly:
-#
-#    "ResultData": {
-#      "Disabled": true/false
-#    }
-#
-# Errors are reported using the appropriate JSON schema
-vlCheckIsFeatureDisabledFromCommandOutput()
-{
-  local testName="$1"
-  local displayName="$2"
-  local description="$3"
-  local riskScore="$4"
-  local expectedOutput="$5"
-
-  shift 5
-
-  local expectedGrepStatus=0
-  local expectedTestResultDataValue=true
-  local testResultVarName='Disabled'
-
-  vlCheckFeatureStateFromCommandOutput \
-    "$testName" \
-    "$displayName" \
-    "$description" \
-    "$riskScore" \
-    "$expectedOutput" \
-    "$expectedGrepStatus" \
-    "$expectedTestResultDataValue" \
-    "$testResultVarName" \
-    $@
-}
-
-# Checks whether a feature is disabled by ensuring that the output of the specified
-# command does NOT match a specific string.
-# If the command output doesn't match the string, the feature is considered disabled.
-# Never quote the command invocation parameters, which must be specified last!
-#
-# The ResultData field is reported accordingly:
-#
-#    "ResultData": {
-#      "Disabled": true/false
-#    }
-#
-# Errors are reported using the appropriate JSON schema
-vlCheckIsFeatureDisabledFromNonMatchingCommandOutput()
-{
-  local testName="$1"
-  local displayName="$2"
-  local description="$3"
-  local riskScore="$4"
-  local expectedOutput="$5"
-
-  shift 5
-
-  local expectedGrepStatus=1
-  local expectedTestResultDataValue=true
-  local testResultVarName='Disabled'
-
-  vlCheckFeatureStateFromCommandOutput \
-    "$testName" \
-    "$displayName" \
-    "$description" \
-    "$riskScore" \
-    "$expectedOutput" \
-    "$expectedGrepStatus" \
-    "$expectedTestResultDataValue" \
-    "$testResultVarName" \
-    $@
 }
 
 vlCheckFeatureEnabledFromPlistDomainKey()
@@ -422,7 +299,7 @@ vlCheckFeatureEnabledFromPlistDomainKey()
     testResultDataValue=true
   fi
 
-  local resultData=$(vlAddResultValue "" "Enabled" $testResultDataValue)
+  local resultData=$(vlAddResultValue "{}" "Enabled" $testResultDataValue)
 
   vlCreateResultObject \
     "$testName" \
