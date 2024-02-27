@@ -1,4 +1,3 @@
-#!/bin/zsh
 #
 # Security and Compliance Inventory: Operating system configuration 
 #
@@ -68,7 +67,7 @@ vlCheckFWPWStatus()
    local isPhysical="true"
 
    for identifier in "${virtualIdentifiers[@]}"; do
-      if [[ "$hwModel" == *"$identifier"* ]]; then
+      if [[ "$hwModel:l" == *"$identifier:l"* ]]; then
          isPhysical="false"
          break
       fi
