@@ -53,7 +53,7 @@ vlCheckSipStatus()
       csrutil status
 }
 
-vlCheckFirmwareStatus()
+vlCheckFWPWStatus()
 {
    testName="CheckFWPWStatus"
    testDisplayName="Firmware Password Status"
@@ -62,9 +62,19 @@ vlCheckFirmwareStatus()
    riskScore=60
 
    local architecture=$(uname -m)
+   local hwModel=$(sysctl -n hw.model)
+   local virtualIdentifiers=("virtual" "vmware" "parallels" "vbox") 
+   local isPhysical="true"
 
-   # Firmware passwords are not available on Apple Silicon Macs.
-   if [[ "$architecture" == "x86_64" ]]; then
+   for identifier in "${virtualIdentifiers[@]}"; do
+      if [[ "$hwModel:l" == *"$identifier:l"* ]]; then
+         isPhysical="false"
+         break
+      fi
+   done
+
+   # Firmware passwords are not available on Apple Silicon Macs and virtual machines.
+   if [[ "$architecture" == "x86_64" && "$isPhysical" == "true" ]]; then
       local expectedOutput="Password Enabled: Yes"
       local expectedGrepStatus=0
       local expectedTestResultDataValue=true
@@ -243,32 +253,39 @@ vlCheckMediaSharing()
    for user in $users
       do
          # Retrieve media sharing preferences for a given user.
-         vlRunCommand sudo -u $user defaults read com.apple.amp.mediasharingd         
-         resultObj=$(vlAddResultValue "{}" "User" $user)
-         if [[ $vlCommandStatus == 0 ]]; then
-            # Parse the output to get the status of home and public sharing preferences.
-            local homeSharing=$(echo $vlCommandStdout | grep -o '"home-sharing-enabled" = [0-1];' | awk -F'= ' '{print $2}' | sed 's/;//')
-            local publicSharing=$(echo $vlCommandStdout | grep -o '"public-sharing-enabled" = [0-1];' | awk -F'= ' '{print $2}' | sed 's/;//')
-               # Check if both homeSharing and publicSharing are disabled, else consider media sharing as enabled.
-               if [[ $homeSharing == "0" && $publicSharing == "0" ]]; then
-                  result="false"
-                  resultObj=$(vlAddResultValue $resultObj "Enabled" $result)
-               else
-                  result="true"   
-                  resultObj=$(vlAddResultValue $resultObj "Enabled" $result)
-               fi
-         # If $vlCommandStatus != 0, report an error.
+         if [ -e /Users/$user/Library/Preferences/com.apple.amp.mediasharingd.plist ]; then
+            vlRunCommand sudo -u $user defaults read com.apple.amp.mediasharingd         
+            resultObj=$(vlAddResultValue "{}" "User" $user)
+            if [[ $vlCommandStatus == 0 ]]; then
+               # Parse the output to get the status of home and public sharing preferences.
+               local homeSharing=$(echo $vlCommandStdout | grep -o '"home-sharing-enabled" = [0-1];' | awk -F'= ' '{print $2}' | sed 's/;//')
+               local publicSharing=$(echo $vlCommandStdout | grep -o '"public-sharing-enabled" = [0-1];' | awk -F'= ' '{print $2}' | sed 's/;//')
+                  # Check if both homeSharing and publicSharing are disabled, else consider media sharing as enabled.
+                  if [[ (-z "$homeSharing" || "$homeSharing" == "0") && (-z "$publicSharing" || "$publicSharing" == "0") ]]; then
+                     result="false"
+                     resultObj=$(vlAddResultValue $resultObj "Enabled" $result)
+                  else
+                     result="true"   
+                     resultObj=$(vlAddResultValue $resultObj "Enabled" $result)
+                  fi
+            # If $vlCommandStatus != 0, report an error.
+            else
+               testScore=$(vlGetMinScore "$riskScore")
+               vlReportErrorJson \
+                  "$testName" \
+                  "$testDisplayName" \
+                  "$testDescription" \
+                  "$vlCommandStatus" \
+                  "$vlCommandStderr"
+               return
+            fi
+         # If the plist is not present assume the default, e.g. Media Sharing is disabled.
          else
-            testScore=$(vlGetMinScore "$riskScore")
-            vlReportErrorJson \
-               "$testName" \
-               "$testDisplayName" \
-               "$testDescription" \
-               "$vlCommandStatus" \
-               "$vlCommandStderr"
-            return
+            result="false"
+            resultObj=$(vlAddResultValue "{}" "User" $user)
+            resultObj=$(vlAddResultValue $resultObj "Enabled" $result)
          fi
-
+         
          # If this is not the first loop iteration, we can add $resultData to the existing array. Otherwise, we create a new array. 
          if [[ -n $resultData ]]
          then
@@ -292,7 +309,7 @@ vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 results=()
 results+="$( vlCheckFVStatus )"
 results+="$( vlCheckSipStatus )"
-results+="$( vlCheckFirmwareStatus )"
+results+="$( vlCheckFWPWStatus )"
 results+="$( vlCheckPwForSwSettings )"
 results+="$( vlCheckTmEnc )"
 results+="$( vlCheckSecureEntry )"
