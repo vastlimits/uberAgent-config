@@ -4,12 +4,11 @@
 
 vlCheckFVStatus()
 {
-   testName="CheckFVStatus"
-   testDisplayName="FileVault Status"
-   testDescription="FileVault secures the data on a machines disk by encrypting its content automatically. It is recommended to turn it on, especially for mobile devices. This test checks if FileVault is enabled."
-
-   testScore=10
-   riskScore=80
+   local testName="FVStatus"
+   local testDisplayName="FileVault Status"
+   local testDescription="FileVault secures the data on a machines disk by encrypting its content automatically. It is recommended to turn it on, especially for mobile devices. This test checks if FileVault is enabled."
+   local testScore=10
+   local riskScore=80
 
    local expectedOutput="FileVault is On."
    local expectedGrepStatus=0
@@ -30,11 +29,11 @@ vlCheckFVStatus()
 
 vlCheckSipStatus()
 {
-   testName="CheckSIPStatus"
-   testDisplayName="System Integrity Protection Status"
-   testDescription="System Integrity Protection (SIP) in macOS protects the entire system by preventing the execution of unauthorized code. This test checks if SIP is enabled."
-   testScore=10
-   riskScore=100
+   local testName="SIPStatus"
+   local testDisplayName="System Integrity Protection Status"
+   local testDescription="System Integrity Protection (SIP) in macOS protects the entire system by preventing the execution of unauthorized code. This test checks if SIP is enabled."
+   local testScore=10
+   local riskScore=100
 
    local expectedOutput="System Integrity Protection status: enabled."
    local expectedGrepStatus=0
@@ -55,11 +54,11 @@ vlCheckSipStatus()
 
 vlCheckFWPWStatus()
 {
-   testName="CheckFWPWStatus"
-   testDisplayName="Firmware Password Status"
-   testDescription="Without a firmware password system startup from any disk other than the designated startup disk is not possible. This feature requires a Mac with an Intel processor. This test checks if a firmware password is set."
-   testScore=10
-   riskScore=60
+   local testName="FWPWStatus"
+   local testDisplayName="Firmware Password Status"
+   local testDescription="Without a firmware password system startup from any disk other than the designated startup disk is not possible. This feature requires a Mac with an Intel processor. This test checks if a firmware password is set."
+   local testScore=10
+   local riskScore=60
 
    local architecture=$(uname -m)
    local hwModel=$(sysctl -n hw.model)
@@ -95,11 +94,11 @@ vlCheckFWPWStatus()
 
 vlCheckPwForSwSettings()
 {
-   testName="CheckPwForSwSettings"
-   testDisplayName="Require administrator password to access systemwide settings"
-   testDescription="Some preferences in macOS contain settings that affect the entire system. Requiring a password to unlock these systemwide settings reduces the risk of a non-authorized user modifying system configurations. This test checks if this setting is enabled."
-   testScore=10
-   riskScore=100
+   local testName="PwForSwSettings"
+   local testDisplayName="Require administrator password to access systemwide settings"
+   local testDescription="Some preferences in macOS contain settings that affect the entire system. Requiring a password to unlock these systemwide settings reduces the risk of a non-authorized user modifying system configurations. This test checks if this setting is enabled."
+   local testScore=10
+   local riskScore=100
 
    # taken from: https://github.com/usnistgov/macos_security 
    authDBs=("system.preferences" "system.preferences.energysaver" "system.preferences.network" "system.preferences.printing" "system.preferences.sharing" "system.preferences.softwareupdate" "system.preferences.startupdisk" "system.preferences.timemachine")
@@ -122,11 +121,11 @@ vlCheckPwForSwSettings()
 
 vlCheckTmEnc()
 {
-   testName="CheckTmEnc"
-   testDisplayName="Time Machine backup encryption"
-   testDescription="This test checks if the Time Machine backup encryption is enabled."
-   testScore=10
-   riskScore=70
+   local testName="TmEnc"
+   local testDisplayName="Time Machine backup encryption"
+   local testDescription="This test checks if the Time Machine backup encryption is enabled."
+   local testScore=10
+   local riskScore=70
 
    # Check if Time Machine is enabled
    vlRunCommand tmutil destinationinfo
@@ -170,11 +169,11 @@ vlCheckTmEnc()
 
 vlCheckSecureEntry()
 {
-   testName="CheckSecureEntry"
-   testDisplayName="Terminal Secure Keyboard Entry"
-   testDescription="Secure Keyboard Entry can prevent other apps on the computer or network from detecting and recording what is typed in Terminal. This test checks if Secure Keyboard Entry is enabled."
-   testScore=10
-   riskScore=30
+   local testName="SecureEntry"
+   local testDisplayName="Terminal Secure Keyboard Entry"
+   local testDescription="Secure Keyboard Entry can prevent other apps on the computer or network from detecting and recording what is typed in Terminal. This test checks if Secure Keyboard Entry is enabled."
+   local testScore=10
+   local riskScore=30
 
    # Get all real local users.
    local users=($(dscacheutil -q user | grep -A 3 -B 2 -e 'uid: [5-9][0-9]\{2\}\|uid: 1[0-9]\{3\}' | grep 'name:' | cut -d: -f2 | tr -d ' '))
@@ -220,11 +219,11 @@ vlCheckSecureEntry()
 
 vlCheckSmbSharing()
 {
-   testName="CheckSmbSharing"
-   testDisplayName="SMB Sharing"
-   testDescription="Local shares can be a security risk as they might allow unauthorized access to sensitive data if not properly configured or if weak passwords are used. This test checks if SMB sharing is enabled."
-   testScore=10
-   riskScore=50
+   local testName="SmbSharing"
+   local testDisplayName="SMB Sharing"
+   local testDescription="Local shares can be a security risk as they might allow unauthorized access to sensitive data if not properly configured or if weak passwords are used. This test checks if SMB sharing is enabled."
+   local testScore=10
+   local riskScore=50
 
    result="false"
    # Check if SMB sharing is enabled
@@ -242,7 +241,7 @@ vlCheckSmbSharing()
 
 vlCheckMediaSharing()
 {
-   local testName="CheckMediaSharing"
+   local testName="MediaSharing"
    local testDisplayName="Media Sharing"
    local testDescription="Media sharing can pose a security risk because it may allow unauthorized access to sensitive content and exploit potential software vulnerabilities, leading to misuse of shared media. This test checks if media sharing is enabled."
    local riskScore=30

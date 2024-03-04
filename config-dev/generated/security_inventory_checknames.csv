@@ -36,7 +36,14 @@ WCHta,WindowsConfiguration HTA,This test validates whether HTA (HTML Application
 FWBlockAll,macOS Firewall block-all rule active,Checks whether the block-all rule of the macOS firewall is active.
 FWStealthMode,macOS Firewall stealth mode active,Checks whether the stealth mode of the macOS firewall is active.
 FWApprovedApps,macOS Firewall approved applications,Provides a list of applications that may accept incoming connections.
-CheckMediaSharing,Media Sharing,"Media sharing can pose a security risk because it may allow unauthorized access to sensitive content and exploit potential software vulnerabilities, leading to misuse of shared media. This test checks if media sharing is enabled."
+FVStatus,FileVault Status,"FileVault secures the data on a machines disk by encrypting its content automatically. It is recommended to turn it on, especially for mobile devices. This test checks if FileVault is enabled."
+SIPStatus,System Integrity Protection Status,System Integrity Protection (SIP) in macOS protects the entire system by preventing the execution of unauthorized code. This test checks if SIP is enabled.
+FWPWStatus,Firmware Password Status,Without a firmware password system startup from any disk other than the designated startup disk is not possible. This feature requires a Mac with an Intel processor. This test checks if a firmware password is set.
+PwForSwSettings,Require administrator password to access systemwide settings,Some preferences in macOS contain settings that affect the entire system. Requiring a password to unlock these systemwide settings reduces the risk of a non-authorized user modifying system configurations. This test checks if this setting is enabled.
+TmEnc,Time Machine backup encryption,This test checks if the Time Machine backup encryption is enabled.
+SecureEntry,Terminal Secure Keyboard Entry,Secure Keyboard Entry can prevent other apps on the computer or network from detecting and recording what is typed in Terminal. This test checks if Secure Keyboard Entry is enabled.
+SmbSharing,SMB Sharing,Local shares can be a security risk as they might allow unauthorized access to sensitive data if not properly configured or if weak passwords are used. This test checks if SMB sharing is enabled.
+MediaSharing,Media Sharing,"Media sharing can pose a security risk because it may allow unauthorized access to sensitive content and exploit potential software vulnerabilities, leading to misuse of shared media. This test checks if media sharing is enabled."
 SSHLoginDisabled,macOS Remote login disabled,Checks whether remote login over ssh is disabled.
 SSHRootUserDisabled,macOS Root user disabled,Checks whether the macOS root user is disabled.
 SSHPasswordLoginDisabled,macOS Remote password login disabled,Checks whether remote password logins are disabled on macOS.
