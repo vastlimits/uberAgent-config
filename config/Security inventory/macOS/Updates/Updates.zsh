@@ -5,8 +5,8 @@
 vlCheckIsAutomaticCheckingForMacOSUpdatesEnabled()
 {
   local testName="SWUAutomaticUpdateCheckingEnabled"
-  local testDisplayName="Automatic checking for macOS updates enabled"
-  local testDescription="Checks whether the automatic check for macOS updates is enabled."
+  local testDisplayName="macOS updates"
+  local testDescription="Disabling automatic update checks on macOS can leave the system vulnerable to threats. This test verifys if automatic update checks are enabled."
   local riskScore=100
 
   local expectedOutput="Automatic checking for updates is turned on"
@@ -29,8 +29,8 @@ vlCheckIsAutomaticCheckingForMacOSUpdatesEnabled()
 vlCheckIsAutomaticCheckingForAppStoreUpdatesEnabled()
 {
   local testName="SWUAutomaticUpdateAppStoreCheckingEnabled"
-  local testDisplayName="Automatic checking for AppStore updates enabled"
-  local testDescription="Checks whether the automatic check for AppStore updates is enabled."
+  local testDisplayName="macOS AppStore updates"
+  local testDescription="Deactivating AppStore updates can result in out-of-date applications, increasing the risk of security breaches. This test verifys if AppStore update checks are enabled."
   local riskScore=80
   local plistDefault=0
 
@@ -47,8 +47,8 @@ vlCheckIsAutomaticCheckingForAppStoreUpdatesEnabled()
 vlCheckForRecommendedUpdates()
 {
   local testName="SWURecommendedUpdatesAvailable"
-  local testDisplayName="Checks whether there are recommended software updates pending"
-  local testDescription="Provides a list of pending recommended software updates."
+  local testDisplayName="macOS recommended updates"
+  local testDescription="Provides a list of pending recommended macOS software updates."
   local riskScore=90
 
   local resultData=$(vlAddResultValue "{}" "RecommendedUpdates" '[]')
@@ -72,7 +72,7 @@ vlCheckForRecommendedUpdates()
 vlCheckInstallSecurityResponsesAndSystemFilesEnabled()
 {
   local testName="SWUInstallSecurityResponsesAndSystemFilesEnabled"
-  local testDisplayName="Install security responses and system files automatically"
+  local testDisplayName="macOS security response updates"
   local testDescription="Checks whether the automatic installation of security responses and system files is enabled."
   local riskScore=80
   local plistDefault=1
