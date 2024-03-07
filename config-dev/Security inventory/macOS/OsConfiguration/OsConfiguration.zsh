@@ -55,7 +55,7 @@ vlCheckSipStatus()
 vlCheckFWPWStatus()
 {
    local testName="FWPWStatus"
-   local testDisplayName="Firmware Password Status"
+   local testDisplayName="macOS firmware password status"
    local testDescription="Without a firmware password system startup from any disk other than the designated startup disk is not possible. This feature requires a Mac with an Intel processor. This test checks if a firmware password is set."
    local testScore=10
    local riskScore=60
@@ -95,8 +95,8 @@ vlCheckFWPWStatus()
 vlCheckPwForSwSettings()
 {
    local testName="PwForSwSettings"
-   local testDisplayName="Require administrator password to access systemwide settings"
-   local testDescription="Some preferences in macOS contain settings that affect the entire system. Requiring a password to unlock these systemwide settings reduces the risk of a non-authorized user modifying system configurations. This test checks if this setting is enabled."
+   local testDisplayName="Systemwide settings access"
+   local testDescription="Some preferences in macOS contain settings that affect the entire system. Requiring a password to unlock these systemwide settings reduces the risk of a non-authorized user modifying system configurations. This test checks if a password is required."
    local testScore=10
    local riskScore=100
 
@@ -123,7 +123,7 @@ vlCheckTmEnc()
 {
    local testName="TmEnc"
    local testDisplayName="Time Machine backup encryption"
-   local testDescription="This test checks if the Time Machine backup encryption is enabled."
+   local testDescription="This test checks if the Time Machine backup encryption is enabled. A backup needs to be present for this check to work."
    local testScore=10
    local riskScore=70
 
@@ -220,7 +220,7 @@ vlCheckSecureEntry()
 vlCheckSmbSharing()
 {
    local testName="SmbSharing"
-   local testDisplayName="SMB Sharing"
+   local testDisplayName="SMB sharing"
    local testDescription="Local shares can be a security risk as they might allow unauthorized access to sensitive data if not properly configured or if weak passwords are used. This test checks if SMB sharing is enabled."
    local testScore=10
    local riskScore=50
@@ -242,7 +242,7 @@ vlCheckSmbSharing()
 vlCheckMediaSharing()
 {
    local testName="MediaSharing"
-   local testDisplayName="Media Sharing"
+   local testDisplayName="Media sharing"
    local testDescription="Media sharing can pose a security risk because it may allow unauthorized access to sensitive content and exploit potential software vulnerabilities, leading to misuse of shared media. This test checks if media sharing is enabled."
    local riskScore=30
    local testScore=10
