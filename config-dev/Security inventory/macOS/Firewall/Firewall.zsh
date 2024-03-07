@@ -29,8 +29,8 @@ vlCheckIsFirewallEnabled()
 vlCheckIsFirewallBlockallRuleEnabled()
 {
   local testName="FWBlockAll"
-  local testDisplayName="macOS Firewall block-all rule active"
-  local testDescription="Checks whether the block-all rule of the macOS firewall is active."
+  local testDisplayName="macOS block-all rule"
+  local testDescription="The block-all rule of the macOS firewall is a setting that restricts all incoming connections, providing an essential layer of security by minimizing potential entry points for threats. This test checks whether this rule is active."
   local riskScore=70
   local expectedOutput="Firewall is set to block all non-essential incoming connections"
 
@@ -54,8 +54,8 @@ vlCheckIsFirewallBlockallRuleEnabled()
 vlCheckIsFirewallStealthModeEnabled()
 {
   local testName="FWStealthMode"
-  local testDisplayName="macOS Firewall stealth mode active"
-  local testDescription="Checks whether the stealth mode of the macOS firewall is active."
+  local testDisplayName="macOS stealth mode"
+  local testDescription="Stealth mode is a feature that prevents the system from responding to network test requests. Checks whether the stealth mode of the macOS firewall is active."
   local riskScore=80
 
   local expectedOutput="enabled"
@@ -78,8 +78,8 @@ vlCheckIsFirewallStealthModeEnabled()
 vlGetFirewallApprovedApps()
 {
   local testName="FWApprovedApps"
-  local testDisplayName="macOS Firewall approved applications"
-  local testDescription="Provides a list of applications that may accept incoming connections."
+  local testDisplayName="macOS approved applications"
+  local testDescription="Provides a list of applications that may accept incoming connections. This test is only informational and always returns a fixed test score."
   # This test is only informational and always returns a fixed test score
   local testScore=10
   local riskScore=0
