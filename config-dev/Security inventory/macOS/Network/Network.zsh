@@ -53,18 +53,57 @@ vlCheckWiFiSecurity()
               ;;
       esac
        
-      resultObj1=$(vlAddResultValue "{}" "Status" "On")
+      resultObj1=$(vlAddResultValue "{}" "Status" "on")
       resultObj2=$(vlAddResultValue "{}" "Connection" "$security")
       resultData=$(vlAddResultValue "[]" "" "[$resultObj1, $resultObj2]")
   else
       testScore=10
-      resultData=$(vlAddResultValue "{}" "Status" "Off")
+      resultData=$(vlAddResultValue "{}" "Status" "off")
   fi
   
   # Create the result object 
   vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
 }
 
+vlCheckSmbAndNetBios()
+{
+  local testName="SMBv1andNetBiosTest"
+  local testDisplayName="SMBv1 and NetBIOS Status"
+  local testDescription="Due to the age of SMBv1 and NetBIOS these might be prone to vulnerabilities and security issues. This test checks if they are system wide enabled (which is the default) or disabled."
+  local testScore=2
+  local riskScore=80
+
+  # These are enabled by default
+  local SMBv1Status="enabled"
+  local NetBiosStatus="enabled" 
+  
+  FILE="/etc/nsmb.conf"
+  SEARCH_STRING_SMB="protocol_vers_map=6"
+  SEARCH_STRING_NETBIOS="port445=no_netbios"
+
+  # Check if the file exists and if SMBv1 and/or NetBIOS is disabled
+  # If the file doesn't exist, assume both SMBv1 and NetBIOS are enabled
+  if [ -f "$FILE" ]; then
+      # Check if the file contains only the first search string on a line (ignoring leading/trailing whitespace)
+      if grep -Eq "^\s*$SEARCH_STRING_SMB\s*$" "$FILE"; then
+          SMBv1Status="disabled"
+          testScore=10
+      fi
+  
+      # Check if the file contains only the second search string on a line (ignoring leading/trailing whitespace)
+      if grep -Eq "^\s*$SEARCH_STRING_NETBIOS\s*$" "$FILE"; then
+          NetBiosStatus="disabled"
+          testScore=10
+      fi
+  fi  
+
+  resultObj1=$(vlAddResultValue "{}" "SMBv1" "$SMBv1Status")
+  resultObj2=$(vlAddResultValue "{}" "NetBIOS" "$NetBiosStatus")
+  resultData=$(vlAddResultValue "[]" "" "[$resultObj1, $resultObj2]")
+  
+  # Create the result object 
+  vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
+}
 
 # Initialize the vl* utility functions
 vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
@@ -75,5 +114,6 @@ vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 # Run the tests
 results=()
 results+="$( vlCheckWiFiSecurity )"
+results+="$( vlCheckSmbAndNetBios )"
 # Print the results as JSON
 vlPrintJsonReport "${results[@]}"
