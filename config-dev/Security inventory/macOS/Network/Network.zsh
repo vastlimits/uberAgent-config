@@ -105,6 +105,91 @@ vlCheckSmbAndNetBios()
   vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
 }
 
+vlCheckInternetSharing()
+{
+  local testName="InternetSharingTest"
+  local testDisplayName="Internet Sharing Status"
+  local testDescription="Internet Sharing allows the system to share its internet connection with other devices, potentially creating a security risk by inadvertently providing network access to unauthorized users or devices. This test checks if it is configured and/or enabled/disabled."
+  local testScore=10
+  local riskScore=80
+  
+  # Internet Sharing is disabled and not configured by default
+  local sharingStatus="disabled"
+  
+  # Command to check Internet Sharing status
+  output=$(defaults read /Library/Preferences/SystemConfiguration/com.apple.nat 2>&1)
+  
+  # Check if the domain exists
+  if [[ $output != *"Domain /Library/Preferences/SystemConfiguration/com.apple.nat does not exist"* ]]; then
+    # Check if Internet Sharing is enabled or not
+    if echo "$output" | grep -q "Enabled = 1"; then
+      sharingStatus="enabled"
+      testScore=2
+    fi
+  fi
+
+  resultData=$(vlAddResultValue "{}" "Status" "$sharingStatus")
+  
+  # Create the result object 
+  vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
+}
+
+vlCheckAirDrop()
+{
+  local testName="AirDropTest"
+  local testDisplayName="AirDrop Status"
+  local testDescription="AirDrop is a file-sharing feature built into macOS that uses Wi-Fi and Bluetooth for peer-to-peer transfers. This can be a security risk because it may allow harmful content to be sent from unknown devices. This test checks if AirDrop is enabled."
+  local testScore=10
+  local riskScore=80
+  
+  local wifiEnabled="false"
+  local blueToothEnabled="false"
+  local sharingDaemonRunning="false"
+  local interfaceAwdl0Active="false"
+  local airdropStatus="disabled"
+  
+  # Check Wi-Fi Status
+  wifi_status=$(/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | awk '/state:/ {print $2}')
+  if [[ $wifi_status == "running" ]]; then
+      wifiEnabled="true"
+  fi
+  
+  # Check Bluetooth Status using system_profiler and awk
+  bluetooth_info=$(system_profiler SPBluetoothDataType)
+  bluetooth_status=$(echo "$bluetooth_info" | awk '/State:/{print $2}')
+  
+  if [[ $bluetooth_status == "On" ]]; then
+      blueToothEnabled="true"
+  fi
+  
+  # Check if sharingd is running
+  sharingd_pid=$(pgrep sharingd)
+  if [[ $sharingd_pid ]]; then
+      sharingDaemonRunning="true"
+  fi
+  
+  # Check the status of the awdl0 interface
+  awdl_status=$(ifconfig awdl0 | grep "status: " | awk '{print $2}')
+  if [[ $awdl_status == "active" ]]; then
+      interfaceAwdl0Active="true"
+  fi
+  
+  # Infer AirDrop status based on above checks
+  if [[ $wifiEnabled == "true" && $blueToothEnabled == "true" && $sharingDaemonRunning == "true" && $interfaceAwdl0Active == "true" ]]; then
+      airdropStatus="enabled"
+      testScore=5
+  else
+      airdropStatus="disabled"
+      testScore=10
+  fi
+  
+  resultData=$(vlAddResultValue "{}" "Status" "$airdropStatus")
+  
+  # Create the result object 
+  vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
+  
+}
+
 # Initialize the vl* utility functions
 vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 . "$vlUtils" && vlInit
@@ -115,5 +200,7 @@ vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 results=()
 results+="$( vlCheckWiFiSecurity )"
 results+="$( vlCheckSmbAndNetBios )"
+results+="$( vlCheckInternetSharing )"
+results+="$( vlCheckAirDrop )"
 # Print the results as JSON
 vlPrintJsonReport "${results[@]}"
