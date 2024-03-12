@@ -1,0 +1,31 @@
+name: Validate consistency of uberAgent.conf and uberAgent-data-volume-optimized.conf files
+on:
+  pull_request:
+    branches:
+    - develop
+    - "main"
+    - "version/*"
+
+jobs:
+  download-config:
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+           fetch-depth: 0
+
+      - name: "Check if no configuration files has changed or both files uberAgent.conf and uberAgent-data-volume-optimized.conf"
+        run: |
+                CONFIG_CHANGED="$(git diff --name-only uberAgent.conf)"
+                CONFIG_OPTIMIZED_CHANGED="$(git diff --name-only uberAgent-data-volume-optimized.conf)"
+
+                if ( [ -n "${CONFIG_CHANGED}" ] && [ -z "${CONFIG_OPTIMIZED_CHANGED}" ] ) || ( [ -z "${CONFIG_CHANGED}" ] && [ -n "${CONFIG_OPTIMIZED_CHANGED}" ] )
+                then
+                  # only one configuration file was changed. This is an error
+                  exit 1
+                fi
+
+                exit 0
+        continue-on-error: false
