@@ -18,8 +18,8 @@ jobs:
 
       - name: "Check if no configuration files has changed or both files uberAgent.conf and uberAgent-data-volume-optimized.conf"
         run: |
-                CONFIG_CHANGED="$(git diff --name-only uberAgent.conf)"
-                CONFIG_OPTIMIZED_CHANGED="$(git diff --name-only uberAgent-data-volume-optimized.conf)"
+                CONFIG_CHANGED="$(git diff --name-only config/uberAgent.conf)"
+                CONFIG_OPTIMIZED_CHANGED="$(git diff --name-only config/uberAgent-data-volume-optimized.conf)"
 
                 if ( [ -n "${CONFIG_CHANGED}" ] && [ -z "${CONFIG_OPTIMIZED_CHANGED}" ] ) || ( [ -z "${CONFIG_CHANGED}" ] && [ -n "${CONFIG_OPTIMIZED_CHANGED}" ] )
                 then
