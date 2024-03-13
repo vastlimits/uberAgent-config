@@ -190,6 +190,44 @@ vlCheckAirDrop()
   
 }
 
+vlCheckAirplayReceiver()
+{
+  local testName="AirPlayReceiverTest"
+  local testDisplayName="Airplay Receiver Status"
+  local testDescription="The AirPlay Receiver under macOS is a feature that allows the computer to receive and display or play content streamed from other Apple devices. It might be a security risk as it could potentially allow unauthorized users to broadcast content if not properly secured. This test checks each user's settings."
+  local testScore=10
+  local riskScore=80
+  
+  local resultData=""
+  
+  # Iterate over each user home directory in /Users
+  for user_home in /Users/*; do
+    # Extract the username from the home directory path
+    user=$(basename "$user_home")
+
+    # Skip the "Shared" directory
+    [[ "$user" == "Shared" ]] && continue
+    
+    # Use sudo to run 'defaults' as the user to check AirplayReceiverEnabled status
+    # Yes, the option is called "AirplayRecieverEnabled" and contains a typo
+    airplay_status=$(sudo -u "$user" defaults -currentHost read com.apple.controlcenter.plist AirplayRecieverEnabled 2>/dev/null)
+    
+    # Check if the `defaults` command succeeded
+    if [[ $? -eq 0 ]]; then
+      # Check the returned value and print the status
+      local result="disabled for $user"
+      if [[ $airplay_status -eq 1 ]]; then
+        result="enabled for $user"
+        testScore=3
+      fi
+      resultData+=$(vlAddResultValue "{}" "Status" "$result")
+    fi
+  done
+  
+  # Create the result object 
+  vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
+}
+
 # Initialize the vl* utility functions
 vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 . "$vlUtils" && vlInit
@@ -202,5 +240,6 @@ results+="$( vlCheckWiFiSecurity )"
 results+="$( vlCheckSmbAndNetBios )"
 results+="$( vlCheckInternetSharing )"
 results+="$( vlCheckAirDrop )"
+results+="$( vlCheckAirplayReceiver )"
 # Print the results as JSON
 vlPrintJsonReport "${results[@]}"
