@@ -33,25 +33,25 @@ WCBitlocker,WindowsConfiguration Bitlocker,"This test verifies the status of Bit
 WCComHijacking,WindowsConfiguration COM hijacking,This test determines whether the mmc.exe executable file is set as the default program for .msc (Microsoft Management Console) files.
 WCTimeProvHijacking,WindowsConfiguration time provider hijacking,"This test verifies whether the w32time.dll file is set as the default time provider in the Windows operating system. The w32time.dll file is a crucial component responsible for time synchronization and accuracy within the system. Accurate timekeeping is essential for various system functionalities, including security protocols, authentication processes, and event logging."
 WCHta,WindowsConfiguration HTA,This test validates whether HTA (HTML Application) execution is enabled for the current user. HTA files can be used to execute malicious scripts or actions if not properly controlled.
-FWBlockAll,macOS Firewall block-all rule active,Checks whether the block-all rule of the macOS firewall is active.
-FWStealthMode,macOS Firewall stealth mode active,Checks whether the stealth mode of the macOS firewall is active.
-FWApprovedApps,macOS Firewall approved applications,Provides a list of applications that may accept incoming connections.
+FWBlockAll,macOS block-all rule,"The block-all rule of the macOS firewall is a setting that restricts all incoming connections, providing an essential layer of security by minimizing potential entry points for threats. This test checks whether this rule is active."
+FWStealthMode,macOS stealth mode,Stealth mode is a feature that prevents the system from responding to network test requests. Checks whether the stealth mode of the macOS firewall is active.
+FWApprovedApps,macOS approved applications,Provides a list of applications that may accept incoming connections. This test is only informational and always returns a fixed test score.
 FVStatus,FileVault Status,"FileVault secures the data on a machines disk by encrypting its content automatically. It is recommended to turn it on, especially for mobile devices. This test checks if FileVault is enabled."
 SIPStatus,System Integrity Protection Status,System Integrity Protection (SIP) in macOS protects the entire system by preventing the execution of unauthorized code. This test checks if SIP is enabled.
-FWPWStatus,Firmware Password Status,Without a firmware password system startup from any disk other than the designated startup disk is not possible. This feature requires a Mac with an Intel processor. This test checks if a firmware password is set.
-PwForSwSettings,Require administrator password to access systemwide settings,Some preferences in macOS contain settings that affect the entire system. Requiring a password to unlock these systemwide settings reduces the risk of a non-authorized user modifying system configurations. This test checks if this setting is enabled.
-TmEnc,Time Machine backup encryption,This test checks if the Time Machine backup encryption is enabled.
+FWPWStatus,macOS firmware password status,Without a firmware password system startup from any disk other than the designated startup disk is not possible. This feature requires a Mac with an Intel processor. This test checks if a firmware password is set.
+PwForSwSettings,Systemwide settings access,Some preferences in macOS contain settings that affect the entire system. Requiring a password to unlock these systemwide settings reduces the risk of a non-authorized user modifying system configurations. This test checks if a password is required.
+TmEnc,Time Machine backup encryption,This test checks if the Time Machine backup encryption is enabled. A backup needs to be present for this check to work.
 SecureEntry,Terminal Secure Keyboard Entry,Secure Keyboard Entry can prevent other apps on the computer or network from detecting and recording what is typed in Terminal. This test checks if Secure Keyboard Entry is enabled.
-SmbSharing,SMB Sharing,Local shares can be a security risk as they might allow unauthorized access to sensitive data if not properly configured or if weak passwords are used. This test checks if SMB sharing is enabled.
-MediaSharing,Media Sharing,"Media sharing can pose a security risk because it may allow unauthorized access to sensitive content and exploit potential software vulnerabilities, leading to misuse of shared media. This test checks if media sharing is enabled."
-SSHLoginDisabled,macOS Remote login disabled,Checks whether remote login over ssh is disabled.
-SSHRootUserDisabled,macOS Root user disabled,Checks whether the macOS root user is disabled.
-SSHPasswordLoginDisabled,macOS Remote password login disabled,Checks whether remote password logins are disabled on macOS.
-SSHFipsCompliantConfig,macOS Remote login configuration is FIPS compliant,Checks whether the remote login configuration is FIPS compliant.
-SSHKeysUseStrongEncryption,macOS Remote login keys use strong encryption,Checks whether the symmetric key algorithms that are used for remote login are strong.
-SSHCiphersUseStrongEncryption,macOS Remote login ciphers use strong encryption,Checks whether the cipher algorithms that are used for remote login are strong.
-SSHMacsUseStrongEncryption,macOS Remote login MACs use strong encryption,Checks whether the MAC algorithms that are used for remote login are strong.
-SWUAutomaticUpdateCheckingEnabled,Automatic checking for macOS updates enabled,Checks whether the automatic check for macOS updates is enabled.
-SWUAutomaticUpdateAppStoreCheckingEnabled,Automatic checking for AppStore updates enabled,Checks whether the automatic check for AppStore updates is enabled.
-SWURecommendedUpdatesAvailable,Checks whether there are recommended software updates pending,Provides a list of pending recommended software updates.
-SWUInstallSecurityResponsesAndSystemFilesEnabled,Install security responses and system files automatically,Checks whether the automatic installation of security responses and system files is enabled.
+SmbSharing,SMB sharing,Local shares can be a security risk as they might allow unauthorized access to sensitive data if not properly configured or if weak passwords are used. This test checks if SMB sharing is enabled.
+MediaSharing,Media sharing,"Media sharing can pose a security risk because it may allow unauthorized access to sensitive content and exploit potential software vulnerabilities, leading to misuse of shared media. This test checks if media sharing is enabled."
+SSHLoginDisabled,macOS remote login,"Turning off remote login over SSH eliminates an access point that could potentially be exploited, increasing system security. Checks whether remote login over ssh is disabled."
+SSHRootUserDisabled,macOS root user,Enabling the root user can pose a security risk as it provides full access and control over the system. Checks whether the macOS root user is disabled.
+SSHPasswordLoginDisabled,macOS remote password login,Disabling password login over SSH reduces the risk of brute force attacks by requiring more secure cryptographic keys for access. Checks whether remote password logins are disabled on macOS.
+SSHFipsCompliantConfig,macOS remote login FIPS compliance,"Making remote logins FIPS (Federal Information Processing Standards) compliant, enhances security by enforcing stringent encryption standards. Checks whether the remote login configuration is FIPS compliant."
+SSHKeysUseStrongEncryption,macOS remote login key encryption,Checks whether the symmetric key algorithms that are used for remote login are considered strong.
+SSHCiphersUseStrongEncryption,macOS remote login ciphers,Checks whether the cipher algorithms that are used for remote login are considered strong.
+SSHMacsUseStrongEncryption,macOS remote login MACs,Checks whether the MAC (Message Authentication Codes) algorithms that are used for remote login are considered strong.
+SWUAutomaticUpdateCheckingEnabled,macOS updates,Disabling automatic update checks on macOS can leave the system vulnerable to threats. This test verifys if automatic update checks are enabled.
+SWUAutomaticUpdateAppStoreCheckingEnabled,macOS AppStore updates,"Deactivating AppStore updates can result in out-of-date applications, increasing the risk of security breaches. This test verifys if AppStore update checks are enabled."
+SWURecommendedUpdatesAvailable,macOS recommended updates,Provides a list of pending recommended macOS software updates.
+SWUInstallSecurityResponsesAndSystemFilesEnabled,macOS security response updates,Checks whether the automatic installation of security responses and system files is enabled.

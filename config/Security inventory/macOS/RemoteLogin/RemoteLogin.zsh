@@ -5,8 +5,8 @@
 vlCheckRemoteLoginDisabled()
 {
   local testName="SSHLoginDisabled"
-  local testDisplayName="macOS Remote login disabled"
-  local testDescription="Checks whether remote login over ssh is disabled."
+  local testDisplayName="macOS remote login"
+  local testDescription="Turning off remote login over SSH eliminates an access point that could potentially be exploited, increasing system security. Checks whether remote login over ssh is disabled."
   local riskScore=40
 
   local expectedOutput="Remote Login: Off"
@@ -29,8 +29,8 @@ vlCheckRemoteLoginDisabled()
 vlCheckRootUserDisabled()
 {
   local testName="SSHRootUserDisabled"
-  local testDisplayName="macOS Root user disabled"
-  local testDescription="Checks whether the macOS root user is disabled."
+  local testDisplayName="macOS root user"
+  local testDescription="Enabling the root user can pose a security risk as it provides full access and control over the system. Checks whether the macOS root user is disabled."
   local riskScore=60
 
   local dontMatchOutput="ShadowHashData"
@@ -109,8 +109,8 @@ vlGetSshdConfigOpt()
 vlCheckSshPasswordLoginDisabled()
 {
   local testName="SSHPasswordLoginDisabled"
-  local testDisplayName="macOS Remote password login disabled"
-  local testDescription="Checks whether remote password logins are disabled on macOS."
+  local testDisplayName="macOS remote password login"
+  local testDescription="Disabling password login over SSH reduces the risk of brute force attacks by requiring more secure cryptographic keys for access. Checks whether remote password logins are disabled on macOS."
   local riskScore=50
 
   vlEnsureValidSshdConfig "$testName" "$testDisplayName" "$testDescription" || return
@@ -143,8 +143,8 @@ vlCheckSshPasswordLoginDisabled()
 vlCheckSshFipsCompliant()
 {
   local testName="SSHFipsCompliantConfig"
-  local testDisplayName="macOS Remote login configuration is FIPS compliant"
-  local testDescription="Checks whether the remote login configuration is FIPS compliant."
+  local testDisplayName="macOS remote login FIPS compliance"
+  local testDescription="Making remote logins FIPS (Federal Information Processing Standards) compliant, enhances security by enforcing stringent encryption standards. Checks whether the remote login configuration is FIPS compliant."
   local riskScore=60
 
   vlEnsureValidSshdConfig "$testName" "$testDisplayName" "$testDescription" || return
@@ -284,8 +284,8 @@ vlGetTestScoreOnMatchingValues()
 vlCheckKeysStrongEncryption()
 {
   local testName="SSHKeysUseStrongEncryption"
-  local testDisplayName="macOS Remote login keys use strong encryption"
-  local testDescription="Checks whether the symmetric key algorithms that are used for remote login are strong."
+  local testDisplayName="macOS remote login key encryption"
+  local testDescription="Checks whether the symmetric key algorithms that are used for remote login are considered strong."
   local riskScore=100
 
   vlEnsureValidSshdConfig "$testName" "$testDisplayName" "$testDescription" || return
@@ -326,8 +326,8 @@ vlCheckKeysStrongEncryption()
 vlCheckCiphersStrongEncryption()
 {
   local testName="SSHCiphersUseStrongEncryption"
-  local testDisplayName="macOS Remote login ciphers use strong encryption"
-  local testDescription="Checks whether the cipher algorithms that are used for remote login are strong."
+  local testDisplayName="macOS remote login ciphers"
+  local testDescription="Checks whether the cipher algorithms that are used for remote login are considered strong."
   local riskScore=100
 
   vlEnsureValidSshdConfig "$testName" "$testDisplayName" "$testDescription" || return
@@ -368,8 +368,8 @@ vlCheckCiphersStrongEncryption()
 vlCheckMacsStrongEncryption()
 {
   local testName="SSHMacsUseStrongEncryption"
-  local testDisplayName="macOS Remote login MACs use strong encryption"
-  local testDescription="Checks whether the MAC algorithms that are used for remote login are strong."
+  local testDisplayName="macOS remote login MACs"
+  local testDescription="Checks whether the MAC (Message Authentication Codes) algorithms that are used for remote login are considered strong."
   local riskScore=100
 
   vlEnsureValidSshdConfig "$testName" "$testDisplayName" "$testDescription" || return
