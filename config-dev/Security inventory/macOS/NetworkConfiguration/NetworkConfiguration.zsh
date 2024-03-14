@@ -6,7 +6,7 @@ vlCheckWiFiSecurity()
 {
   local testName="WiFiConnectionSecurityStatus"
   local testDisplayName="WiFi Connection Security Status"
-  local testDescription="WiFi connections should be secured with at least WPA2. This test checks if a WiFi connection is used and if WPA2 oder higher is enabled."
+  local testDescription="WiFi connections can potentially compromise a machine's security and therefore be encrypted. This test checks which kind of encryption the WiFi connection uses."
   local testScore=1
   local riskScore=80
    
@@ -98,7 +98,7 @@ vlCheckInternetSharing()
 {
   local testName="InternetSharingStatus"
   local testDisplayName="Internet Sharing Status"
-  local testDescription="Internet Sharing allows the system to share its internet connection with other devices, potentially creating a security risk by inadvertently providing network access to unauthorized users or devices. This test checks if it is configured and/or enabled/disabled."
+  local testDescription="Internet Sharing allows the system to share its internet connection with other devices, potentially creating a security risk by inadvertently providing network access to unauthorized users or devices. This test checks if it is enabled/disabled."
   local testScore=10
   local riskScore=80
   
