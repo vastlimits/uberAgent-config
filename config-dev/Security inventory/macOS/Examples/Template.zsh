@@ -1,18 +1,38 @@
 
+# This file should help you to get started with writing SCI tests for macOS.
+
+#
+# To ensure that data is displayed accurately in the Securty Score Splunk dashboard, it's important to follow certain best practices.
+#
+# 1)  A key practice is to aggregate related values within a test and return the result as a single object.
+#     This approach simplifies the analysis and visualization of data, especially when examining related metrics or statuses.
+#
+#     This allows you to handle dependencies, such as only getting the SSID and encryption method when WIFI is enabled and connected.
+#     If you separated these values into separate tests (WIFI enabled, current SSID, encryption method), it would be more difficult to calculate the risk score and merge the data.
+#
+#     Example: vlGroupSimilarValues.
+#
+# 2)  Splunk has a default limit of 10,000 characters for a single event; data is truncated if it exceeds this limit.
+#     If you expect a result to exceed this limit, consider breaking it into smaller, more manageable pieces.
+#
+# 3)  The Securty Score Splunk dashboard currently does not support every json structure.
+#
+#     Example: vlSupportMatrixExample.
+#
 
 vlSimpleExample()
 {
    # Please always use this block, which consists of testName, testDisplayName, and testDescription.
    # Important for the pipeline, these values are parsed and displayed on the dashboard.
-   testName="vlSimpleExample" # give the test a unique name
-   testDisplayName="Simple example" # give the test a human-readable name, this will be displayed on the dashboard
-   testDescription="This test returns a simple result." # give the test a description
+   local testName="vlSimpleExample" # give the test a unique name
+   local testDisplayName="Simple example" # give the test a human-readable name, this will be displayed on the dashboard
+   local testDescription="This test returns a simple result." # give the test a description
 
-   testScore=10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
-   riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
+   local testScore=10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
+   local riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
 
    # Add your test logic here, we just set a variable to true
-   result="true"
+   local result="true"
 
    # Add the result of your logic to the final output using vlAddResultValue
 
@@ -26,7 +46,52 @@ vlSimpleExample()
    #  $value:
    #     Is the value you want to add. In this case, we want to add the value of $result.
 
-   resultData=$(vlAddResultValue "{}" "Enabled" $result)
+   local resultData=$(vlAddResultValue "{}" "Enabled" $result)
+
+   # Create the result object
+   vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
+}
+
+vlGroupSimilarValues()
+{
+   # Please always use this block, which consists of testName, testDisplayName, and testDescription.
+   # Important for the pipeline, these values are parsed and displayed on the dashboard.
+   local testName="vlGroupSimilarValues" # give the test a unique name
+   local testDisplayName="Group values example" # give the test a human-readable name, this will be displayed on the dashboard
+   local testDescription="This test returns a grouped result." # give the test a description
+
+   local testScore=10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
+   local riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
+
+   # Add your test logic here, we just set a variable to true
+
+   # Case WIFI is enabled and connected
+   local wifiStatus="enabled"
+   local wifiConnectionStatus="connected"
+   local wifiSSID="MyWifi"
+   local wifiEncryption="WPA3"
+
+   # check if wifiEncryption is WPA3 else give it a lower testScore
+   if [ "$wifiEncryption" != "WPA3" ]; then
+      testScore=5
+   fi
+
+   # Initialize new result object and add the values to it
+   local resultData=$(vlAddResultValue "{}" "wifiStatus" "$wifiStatus")
+   resultData=$(vlAddResultValue "$resultData" "wifiConnectionStatus" "$wifiConnectionStatus")
+   resultData=$(vlAddResultValue "$resultData" "wifiSSID" "$wifiSSID")
+   resultData=$(vlAddResultValue "$resultData" "wifiEncryption" "$wifiEncryption")
+
+   # Case WIFI is disabled
+   local wifiStatus="disabled"
+   local wifiConnectionStatus="not connected"
+
+   # Case WIFI is disabled
+   resultData=$(vlAddResultValue "{}" "wifiStatus" "$wifiStatus")
+   resultData=$(vlAddResultValue "$resultData" "wifiConnectionStatus" "$wifiConnectionStatus")
+
+   # We do not need to add $wifiSSID and $wifiEncryption here, since they are not available if WIFI is disabled.
+   # The dashboard will show n/a for these values if they are not present.
 
    # Create the result object
    vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
@@ -38,15 +103,15 @@ vlSimpleArrayExample()
 
    # Please always use this block, which consists of testName, testDisplayName, and testDescription.
    # Important for the pipeline, these values are parsed and displayed on the dashboard.
-   testName="vlSimpleArrayExample" # give the test a unique name
-   testDisplayName="Simple array example" # give the test a human-readable name, this will be displayed at the dashboard
-   testDescription="This test returns a simple result array." # give the test a description
+   local testName="vlSimpleArrayExample" # give the test a unique name
+   local testDisplayName="Simple array example" # give the test a human-readable name, this will be displayed at the dashboard
+   local testDescription="This test returns a simple result array." # give the test a description
 
-   testScore=10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
-   riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
+   local testScore=10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
+   local riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
 
    # Add your test logic here, we just create two objects and add them to the result array
-   resultObj1=$(vlAddResultValue "{}" "Name" "John")
+   local resultObj1=$(vlAddResultValue "{}" "Name" "John")
    resultObj1=$(vlAddResultValue "$resultObj1" "Age" "30")
 
    resultObj2=$(vlAddResultValue "{}" "Name" "Doe")
@@ -65,7 +130,7 @@ vlSimpleArrayExample()
    #     The value you want to add. In this case, we want to add the two objects we created above.
 
    # Option 1 all at once. Use "[]" to create a new array, since there is no key within an array leave key empty.
-   resultData=$(vlAddResultValue "[]" "" "[$resultObj1, $resultObj2]")
+   local resultData=$(vlAddResultValue "[]" "" "[$resultObj1, $resultObj2]")
 
    # Option 2 one by one. Use "[]" to create a new array, then pass $resultData. Since there is no key within an array leave key empty.
    resultData=$(vlAddResultValue "[]" "" "[$resultObj1]")
@@ -79,18 +144,18 @@ vlNestedExample()
 {
    # Please always use this block, which consists of testName, testDisplayName, and testDescription.
    # Important for the pipeline, these values are parsed and displayed on the dashboard.
-   testName="vlNestedExample" # give the test a unique name
-   testDisplayName="Nested result" # give the test a human-readable name, this will be displayed at the dashboard
-   testDescription="This test returns a nested result." # give the test a description
+   local testName="vlNestedExample" # give the test a unique name
+   local testDisplayName="Nested result" # give the test a human-readable name, this will be displayed at the dashboard
+   local testDescription="This test returns a nested result." # give the test a description
 
-   testScore=3 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
-   riskScore=70 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
+   local testScore=3 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
+   local riskScore=70 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
 
    # Add your test logic here
    # ...
 
    # Create result object, pass on $resultData to add values to the result
-   resultData=$(vlAddResultValue "{}" "Enabled" true)
+   local resultData=$(vlAddResultValue "{}" "Enabled" true)
    resultData=$(vlAddResultValue "$resultData" "CmdLine" "/bin/zsh -c \"if [ 2 -eq 2 ]; then echo equals; fi;\"")
 
    # Add a nested object
@@ -109,12 +174,12 @@ vlCheckFeatureStateFromCommandOutputExample()
 {
    # Please always use this block, which consists of testName, testDisplayName, and testDescription.
    # Important for the pipeline, these values are parsed and displayed on the dashboard.
-   testName="vlCheckFeatureStateFromCommandOutputExample" # give the test a unique name
-   testDisplayName="Check feature state from command output" # give the test a human-readable name, this will be displayed at the dashboard
-   testDescription="This test checks the state of a feature from the command output." # give the test a description
+   local testName="vlCheckFeatureStateFromCommandOutputExample" # give the test a unique name
+   local testDisplayName="Check feature state from command output" # give the test a human-readable name, this will be displayed at the dashboard
+   local testDescription="This test checks the state of a feature from the command output." # give the test a description
 
-   testScore=10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
-   riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
+   local testScore=10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
+   local riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
 
    # Define the expected output
    local expectedOutput="enabled"
@@ -146,12 +211,12 @@ vlCheckFeatureEnabledFromPlistDomainKeyExample()
 {
    # Please always use this block, which consists of testName, testDisplayName, and testDescription.
    # Important for the pipeline, these values are parsed and displayed on the dashboard.
-   testName="vlCheckFeatureEnabledFromPlistDomainKeyExample" # give the test a unique name
-   testDisplayName="Check feature enabled from plist domain key" # give the test a human-readable name, this will be displayed at the dashboard
-   testDescription="This test checks the state of a feature from a plist domain key." # give the test a description
+   local testName="vlCheckFeatureEnabledFromPlistDomainKeyExample" # give the test a unique name
+   local testDisplayName="Check feature enabled from plist domain key" # give the test a human-readable name, this will be displayed at the dashboard
+   local testDescription="This test checks the state of a feature from a plist domain key." # give the test a description
 
-   testScore=10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
-   riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
+   local testScore=10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
+   local riskScore=90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
 
    # Define the plist domain
    local plistDomain="/Library/Preferences/com.apple.commerce"
@@ -177,9 +242,9 @@ vlSupportMatrixExample()
 {
    # Please always use this block, which consists of testName, testDisplayName, and testDescription.
    # Important for the pipeline, these values are parsed and displayed on the dashboard.
-   testName="vlSupportMatrixExample" # give the test a unique name
-   testDisplayName="Matrix example" # give the test a human-readable name, this will be displayed on the dashboard
-   testDescription="This test returns a Matrix example." # give the test a description
+   local testName="vlSupportMatrixExample" # give the test a unique name
+   local testDisplayName="Matrix example" # give the test a human-readable name, this will be displayed on the dashboard
+   local testDescription="This test returns a Matrix example." # give the test a description
 
    # JSON - Dashboard Support Matrix
    # The dashboard supports the following structures. Please use this example to check if your result can be displayed correctly.
@@ -197,7 +262,7 @@ vlSupportMatrixExample()
    # Create result object, pass on $resultData to add values to the result.
    # Use "{}" to create a new result object.
    # Use "[]" to create a new result array.
-   resultData=$(vlAddResultValue "{}" "Enabled" true)
+   local resultData=$(vlAddResultValue "{}" "Enabled" true)
    # resultData after call: {"Enabled": true}
 
    resultData=$(vlAddResultValue "$resultData" "Mode" "Auto")
@@ -210,7 +275,7 @@ vlSupportMatrixExample()
    # Code:
 
    # Create result object, pass on $resultData to add values to the result.
-   resultData=$(vlAddResultValue "[]" "" '{"Name":"John","Age":30, "City":"New York"}') 
+   resultData=$(vlAddResultValue "[]" "" '{"Name":"John","Age":30, "City":"New York"}')
    # resultData after call: [{"Name":"John","Age":30, "City":"New York"}]
 
    resultData=$(vlAddResultValue "$resultData" "" '{"Name":"Alice","Age":25, "City":"Los Angeles"}')
@@ -256,7 +321,7 @@ vlSupportMatrixExample()
    #    "Members": [{"Name":"John","Skill":"Java"},
    #                {"Name":"Alice","Skill":"Python"}
    #               ]}
-   
+
    # While it is technically possible to add arrays to an nested object, the dashboard cannot display them correctly, so please avoid doing so.
    # Code to create such a result:
    resultData=$(vlAddResultValue "{}" "Team" "Developers")
@@ -271,9 +336,9 @@ vlErrorExample()
 {
    # Please always use this block, which consists of testName, testDisplayName, and testDescription.
    # Important for the pipeline, these values are parsed and displayed on the dashboard.
-   testName="vlErrorExample" # give the test a unique name
-   testDisplayName="Error result" # give the test a human-readable name, this will be displayed at the dashboard
-   testDescription="This test is made to fail to demonstrate how to handle errors." # give the test a description
+   local testName="vlErrorExample" # give the test a unique name
+   local testDisplayName="Error result" # give the test a human-readable name, this will be displayed at the dashboard
+   local testDescription="This test is made to fail to demonstrate how to handle errors." # give the test a description
 
    # Add your test logic here
    # ...
@@ -300,6 +365,7 @@ vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 # Run the tests
 results=()
 results+="$( vlSimpleExample )"
+results+="$( vlGroupSimilarValues )"
 results+="$( vlSimpleArrayExample )"
 results+="$( vlNestedExample )"
 results+="$( vlCheckFeatureStateFromCommandOutputExample )"
