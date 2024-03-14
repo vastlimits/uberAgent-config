@@ -4,16 +4,11 @@
 
 vlCheckWiFiSecurity()
 {
-  local testName="WiFiConnectionSecurity"
+  local testName="WiFiConnectionSecurityStatus"
   local testDisplayName="WiFi Connection Security Status"
   local testDescription="WiFi connections should be secured with at least WPA2. This test checks if a WiFi connection is used and if WPA2 oder higher is enabled."
   local testScore=1
   local riskScore=80
-
-  local WiFiEnabled="false"
-  local WiFiIsSecure="Secure"
-  local WiFiIsNotSecure="Insecure"
-  local WiFiUnknown="Unknown"
    
   # Define path to the airport command-line utility
   AIRPORT="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
@@ -21,56 +16,47 @@ vlCheckWiFiSecurity()
   # Check if Wi-Fi is enabled
   WIFI_STATUS=$($AIRPORT -I | grep 'AirPort: Off')
   if [ -n "$WIFI_STATUS" ]; then
-      WiFiEnabled="false"
-  else
-      WiFiEnabled="true"
+      return 0
   fi
    
   local security=""
-  if [ $WiFiEnabled = "true" ]; then
-      # Get Wi-Fi security information
-      SECURITY_INFO=$($AIRPORT -I | awk '/link auth/ {print $3}')
-      
-      # Check if the security is one of the secure types
-      case "$SECURITY_INFO" in
-          wpa2-psk)
-              security=$WiFiIsSecure
-              testScore=7
-              ;;
-          wpa3-sae | wpa3-psk | wpa2/wpa3-psk)
-              security=$WiFiIsSecure
-              testScore=10
-              ;;
-          none | open)
-              security=$WiFiIsNotSecure
-              testScore=1
-              ;;
-          unknown)
-              security=$WiFiIsUnknown
-              testScore=1
-              ;;
-          *)
-              ;;
-      esac
-       
-      resultObj1=$(vlAddResultValue "{}" "Status" "on")
-      resultObj2=$(vlAddResultValue "{}" "Connection" "$security")
-      resultData=$(vlAddResultValue "[]" "" "[$resultObj1, $resultObj2]")
-  else
-      testScore=10
-      resultData=$(vlAddResultValue "{}" "Status" "off")
-  fi
+  # Get Wi-Fi security information
+  SECURITY_INFO=$($AIRPORT -I | awk '/link auth/ {print $3}')
   
+  # Check if the security is one of the secure types
+  case "$SECURITY_INFO" in
+      wpa2-psk)
+          security="WPA2"
+          testScore=7
+          ;;
+      wpa3-sae | wpa3-psk | wpa2/wpa3-psk)
+          security="WPA3"
+          testScore=10
+          ;;
+      none | open)
+          security="none"
+          testScore=1
+          ;;
+      unknown)
+          security="unknown"
+          testScore=1
+          ;;
+      *)
+          ;;
+  esac
+   
+  resultData=$(vlAddResultValue "{}" "Security type" "$security")
+
   # Create the result object 
   vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
 }
 
 vlCheckSmbAndNetBios()
 {
-  local testName="SMBv1andNetBiosTest"
+  local testName="SMBv1andNetBiosStatus"
   local testDisplayName="SMBv1 and NetBIOS Status"
   local testDescription="Due to the age of SMBv1 and NetBIOS these might be prone to vulnerabilities and security issues. This test checks if they are system wide enabled (which is the default) or disabled."
-  local testScore=2
+  local testScore=1
   local riskScore=80
 
   # These are enabled by default
@@ -87,19 +73,22 @@ vlCheckSmbAndNetBios()
       # Check if the file contains only the first search string on a line (ignoring leading/trailing whitespace)
       if grep -Eq "^\s*$SEARCH_STRING_SMB\s*$" "$FILE"; then
           SMBv1Status="disabled"
-          testScore=10
+          testScore=5
       fi
   
       # Check if the file contains only the second search string on a line (ignoring leading/trailing whitespace)
       if grep -Eq "^\s*$SEARCH_STRING_NETBIOS\s*$" "$FILE"; then
           NetBiosStatus="disabled"
-          testScore=10
+          if [[ $SMBv1Status == "disabled" ]]; then
+             testScore=10
+          else
+             testScore=5
+          fi
       fi
   fi  
 
-  resultObj1=$(vlAddResultValue "{}" "SMBv1" "$SMBv1Status")
-  resultObj2=$(vlAddResultValue "{}" "NetBIOS" "$NetBiosStatus")
-  resultData=$(vlAddResultValue "[]" "" "[$resultObj1, $resultObj2]")
+  resultData=$(vlAddResultValue "{}" "SMBv1" "$SMBv1Status")
+  resultData=$(vlAddResultValue "$resultData" "NetBIOS" "$NetBiosStatus")  
   
   # Create the result object 
   vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
@@ -107,7 +96,7 @@ vlCheckSmbAndNetBios()
 
 vlCheckInternetSharing()
 {
-  local testName="InternetSharingTest"
+  local testName="InternetSharingStatus"
   local testDisplayName="Internet Sharing Status"
   local testDescription="Internet Sharing allows the system to share its internet connection with other devices, potentially creating a security risk by inadvertently providing network access to unauthorized users or devices. This test checks if it is configured and/or enabled/disabled."
   local testScore=10
@@ -136,7 +125,7 @@ vlCheckInternetSharing()
 
 vlCheckAirDrop()
 {
-  local testName="AirDropTest"
+  local testName="AirDropStatus"
   local testDisplayName="AirDrop Status"
   local testDescription="AirDrop is a file-sharing feature built into macOS that uses Wi-Fi and Bluetooth for peer-to-peer transfers. This can be a security risk because it may allow harmful content to be sent from unknown devices. This test checks if AirDrop is enabled."
   local testScore=10
@@ -192,18 +181,30 @@ vlCheckAirDrop()
 
 vlCheckAirplayReceiver()
 {
-  local testName="AirPlayReceiverTest"
+  local testName="AirPlayReceiverStatus"
   local testDisplayName="Airplay Receiver Status"
   local testDescription="The AirPlay Receiver under macOS is a feature that allows the computer to receive and display or play content streamed from other Apple devices. It might be a security risk as it could potentially allow unauthorized users to broadcast content if not properly secured. This test checks each user's settings."
   local testScore=10
   local riskScore=80
   
-  local resultData=""
+  local resultData=[]
+  local numUsers=0
+  local numEnabledForUsers=0
+  
+  # Calculate the decrement value based on the number of users
+  local numUsers=$(ls /Users | grep -v "Shared" | wc -l)
+  local decrementValue=$((10 / numUsers))
+  if [[ $decrementValue -lt 1 ]]; then
+    decrementValue=1  # Ensure the decrement value is at least 1
+  fi
   
   # Iterate over each user home directory in /Users
   for user_home in /Users/*; do
     # Extract the username from the home directory path
     user=$(basename "$user_home")
+    
+    numUsers+=1
+    resultObj=""
 
     # Skip the "Shared" directory
     [[ "$user" == "Shared" ]] && continue
@@ -215,14 +216,34 @@ vlCheckAirplayReceiver()
     # Check if the `defaults` command succeeded
     if [[ $? -eq 0 ]]; then
       # Check the returned value and print the status
-      local result="disabled for $user"
+      local result="disabled"
       if [[ $airplay_status -eq 1 ]]; then
-        result="enabled for $user"
-        testScore=3
+        result="enabled"
+        numEnabledForUsers=$((numEnabledForUsers + 1))
       fi
-      resultData+=$(vlAddResultValue "{}" "Status" "$result")
+      resultObj1=$(vlAddResultValue "{}" "Status" "$result")
+      resultObj2=$(vlAddResultValue "$resultObj1" "User" "$user")  
+      resultData=$(vlAddResultValue "$resultData" "" "[$resultObj2]")
+    else
+      # The following message is returned for the command above for users which have never switched the receiver off and/or on again:
+      # "The domain/default pair of (com.apple.controlcenter.plist, AirplayRecieverEnabled) does not exist"
+      # By default, the receiver is enabled, but we still get this message and the command is marked as failed. In this case so we have to assume the receiver is enabled.
+      # If the receiver has at least once been turned off, the command above will return 0, and if switched on again it will return 1.
+      numEnabledForUsers=$((numEnabledForUsers + 1))
+      resultObj1=$(vlAddResultValue "{}" "Status" "enabled")
+      resultObj2=$(vlAddResultValue "$resultObj1" "User" "$user")  
+      resultData=$(vlAddResultValue "$resultData" "" "[$resultObj2]")
     fi
   done
+  
+  # Calculate the test score
+  local totalDecrement=$((decrementValue * numEnabledForUsers))
+  testScore=$((testScore - totalDecrement))
+  
+  # Ensure the score does not fall below 1
+  if [[ $testScore -lt 1 ]]; then
+    testScore=1
+  fi
   
   # Create the result object 
   vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
