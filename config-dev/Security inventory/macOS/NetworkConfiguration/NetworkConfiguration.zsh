@@ -6,7 +6,7 @@ vlCheckWiFiSecurity()
 {
   local testName="WiFiConnectionSecurityStatus"
   local testDisplayName="WiFi Connection Security Status"
-  local testDescription="WiFi connections can potentially compromise a machine's security and therefore be encrypted. This test checks which kind of encryption the WiFi connection uses."
+  local testDescription="WiFi connections can potentially compromise a machine's security and therefore should be encrypted. This test checks which kind of encryption the WiFi connection uses."
   local testScore=1
   local riskScore=80
    
@@ -19,7 +19,7 @@ vlCheckWiFiSecurity()
       return 0
   fi
    
-  local security=""
+  local security="unknown"
   # Get Wi-Fi security information
   SECURITY_INFO=$($AIRPORT -I | awk '/link auth/ {print $3}')
   
@@ -192,7 +192,7 @@ vlCheckAirplayReceiver()
   local numEnabledForUsers=0
   
   # Calculate the decrement value based on the number of users
-  local numUsers=$(ls /Users | grep -v "Shared" | wc -l)
+  local numUsers=$(dscacheutil -q user | grep -A 3 -B 2 'uid: [5-9][0-9][0-9]' | grep -v '^--$' | grep 'name:' | wc -l)
   local decrementValue=$((10 / numUsers))
   if [[ $decrementValue -lt 1 ]]; then
     decrementValue=1  # Ensure the decrement value is at least 1
@@ -221,18 +221,18 @@ vlCheckAirplayReceiver()
         result="enabled"
         numEnabledForUsers=$((numEnabledForUsers + 1))
       fi
-      resultObj1=$(vlAddResultValue "{}" "Status" "$result")
-      resultObj2=$(vlAddResultValue "$resultObj1" "User" "$user")  
-      resultData=$(vlAddResultValue "$resultData" "" "[$resultObj2]")
+      resultObj=$(vlAddResultValue "{}" "Status" "$result")
+      resultObj=$(vlAddResultValue "$resultObj" "User" "$user")  
+      resultData=$(vlAddResultValue "$resultData" "" "[$resultObj]")
     else
       # The following message is returned for the command above for users which have never switched the receiver off and/or on again:
       # "The domain/default pair of (com.apple.controlcenter.plist, AirplayRecieverEnabled) does not exist"
       # By default, the receiver is enabled, but we still get this message and the command is marked as failed. In this case so we have to assume the receiver is enabled.
       # If the receiver has at least once been turned off, the command above will return 0, and if switched on again it will return 1.
       numEnabledForUsers=$((numEnabledForUsers + 1))
-      resultObj1=$(vlAddResultValue "{}" "Status" "enabled")
-      resultObj2=$(vlAddResultValue "$resultObj1" "User" "$user")  
-      resultData=$(vlAddResultValue "$resultData" "" "[$resultObj2]")
+      resultObj=$(vlAddResultValue "{}" "Status" "enabled")
+      resultObj=$(vlAddResultValue "$resultObj" "User" "$user")  
+      resultData=$(vlAddResultValue "$resultData" "" "[$resultObj]")
     fi
   done
   
