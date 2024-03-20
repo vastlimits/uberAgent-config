@@ -8,7 +8,7 @@ vlCheckWiFiSecurity()
   local testDisplayName="WiFi Connection Security Status"
   local testDescription="WiFi connections can potentially compromise a machine's security and therefore should be encrypted. This test checks which kind of encryption the WiFi connection uses."
   local testScore=1
-  local riskScore=80
+  local riskScore=90
    
   # Define path to the airport command-line utility
   AIRPORT="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
@@ -35,11 +35,11 @@ vlCheckWiFiSecurity()
           ;;
       none | open)
           security="none"
-          testScore=1
+          testScore=0
           ;;
       unknown)
           security="unknown"
-          testScore=1
+          testScore=0
           ;;
       *)
           ;;
@@ -56,8 +56,8 @@ vlCheckSmbAndNetBios()
   local testName="SMBv1andNetBiosStatus"
   local testDisplayName="SMBv1 and NetBIOS Status"
   local testDescription="Due to the age of SMBv1 and NetBIOS these might be prone to vulnerabilities and security issues. This test checks if they are system wide enabled (which is the default) or disabled."
-  local testScore=1
-  local riskScore=80
+  local testScore=3
+  local riskScore=90
 
   # These are enabled by default
   local SMBv1Status="enabled"
@@ -68,24 +68,26 @@ vlCheckSmbAndNetBios()
   SEARCH_STRING_NETBIOS="port445=no_netbios"
 
   # Check if the file exists and if SMBv1 and/or NetBIOS is disabled
-  # If the file doesn't exist, assume both SMBv1 and NetBIOS are enabled
   if [ -f "$FILE" ]; then
-      # Check if the file contains only the first search string on a line (ignoring leading/trailing whitespace)
-      if grep -Eq "^\s*$SEARCH_STRING_SMB\s*$" "$FILE"; then
-          SMBv1Status="disabled"
-          testScore=5
-      fi
-  
-      # Check if the file contains only the second search string on a line (ignoring leading/trailing whitespace)
-      if grep -Eq "^\s*$SEARCH_STRING_NETBIOS\s*$" "$FILE"; then
-          NetBiosStatus="disabled"
-          if [[ $SMBv1Status == "disabled" ]]; then
-             testScore=10
-          else
-             testScore=5
-          fi
-      fi
-  fi  
+    # Check if the file contains only the first search string on a line (ignoring leading/trailing whitespace)
+    if grep -Eq "^\s*$SEARCH_STRING_SMB\s*$" "$FILE"; then
+        SMBv1Status="disabled"
+    fi
+    
+    # Check if the file contains only the second search string on a line (ignoring leading/trailing whitespace)
+    if grep -Eq "^\s*$SEARCH_STRING_NETBIOS\s*$" "$FILE"; then
+        NetBiosStatus="disabled"
+    fi
+    
+    # Set the test score based on the status of SMBv1 and NetBIOS
+    if [[ $SMBv1Status == "enabled" ]]; then
+       testScore=3
+    elif [[ $SMBv1Status == "disabled" && $NetBiosStatus == "enabled" ]]; then
+       testScore=5
+    elif [[ $SMBv1Status == "disabled" && $NetBiosStatus == "disabled" ]]; then
+       testScore=10
+    fi
+  fi
 
   resultData=$(vlAddResultValue "{}" "SMBv1" "$SMBv1Status")
   resultData=$(vlAddResultValue "$resultData" "NetBIOS" "$NetBiosStatus")  
@@ -100,7 +102,7 @@ vlCheckInternetSharing()
   local testDisplayName="Internet Sharing Status"
   local testDescription="Internet Sharing allows the system to share its internet connection with other devices, potentially creating a security risk by inadvertently providing network access to unauthorized users or devices. This test checks if it is enabled/disabled."
   local testScore=10
-  local riskScore=80
+  local riskScore=70
   
   # Internet Sharing is disabled and not configured by default
   local sharingStatus="disabled"
@@ -185,25 +187,15 @@ vlCheckAirplayReceiver()
   local testDisplayName="Airplay Receiver Status"
   local testDescription="The AirPlay Receiver under macOS is a feature that allows the computer to receive and display or play content streamed from other Apple devices. It might be a security risk as it could potentially allow unauthorized users to broadcast content if not properly secured. This test checks each user's settings."
   local testScore=10
-  local riskScore=80
+  local riskScore=70
   
   local resultData=[]
-  local numUsers=0
-  local numEnabledForUsers=0
-  
-  # Calculate the decrement value based on the number of users
-  local numUsers=$(dscacheutil -q user | grep -A 3 -B 2 'uid: [5-9][0-9][0-9]' | grep -v '^--$' | grep 'name:' | wc -l)
-  local decrementValue=$((10 / numUsers))
-  if [[ $decrementValue -lt 1 ]]; then
-    decrementValue=1  # Ensure the decrement value is at least 1
-  fi
-  
+    
   # Iterate over each user home directory in /Users
   for user_home in /Users/*; do
     # Extract the username from the home directory path
     user=$(basename "$user_home")
     
-    numUsers+=1
     resultObj=""
 
     # Skip the "Shared" directory
@@ -219,7 +211,7 @@ vlCheckAirplayReceiver()
       local result="disabled"
       if [[ $airplay_status -eq 1 ]]; then
         result="enabled"
-        numEnabledForUsers=$((numEnabledForUsers + 1))
+        testScore=3
       fi
       resultObj=$(vlAddResultValue "{}" "Status" "$result")
       resultObj=$(vlAddResultValue "$resultObj" "User" "$user")  
@@ -229,21 +221,11 @@ vlCheckAirplayReceiver()
       # "The domain/default pair of (com.apple.controlcenter.plist, AirplayRecieverEnabled) does not exist"
       # By default, the receiver is enabled, but we still get this message and the command is marked as failed. In this case so we have to assume the receiver is enabled.
       # If the receiver has at least once been turned off, the command above will return 0, and if switched on again it will return 1.
-      numEnabledForUsers=$((numEnabledForUsers + 1))
       resultObj=$(vlAddResultValue "{}" "Status" "enabled")
       resultObj=$(vlAddResultValue "$resultObj" "User" "$user")  
       resultData=$(vlAddResultValue "$resultData" "" "[$resultObj]")
     fi
   done
-  
-  # Calculate the test score
-  local totalDecrement=$((decrementValue * numEnabledForUsers))
-  testScore=$((testScore - totalDecrement))
-  
-  # Ensure the score does not fall below 1
-  if [[ $testScore -lt 1 ]]; then
-    testScore=1
-  fi
   
   # Create the result object 
   vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
