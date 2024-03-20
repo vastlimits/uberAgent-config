@@ -22,12 +22,13 @@ vlCheckGatekeeper()
   
       if [[ $developer_id_status == *"developer id enabled"* ]]; then
           gatekeeperOption="App Store and identified developers"
+          testScore=8
       elif [[ $developer_id_status == *"developer id disabled"* ]]; then
           gatekeeperOption="App Store"
-          testScore=8
+          testScore=10
       else
           gatekeeperOption="unknown"
-          testScore=5
+          testScore=0
       fi
       
       resultData=$(vlAddResultValue "{}" "Status" "$gatekeeperStatus")
