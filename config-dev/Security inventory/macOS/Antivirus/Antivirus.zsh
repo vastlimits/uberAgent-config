@@ -71,10 +71,6 @@ vlCheckXprotectRemediator()
     # Retrieve and display the last modification date of the plist file
     lastModified=$(stat -f "%Sm" -t "%Y-%m-%d" "$xprotect_plist")
     
-    #resultObj1=$(vlAddResultValue "{}" "Version" "$version")
-    #resultObj2=$(vlAddResultValue "{}" "Last update" "$lastModified")
-    #resultData=$(vlAddResultValue "[]" "" "[$resultObj1, $resultObj2]")
-    
     resultData=$(vlAddResultValue "{}" "Version" "$version")
     resultData=$(vlAddResultValue "$resultData" "Last update" "$lastModified")
     
