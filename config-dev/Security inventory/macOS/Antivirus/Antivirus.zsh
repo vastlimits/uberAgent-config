@@ -14,7 +14,7 @@ vlCheckGatekeeper()
   local gatekeeperOption="App Store"
    
   # Check if Gatekeeper is enabled
-  gatekeeper_status=$(spctl --status)
+  local gatekeeper_status=$(spctl --status)
   if [[ $gatekeeper_status == "assessments enabled" ]]; then
   
       # Check for developer ID status
@@ -76,7 +76,7 @@ vlCheckXprotectRemediator()
     
   else
     testScore=0
-    resultData=$(vlAddResultValue "{}" "Status" "$gatekeeperStatus")
+    resultData=$(vlAddResultValue "{}" "Status" "unknown")
   fi
  
   # Create the result object 
