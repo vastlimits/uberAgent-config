@@ -6,7 +6,7 @@
 ### We support PowerShell 3.0 and later, so we need to add the following line to the top of the script
 #Requires -Version 3.0
 
-# Include helper functions, like retrun handling, error handling, etc.
+# Include helper functions, like retrun handling, error handling, some registry magic etc.
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
 #
@@ -18,14 +18,14 @@
 #     This allows you to handle dependencies, such as only getting the SSID and encryption method when WIFI is enabled and connected.
 #     If you separated these values into separate tests (WIFI enabled, current SSID, encryption method), it would be more difficult to calculate the risk score and merge the data.
 #
-#     Example: vlGroupSimilarValues.
+#     Example: Get-vlGroupSimilarValues.
 #
 # 2)  Splunk has a default limit of 10,000 characters for a single event; data is truncated if it exceeds this limit.
 #     If you expect a result to exceed this limit, consider breaking it into smaller, more manageable pieces.
 #
 # 3)  The Securty Score Splunk dashboard currently does not support every json structure.
 #
-#     Example: vlSupportMatrixExample.
+#     Example: Get-vlSupportMatrixExample.
 #
 
 function Get-vlSimpleExample() {
