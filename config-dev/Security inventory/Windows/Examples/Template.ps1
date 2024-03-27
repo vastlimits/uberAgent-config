@@ -6,7 +6,7 @@
 ### We support PowerShell 3.0 and later, so we need to add the following line to the top of the script
 #Requires -Version 3.0
 
-# Include helper functions, like retrun handling, error handling, some registry magic etc.
+# Include helper functions like return handling, error handling, and for working with the registry more easily
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
 #
@@ -31,7 +31,7 @@
 function Get-vlSimpleExample() {
    <#
    .SYNOPSIS
-       This test returns a simple result.
+         This test returns a simple result.
    .DESCRIPTION
          This test returns a simple result.
    .NOTES
@@ -47,14 +47,13 @@ function Get-vlSimpleExample() {
    # Define risk score ranges from 0 to 100 (100 is the highest risk). This should be static and not change during the test.
    $riskScore = 90
 
+   # Define the score for this test. Score ranges from 0 to 10 (10 is the highest score = best result).
+   $score = 0 # Initialize the score variable
+
    # Add your test logic here, we just set a variable to true
    $result = $true
 
-   # Define the score for this test. Score ranges from 0 to 10 (10 is the highest score = best result).
    # In this case, we set the score to 10, since the result is true.
-
-   $score = 0 # Initialize the score variable
-
    if ($result) {
       $score = 10
    }
@@ -69,7 +68,7 @@ function Get-vlSimpleExample() {
 function Get-vlGroupSimilarValues() {
    <#
    .SYNOPSIS
-       This test returns a grouped result.
+         This test returns a grouped result.
    .DESCRIPTION
          This test returns a grouped result.
    .NOTES
@@ -83,7 +82,10 @@ function Get-vlGroupSimilarValues() {
    #>
 
    # Define risk score ranges from 0 to 100 (100 is the highest risk). This should be static and not change during the test.
-   $riskScore = 90
+   $riskScore = 100
+
+   # Initialize the score variable
+   $score = 10
 
    ### Case WIFI is enabled and connected
    $wifiStatus = "enabled"
@@ -91,37 +93,34 @@ function Get-vlGroupSimilarValues() {
    $wifiSSID = "MyWifi"
    $wifiEncryption = "WPA3"
 
-   # check if wifiEncryption is WPA3 else give it a lower testScore
-   if ($wifiEncryption -eq "WPA3") {
-      $score = 10
+   if ($wifiStatus -eq "enabled") {
+      # Case WIFI is enabled
+      # check if wifiEncryption is WPA3 else give it a lower testScore
+      if ($wifiEncryption -eq "WPA3") {
+         $score = 10
+      }
+      else {
+         $score = 5
+      }
+
+      # Initialize new result object and add the values to it
+      $result = @{
+         wifiStatus           = $wifiStatus
+         wifiConnectionStatus = $wifiConnectionStatus
+         wifiSSID             = $wifiSSID
+         wifiEncryption       = $wifiEncryption
+      }
    }
    else {
-      $score = 5
+      # Case WIFI is disabled
+      # We do not need to add $wifiSSID and $wifiEncryption here, since they are not available if WIFI is disabled.
+      # The dashboard will show n/a for these values if they are not present.
+
+      $result = @{
+         wifiStatus           = $wifiStatus
+         wifiConnectionStatus = $wifiConnectionStatus
+      }
    }
-
-   # Initialize new result object and add the values to it
-   $result = @{
-      wifiStatus           = $wifiStatus
-      wifiConnectionStatus = $wifiConnectionStatus
-      wifiSSID             = $wifiSSID
-      wifiEncryption       = $wifiEncryption
-   }
-
-   ## You would return the result object here, but we will return the result object in the next example.
-   # return New-vlResultObject -result $result -score $score -riskScore $riskScore
-
-   # Case WIFI is disabled
-   $wifiStatus = "disabled"
-   $wifiConnectionStatus = "not connected"
-
-   # Case WIFI is disabled
-   $result = @{
-      wifiStatus           = $wifiStatus
-      wifiConnectionStatus = $wifiConnectionStatus
-   }
-
-   # We do not need to add $wifiSSID and $wifiEncryption here, since they are not available if WIFI is disabled.
-   # The dashboard will show n/a for these values if they are not present.
 
    # Create the result object
    return New-vlResultObject -result $result -score $score -riskScore $riskScore
@@ -130,7 +129,7 @@ function Get-vlGroupSimilarValues() {
 function Get-vlSimpleArrayExample() {
    <#
    .SYNOPSIS
-       This test returns a simple result array.
+         This test returns a simple result array.
    .DESCRIPTION
          This test returns a simple result array.
    .NOTES
@@ -145,8 +144,11 @@ function Get-vlSimpleArrayExample() {
 
    # Arrays can be used for tests. It is important to note that the dashboard currently does only support arrays as a top-level object.
 
-   $score = 10 # define the score for this test. Score ranges from 0 to 10 (10 is the highest score).
-   $riskScore = 90 # define the risk score for this test. Risk score ranges from 0 to 100 (100 is the highest risk).
+   # Define risk score ranges from 0 to 100 (100 is the highest risk). This should be static and not change during the test.
+   $riskScore = 90
+
+   # Define the score for this test. Score ranges from 0 to 10 (10 is the highest score = best result).
+   $score = 0 # Initialize the score variable
 
    # Add your test logic here, we just create two objects and add them to the result array
 
@@ -171,7 +173,7 @@ function Get-vlSimpleArrayExample() {
 function Get-vlNestedExample() {
    <#
    .SYNOPSIS
-       This test returns a nested result.
+         This test returns a nested result.
    .DESCRIPTION
          This test returns a nested result.
    .NOTES
@@ -205,7 +207,7 @@ function Get-vlNestedExample() {
    $result.Add("Person", $nestedObj)
 
    # While it is technically possible to add arrays to an nested object, the dashboard cannot display them correctly, so please avoid doing so.
-   # Don't use code like: $result.Add("Members", @($nestedObj))
+   # Don't use code like: $result.Add("Members", @($nestedObj, $nestedObj2, $nestedObj3, $nestedObj4,...))
 
    # Create the result object
    return New-vlResultObject -result $result -score $score -riskScore $riskScore
@@ -315,7 +317,7 @@ function Get-vlSupportMatrixExample() {
 function Get-vlErrorExample() {
    <#
    .SYNOPSIS
-       This test is made to fail to demonstrate how to handle errors.
+         This test is made to fail to demonstrate how to handle errors.
    .DESCRIPTION
          This test is made to fail to demonstrate how to handle errors.
    .NOTES
@@ -354,15 +356,15 @@ function Get-vlErrorExample() {
 function Get-vlTemplateCheck {
    <#
     .SYNOPSIS
-        Write a quick summary of what the function does here.
+         Write a quick summary of what the function does here.
     .DESCRIPTION
-        Write a description of the function here.
+         Write a description of the function here.
     .NOTES
          Additional information about the function.
     .LINK
-        Provide a link to more information about the function or some related resource.
+         Provide a link to more information about the function or some related resource.
     .OUTPUTS
-        A list with vlResultObject | vlErrorObject [psobject] containing the test results
+         A list with vlResultObject | vlErrorObject [psobject] containing the test results
     .EXAMPLE
         Get-vlTemplateCheck
     #>
