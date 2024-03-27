@@ -270,7 +270,7 @@ function Invoke-ProcessPolicyFile {
                     'Policy-Type'   = $row.'Policy Type'
                     'Key'           = $row.'Policy Group or Registry Key'
                     'Value-Name'    = $row.'Registry Key'
-                    'Expected-Data' = $row.'Policy-Setting'
+                    'Expected-Data' = $row.'Registry-Value'
                     'Actual-Data'   = $securityTemplate
                 }
 
