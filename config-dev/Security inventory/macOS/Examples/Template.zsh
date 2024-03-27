@@ -2,7 +2,7 @@
 # This file should help you to get started with writing SCI tests for macOS.
 
 #
-# To ensure that data is displayed accurately in the Securty Score Splunk dashboard, it's important to follow certain best practices.
+# To ensure that data is displayed accurately in the Security Score Splunk dashboard, it's important to follow certain best practices.
 #
 # 1)  A key practice is to aggregate related values within a test and return the result as a single object.
 #     This approach simplifies the analysis and visualization of data, especially when examining related metrics or statuses.
@@ -15,7 +15,7 @@
 # 2)  Splunk has a default limit of 10,000 characters for a single event; data is truncated if it exceeds this limit.
 #     If you expect a result to exceed this limit, consider breaking it into smaller, more manageable pieces.
 #
-# 3)  The Securty Score Splunk dashboard currently does not support every json structure.
+# 3)  The Security Score Splunk dashboard currently does not support every json structure.
 #
 #     Example: vlSupportMatrixExample.
 #
