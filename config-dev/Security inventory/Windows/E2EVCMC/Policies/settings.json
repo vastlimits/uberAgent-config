@@ -1,0 +1,20 @@
+[
+   {
+      "FileName":"PolicyAnalyzer-DefaultDomain-MemberServer2022-WithIE-Compare.csv",
+      "Delimiter": ";",
+      "DashboardName":"VDISecMemberServer2022",
+      "BatchSize":40,
+      "HasWeight":true,
+      "HasRiskTier":true,
+      "SkipTierGT": 1
+   },
+   {
+      "FileName":"PolicyAnalyzer-Windows1122H2-WithIE.csv",
+      "Delimiter": ";",
+      "DashboardName":"VDISecWindows1122H2",
+      "BatchSize":40,
+      "HasWeight":true,
+      "HasRiskTier":true,
+      "SkipTierGT": 1
+   }
+]
