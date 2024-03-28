@@ -95,7 +95,7 @@ if os.path.isfile(output_csv_mapping):
 print("-------------------------------------")
 
 # List of folders to exclude
-exclude_folders = None #['']
+exclude_folders = ['Examples']
 
 print("Excluding folders: ", exclude_folders)
 print("-------------------------------------")
