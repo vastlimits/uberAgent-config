@@ -30,6 +30,7 @@ vlLoadSshdConfig()
   shift 3
 
   vlRunCommand sshd -T
+
   local sshConfigStatus="$vlCommandStatus"
   local effectiveSshdConfig="$vlCommandStdout"
 
@@ -44,21 +45,26 @@ vlLoadSshdConfig()
     return 1
   fi
 
+  local missingConfigOpts=()
   for sshdConfigOptName in $@; do
     local sshdConfigOptValue=$(printf "${effectiveSshdConfig}\n" | grep -i "$sshdConfigOptName" | awk '{ print $2 }')
     if [ -z "$sshdConfigOptValue" ]; then
-      vlReportErrorJson \
-        "$testName" \
-        "$testDisplayName" \
-        "$testDescription" \
-        1 \
-        "The $sshdConfigOptName option was not found in the effective sshd configuration."
-
-      return 1
+      missingConfigOpts+="$sshdConfigOptName"
     fi
 
     sshdConfiguration[$sshdConfigOptName]="$( vlGetComparableOptionString "$sshdConfigOptValue" )"
   done
+
+  if (( ${#missingConfigOpts[@]} > 0 )); then
+    vlReportErrorJson \
+      "$testName" \
+      "$testDisplayName" \
+      "$testDescription" \
+      1 \
+      "Missing sshd configuration options: ${(j:,:)missingConfigOpts}."
+
+    return 1
+  fi
 
   return 0
 }
