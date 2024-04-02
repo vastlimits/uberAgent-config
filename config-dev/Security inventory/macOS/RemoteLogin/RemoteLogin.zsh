@@ -447,4 +447,8 @@ vlUtils="$(cd "$(dirname "$0")/.." && pwd)/Utils.zsh"
 [ "$(id -u)" = "0" ] || { printf "Error: This script must be run as root.\n" >&2; exit 64; }
 
 # Run the tests
-vlSshDaemonTests
+results=()
+
+results+="$( vlSshDaemonTests )"
+
+vlPrintJsonReport "${results[@]}"
