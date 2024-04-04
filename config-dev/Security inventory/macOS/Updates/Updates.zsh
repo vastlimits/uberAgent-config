@@ -49,7 +49,7 @@ vlCheckIsAutomaticCheckingForMacOSUpdatesEnabled()
 {
   local testName="SWUAutomaticUpdateCheckingEnabled"
   local testDisplayName="macOS updates"
-  local testDescription="Disabling automatic update checks on macOS can leave the system vulnerable to threats. This test verifys that automatic update checks are enabled."
+  local testDescription="Disabling automatic update checks on macOS can leave the system vulnerable to threats. This test verifies that automatic update checks are enabled."
   local riskScore=100
 
   vlRunCommand softwareupdate --schedule
@@ -139,7 +139,7 @@ vlCheckIsAutomaticCheckingForAppStoreUpdatesEnabled()
 {
   local testName="SWUAutomaticUpdateAppStoreCheckingEnabled"
   local testDisplayName="macOS AppStore updates"
-  local testDescription="Deactivating AppStore updates can result in out-of-date applications, increasing the risk of security breaches. This test verifys if AppStore update checks are enabled."
+  local testDescription="Deactivating AppStore updates can result in out-of-date applications, increasing the risk of security breaches. This test verifies if AppStore update checks are enabled."
   local riskScore=80
   local plistDefault=0
 
