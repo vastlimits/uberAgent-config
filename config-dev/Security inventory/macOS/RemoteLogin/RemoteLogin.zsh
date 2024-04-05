@@ -141,10 +141,9 @@ vlCheckRemoteLoginEnabled()
 #   On error, the appropriate JSON is output to stdout and a non-zero value is returned.
 vlCheckRootLoginDisabled()
 {
-  # TODO: Review name, display name and description!
   local testName="SSHRootLoginDisabled"
   local testDisplayName="macOS root login"
-  local testDescription="TODO"
+  local testDescription="This test validates whether root login via SSH is permitted. It is crucial to securing a system, as the root user has full privileges and can potentially cause system-wide changes."
 
   local rootLogin="${sshdConfiguration[PermitRootLogin]}"
   case "$rootLogin" in
@@ -383,10 +382,9 @@ vlReportSshTestResults()
 
 vlSshDaemonTests()
 {
-  # TODO: Review: define testName, testDisplayName, testDescription
   local testName="SSHDaemonTests"
-  local testDisplayName="TODO"
-  local testDescription="TODO"
+  local testDisplayName="SSH daemon settings"
+  local testDescription="This suite of tests performs multiple checks on the SSH daemon configuration, including remote login, password login, encryption techniques, etc., to assess the currently active settings' security level."
   local riskScore=10
 
   vlCheckRemoteLoginEnabled || return $(( $? - 1 ))
