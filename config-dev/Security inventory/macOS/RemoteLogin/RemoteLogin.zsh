@@ -282,14 +282,14 @@ vlScoreAlgorithmList()
   local nonCompliantAlgosList
   nonCompliantAlgosList=$( vlFilterNonCompliantAlgos "$goodAlgosList" "${algosListToCheck}" )
   if (( $? != 0 )); then
-    resultDataForAllTests=$(vlAddResultValue "${resultDataForAllTests}" "${prefix}-NonCompliantAlgorithms" "$nonCompliantAlgosList")
+    resultDataForAllTests=$(vlAddResultValue "${resultDataForAllTests}" "${prefix}-NonCompliant" "$nonCompliantAlgosList")
 
     local riskyAlgosList
     riskyAlgosList=$( vlFilterRiskyAlgos "$knownRiskyAlgos" "$nonCompliantAlgosList" )
     if (( $? == 0 )); then
       score=5
     else
-      resultDataForAllTests=$(vlAddResultValue "${resultDataForAllTests}" "${prefix}-CriticalRiskAlgorithms" "$riskyAlgosList")
+      resultDataForAllTests=$(vlAddResultValue "${resultDataForAllTests}" "${prefix}-CriticalRisk" "$riskyAlgosList")
       score=0
     fi
   fi
