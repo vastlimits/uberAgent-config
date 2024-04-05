@@ -197,9 +197,9 @@ vlCheckAirplayReceiver()
     user=$(basename "$user_home")
     
     resultObj=""
-
-    # Skip the "Shared" directory
-    [[ "$user" == "Shared" ]] && continue
+    
+    # Skip the "Shared" and "Library" directories
+    [[ "$user" == "Shared" || "$user" == "Library" ]] && continue
     
     # Use sudo to run 'defaults' as the user to check AirplayReceiverEnabled status
     # Yes, the option is called "AirplayRecieverEnabled" and contains a typo
@@ -213,16 +213,16 @@ vlCheckAirplayReceiver()
         result="enabled"
         testScore=3
       fi
-      resultObj=$(vlAddResultValue "{}" "Status" "$result")
-      resultObj=$(vlAddResultValue "$resultObj" "User" "$user")  
+      resultObj=$(vlAddResultValue "{}" "User" "$user")
+      resultObj=$(vlAddResultValue "$resultObj" "Status" "$result")  
       resultData=$(vlAddResultValue "$resultData" "" "[$resultObj]")
     else
       # The following message is returned for the command above for users which have never switched the receiver off and/or on again:
       # "The domain/default pair of (com.apple.controlcenter.plist, AirplayRecieverEnabled) does not exist"
       # By default, the receiver is enabled, but we still get this message and the command is marked as failed. In this case so we have to assume the receiver is enabled.
       # If the receiver has at least once been turned off, the command above will return 0, and if switched on again it will return 1.
-      resultObj=$(vlAddResultValue "{}" "Status" "enabled")
-      resultObj=$(vlAddResultValue "$resultObj" "User" "$user")  
+      resultObj=$(vlAddResultValue "{}" "User" "$user")
+      resultObj=$(vlAddResultValue "$resultObj" "Status" "enabled")  
       resultData=$(vlAddResultValue "$resultData" "" "[$resultObj]")
     fi
   done
