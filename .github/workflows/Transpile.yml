@@ -12,13 +12,13 @@ jobs:
     runs-on: ${{ (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/')) && 'windows-latest' || 'ubuntu-latest' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
           token: ${{ secrets.VLSVC_PAT }}
 
       - name: Setup Python environment
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: 3.11
 

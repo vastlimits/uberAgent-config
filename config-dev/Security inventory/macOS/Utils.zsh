@@ -5,21 +5,13 @@
 # Call this function to initialize the variables required to run the utilities
 vlInit()
 {
-  ## This logic to use either version of jq is provided only for testing the scripts
-  ## FIXME: Remove this logic before releasing
-  local uberAgentJq="/Library/uberAgent/uberAgent.app/Contents/MacOS/jq-universal"
-  local systemJq=$( which jq )
+  JQ="/Library/uberAgent/uberAgent.app/Contents/MacOS/jq-universal"
+  JQFLAGS="-M"
 
-  if [ -x "$uberAgentJq" ]; then
-    JQ="$uberAgentJq"
-  elif [ -x "$systemJq" ]; then
-    JQ="$systemJq"
-  else
+  if [ ! -x "$JQ" ]; then
     printf "Error: Unable to find the JSON processor jq(1) which is required to run this program.\n" 1>&2
     exit 2
   fi
-
-  JQFLAGS="-M"
 }
 
 # Runs "$@" in a subshell with the caller's options, sets reply=(stdout stderr)

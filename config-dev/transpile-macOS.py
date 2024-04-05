@@ -197,13 +197,10 @@ def append_mapping_info(data):
 
 # Extracts the DisplayName and Description from a buffer
 def extract_mapping_info(data):
-
-    keywords = ["testName", "testDisplayName", "testDescription"]
-
     pattern = (
-        r'local testName="(?!\$[0-9]+)[^"]*"\s+'
-        r'local testDisplayName="(?!\$[0-9]+)[^"]*"\s+'
-        r'local testDescription="(?!\$[0-9]+)[^"]*"'
+        r'(local\s+)?testName\s*=\s*"?(?!\$[0-9]+)[^"\n#]*"?\s*(#\s*[^"\n]*)?\s*'
+        r'(local\s+)?testDisplayName\s*=\s*"?(?!\$[0-9]+)[^"\n#]*"?\s*(#\s*[^"\n]*)?\s*'
+        r'(local\s+)?testDescription\s*=\s*"?(?!\$[0-9]+)[^"\n#]*"?(\s*#\s*[^"\n]*)?'
     )
 
     matches = re.finditer(pattern, data, re.MULTILINE | re.DOTALL)
