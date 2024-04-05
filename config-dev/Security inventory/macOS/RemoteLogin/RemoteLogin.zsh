@@ -273,7 +273,7 @@ vlFilterRiskyAlgos()
 
 vlScoreAlgorithmList()
 {
-  local testName="$1"
+  local prefix="$1"
   local goodAlgosList="$2"
   local knownRiskyAlgos="$3"
   local algosListToCheck="$4"
@@ -282,14 +282,14 @@ vlScoreAlgorithmList()
   local nonCompliantAlgosList
   nonCompliantAlgosList=$( vlFilterNonCompliantAlgos "$goodAlgosList" "${algosListToCheck}" )
   if (( $? != 0 )); then
-    resultDataForAllTests=$(vlAddResultValue "${resultDataForAllTests}" "${testName}.NonCompliantAlgorithms" "$nonCompliantAlgosList")
+    resultDataForAllTests=$(vlAddResultValue "${resultDataForAllTests}" "${prefix}-NonCompliantAlgorithms" "$nonCompliantAlgosList")
 
     local riskyAlgosList
     riskyAlgosList=$( vlFilterRiskyAlgos "$knownRiskyAlgos" "$nonCompliantAlgosList" )
     if (( $? == 0 )); then
       score=5
     else
-      resultDataForAllTests=$(vlAddResultValue "${resultDataForAllTests}" "${testName}.CriticalRiskAlgorithms" "$riskyAlgosList")
+      resultDataForAllTests=$(vlAddResultValue "${resultDataForAllTests}" "${prefix}-CriticalRiskAlgorithms" "$riskyAlgosList")
       score=0
     fi
   fi
@@ -310,7 +310,7 @@ vlCheckKeysStrongEncryption()
   local goodAlgosList="curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256"
 
   vlScoreAlgorithmList \
-    "$testName" \
+    "SshKexAlgorithms" \
     "$goodAlgosList" \
     "$knownRiskyAlgos" \
     "${sshdConfiguration[KexAlgorithms]}"
@@ -329,7 +329,7 @@ vlCheckCiphersStrongEncryption()
   local goodAlgosList="chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"
 
   vlScoreAlgorithmList \
-    "$testName" \
+    "SshCiphers" \
     "$goodAlgosList" \
     "$knownRiskyAlgos" \
     "${sshdConfiguration[Ciphers]}"
@@ -348,7 +348,7 @@ vlCheckMacsStrongEncryption()
   local goodAlgosList="hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com"
 
   vlScoreAlgorithmList \
-    "$testName" \
+    "SshMacAlgorithms" \
     "$goodAlgosList" \
     "$knownRiskyAlgos" \
     "${sshdConfiguration[MACs]}"
