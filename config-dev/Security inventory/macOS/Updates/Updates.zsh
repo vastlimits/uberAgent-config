@@ -45,7 +45,7 @@ vlAverageScores()
   printf "$testScore"
 }
 
-vlCheckIsAutomaticCheckingForMacOSUpdatesEnabled()
+vlCheckMacOSUpdatesEnabled()
 {
   local testName="SWUAutomaticUpdateCheckingEnabled"
   local testDisplayName="macOS updates"
@@ -135,7 +135,7 @@ vlCheckIsAutomaticCheckingForMacOSUpdatesEnabled()
   return 0
 }
 
-vlCheckIsAutomaticCheckingForAppStoreUpdatesEnabled()
+vlCheckAppStoreUpdatesEnabled()
 {
   local testName="SWUAutomaticUpdateAppStoreCheckingEnabled"
   local testDisplayName="macOS AppStore updates"
@@ -181,9 +181,9 @@ vlCheckForRecommendedUpdates()
 
 vlUpdatesTests()
 {
-  vlCheckIsAutomaticCheckingForMacOSUpdatesEnabled || return 1
+  vlCheckMacOSUpdatesEnabled || return 1
 
-  vlCheckIsAutomaticCheckingForAppStoreUpdatesEnabled
+  vlCheckAppStoreUpdatesEnabled
 }
 
 ################################################################################
