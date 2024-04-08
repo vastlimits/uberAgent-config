@@ -368,7 +368,7 @@ function Get-vlFirewallCheck {
       $Output += [PSCustomObject]@{
          Name         = "FWState"
          DisplayName  = "Firewall status"
-         Description  = "Windows: This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private).\nmacOS: Checks whether the macOS firewall is enabled."
+         Description  = "Windows: This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private). macOS: performs comprehensive checking of firewall settings. If the firewall is enabled, this test also validates the status of the block-all rule, stealth mode, and a list of approved applications."
          Score        = $firewallEnabled.Score
          ResultData   = $firewallEnabled.Result
          RiskScore    = $firewallEnabled.RiskScore
@@ -407,8 +407,8 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBj2eJ5haMwNNff
-# wwIYJUSudnZ/Vlt70aiI2NuxkB8Ot6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBTQqSkz+Jn6t1G
+# 2wy1LmlxSJf111EkPq3/9rPcrf4n76CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -485,17 +485,17 @@ Write-Output (Get-vlFirewallCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg5iTxeDM27WbH
-# nM18O8YtUYuJmIizJzg+Uxc6AxLCtRkwDQYJKoZIhvcNAQEBBQAEggIAJO9HIvx/
-# ZgxkxoO5f0mzrPzCBaI3jj8G5DoiI9p2+/hrj5KuJJcb0ZKXsBT0sDLfjhGlIkfI
-# XQrJNroAW0zoUOwHJ0cCHFZF8VjvhknAq3+niSKLenptt/M1TlXrI9QXIjWPlvLF
-# BG5mhWrYb64HmUtp4f+/GW3PGp/bdf6x5gfIP/3or6jFygt0fntsSJ0r7u9bSzqj
-# /kuyDmnQam9ny9UTKNtSytjf9OlqoWX0/bwyXE+Rswalg4bla9suO3nyuU1TekCd
-# Apkwmn6dYw0RUbAWeRUJ8KXZhnhyDpwA/YJkOFiNYE8fpCcq3BsRVFItzy/ab1N+
-# LkQslI10E/VySAAxxFG/WLndv85fHU6sHt0NbWQlX59JXVGBfKe8NB3Dgpuxc0D/
-# dlxhGWkb4lTTrgVFQHPEblzUeAUQ1gkGy1N0FRcRflxO9ISCZpx6cOCbTlVljU3D
-# 3Gw5FVYfQB1mfp5qVVFVxMv2LQql4hdvQjiKZ7BZ+/p6JjUEgBL8RJh2vgljNTov
-# yR90KaqPq80WUc9OxzjwRunTc0hOq9/skDV4e5y5yaVnr49/1gUhLN/oYQ+inprU
-# PFvG3AEvUsFaE41KBlK6WM4jsBKNiShJXxx5WcdoEzw6avBcxonQXESMveq/DqiW
-# A8bTAY3xLiDuLBSoXBXFBfH/ptDrb2WxuMw=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgq0u/bCpt8ItQ
+# w7J6soiUYtbgn+AfJz8Z/o9jkdYD/HgwDQYJKoZIhvcNAQEBBQAEggIALO/RiCMA
+# uQFefSiBjGK8Zwn63BOGhv5fADjmCaRjsHLrVp7yBRWfJxuKlQYuI7hffNDAtKxM
+# zc9jA5rkkNmPGcLu83kl5MvM8DuiUs6UAy0vLXExoumf2Po56DfnYeWTRv5/YLI2
+# NRYIlMToxg408/Htb68EQYw7vswOIc+1x37yGDh9+4FmLIKx7PEwvifns/s2Li2e
+# FtqV/02mDyUKH3+4zWXaTsKumIc9OCrXLwsepiy3iETtQur6HJJLRF3tOjrVtx4r
+# EzINJ/S8e8gSsETHrPwUyB47l9IQgu3xHtzQVdAhkbm5mzkaGXq90RkRRmfvByFR
+# x8O65Gt9uwAxs6tL4z6RQJcepPBjdslRu8SIrhO4jh1Jid+U6khiIaoiD2IcmDtf
+# Degdl00tZ378V8UakoynDR7HD02PewIrt2zZd/iZeXCCtOPvM1rdhEzU9CaOuBi2
+# 2+4pQgToPCT8EvzSCQNEalM4gPvYAJZMjuos0tMu6KvexwKwi4nNSyHvE3fOdcgz
+# MyS2OODzKuCvf03l2OZdLIJrwxieuXnZZk8z+obBwq0nRF5jqNTcQMfb5GcN1e00
+# wZyWWf2X9YGn33Em4J9rYOuXJFMeizUr2Hw7bikGoFDFqWMGa3XtNhcbgeysLgGb
+# JWfeYVQ+A9BurH9pXMhJgSRcOIgWYVKMrtA=
 # SIG # End signature block
