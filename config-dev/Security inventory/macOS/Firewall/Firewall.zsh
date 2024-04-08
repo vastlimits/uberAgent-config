@@ -9,9 +9,9 @@ resultDataForAllTests="{}"
 
 vlCheckIsFirewallEnabled()
 {
-  local testName="FWState"
-  local testDisplayName="Firewall status"
-  local testDescription="Windows: This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private).\nmacOS: Checks whether the macOS firewall is enabled."
+  local testName="$1"
+  local testDisplayName="$2"
+  local testDescription="$3"
   local riskScore=100
 
   vlRunCommand /usr/libexec/ApplicationFirewall/socketfilterfw --getglobalstate
@@ -184,13 +184,16 @@ vlGetFirewallApprovedApps()
 
 vlFirewallTests()
 {
-  vlCheckIsFirewallEnabled || return $(( $? - 1 ))
-
-  ## TODO: Review and adapt the user-facing text
-  local testName="Firewallo"
+  local testName="FWState"
   local testDisplayName="Firewall status"
-  local testDescription="Comprehensive firewall tests"
+  local testDescription="Windows: This test verifies whether the Windows Defender Firewall is enabled or disabled. It also provides the current connection status of the network profiles. Network profiles allow the system to apply different firewall settings based on the network location, such as a public Wi-Fi network (Public), a corporate network (Domain), or a home network (Private). macOS: performs comprehensive checking of firewall settings. If the firewall is enabled, this test also validates the status of the block-all rule, stealth mode, and a list of approved applications."
   local riskScore=100
+
+  vlCheckIsFirewallEnabled \
+    "$testName" \
+    "$testDisplayName" \
+    "$testDescription" \
+    || return $(( $? - 1 ))
 
   vlCheckIsFirewallBlockallRuleEnabled || return 1
   vlCheckIsFirewallStealthModeEnabled || return 1
