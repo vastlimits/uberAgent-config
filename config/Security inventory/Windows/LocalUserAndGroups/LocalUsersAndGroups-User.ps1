@@ -249,7 +249,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUUIsAdmin"
          DisplayName  = "Local user is admin"
-         Description  = "This test determines whether the local user is a member of the local Administrators group."
+         Description  = "Windows: This test determines whether the local user is a member of the local Administrators group. macOS: This test determines if the current user is a member of the group 'admin'."
          Score        = $isLocalAdmin.Score
          ResultData   = $isLocalAdmin.Result
          RiskScore    = $isLocalAdmin.RiskScore
@@ -287,8 +287,8 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBhaLfD2an9EiyE
-# OCsAEsTxQ5iHq4S8ZdzX+p9ylcTW+qCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAsdf9BAS/sjLWA
+# ISs+wKWP5fSjThpUIBAeo7IskR0R3aCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -365,17 +365,17 @@ Write-Output (Get-vlLocalUsersAndGroupsCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgdPcim60o+L0T
-# 5guZDnjhOp0scpFqznatKWOwfl6jLsAwDQYJKoZIhvcNAQEBBQAEggIAAZhHQeop
-# 8b41+O0pRj+J9FEjOL21axD+NipTqrq2X7LJMzmbKfCvj1dU+7b8+qVn32tSEkAL
-# 2uEUvnqc+Akp2ZZ+KW2KBztV2rHyDLobzy6Gxax4zLdlJMHssMEagzDrFraqh7fe
-# sqMAgSnwuGSXSXGzhfJrciKslJAwaotdD5cPO6GCOCarPXeTSRV4RJYvyonuA7YQ
-# VuPJXhEaFL6ox7X6k6UVMzx3+c+fTY7OP3KTfKVraGpZiZVGfh3hKh4TBINnECnu
-# QZGKMUOCUMK1rNbcugjURDB8d+BF+9dTAOXEU5fdrcYQrRn1yioxcZhJb07ikNqn
-# sI/3yHJf95muLvtq6EywpHSampfMEXbA3lmrcgoFz1ubclC2hCXaQBEEWaABYGSE
-# dCm0gSAU11TKRAIUhSHnov1dWaV55vpCm5SyN8mYkfetWoBDnTyFBTAoFpZU8Mft
-# m9iBxWf8PfObuZjNVNarXbK+NcJ4IBRIWmwkp89wkzhG+ta/aFVhm856snMF8Lyq
-# IwOM0zPa+tnQ2iHx5oaKKwDdA086JodWCuCMzA9083K51jFgTzKrhNUBM/uHWVkn
-# LBMSk4AjvZOs8PhmzDL8acfBrZLRaUFleyhXXdhAR9pevbFJKgL772biqRwupDnG
-# epvZZE3a9I4vxCQYhi0rT7DKtyTCmjBjIjg=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgvIE6LkNdijYo
+# nfUa/qCtrVhopPVXvn4LC3Jkv0uiVGgwDQYJKoZIhvcNAQEBBQAEggIAYUL+PJyF
+# zf3LVpSwyhP8p+yww4YWzqZCzFF8kh44Mc3n+oEs5Or8M7NdFQmuqc7zb6wfHogd
+# S5kvcWM6nbC3UKHddegDyevNxYZatg/9iZMhAU/utw183pAoMK6vxqGHvcyIA6FT
+# lHL5ToW74R+YRqXyGDiBOVp9LURgSZG92hOZsaf8o9XCI2d217sHpXpoYg2CUs+C
+# AdOgzdyC+rEHMJO+poG7KhMFPhUG+Xq5WrBSAQf6Rb0PN1TDzSIZJoXOQ2FJ4YZC
+# W93rBFc4ihTYnkKpoFWqJoUM9qWvY9OBsYDCswH5u1oJKdEeX6YD146hNRVr08jE
+# qpGGw+kDawtrKGPH2uBcLDyEV6aO1H9UKCcJwrXo46YOHFTyhnZS6+p+Ehm19TVb
+# Gd1vDV0yVpuMeAhs6mkez67yR6+TYZ/JDoWLgwrgj0O4vU+MFSFd750RGzB/cbYh
+# pk0e3bwEd7tzTN8873gtvUZQ/m/mMDVPdOxuYPioPcQuwOjgLAHYxROj4yVeku/S
+# sPUxPnugnEiDECIOm9/e0n2Gx4ZXQZ1D0PUBcciJvmiEadRLQuMwlOnAKmn74Jq/
+# T40fn2o9jrwDg5XEdtM4Olw7uL7c0eLwBxDyWKQU2lZdMB6fTwKH75aGZpfY7Q2W
+# TpdmSNvcllF+vJIz26ZtvlBCl3kxmjE7ZFs=
 # SIG # End signature block
