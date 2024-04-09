@@ -27,7 +27,7 @@ vlCheckLocalUserIsAdmin()
 {
   local testName="LUUIsAdmin"
   local testDisplayName="Local user is admin"
-  local testDescription="Windows: This test determines whether the local user is a member of the local Administrators group.\nmacOS: This test determines if the current user is a member of the group 'admin'."
+  local testDescription="Windows: This test determines whether the local user is a member of the local Administrators group. macOS: This test determines if the current user is a member of the group 'admin'."
   local testScore=10
   local riskScore=60
 
