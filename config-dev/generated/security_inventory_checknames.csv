@@ -63,7 +63,6 @@ SSHKeysUseStrongEncryption,macOS remote login key encryption,Checks whether the 
 SSHCiphersUseStrongEncryption,macOS remote login ciphers,Checks whether the cipher algorithms that are used for remote login are considered strong.
 SSHMacsUseStrongEncryption,macOS remote login MACs,Checks whether the MAC (Message Authentication Codes) algorithms that are used for remote login are considered strong.
 SSHDaemonTests,SSH daemon settings,"This suite of tests performs multiple checks on the SSH daemon configuration, including remote login, password login, encryption techniques, etc., to assess the currently active settings"
-SWUAutomaticUpdateCheckingEnabled,macOS updates,Disabling automatic update checks on macOS can leave the system vulnerable to threats. This test verifys if automatic update checks are enabled.
-SWUAutomaticUpdateAppStoreCheckingEnabled,macOS AppStore updates,"Deactivating AppStore updates can result in out-of-date applications, increasing the risk of security breaches. This test verifys if AppStore update checks are enabled."
+SWUAutomaticUpdateCheckingEnabled,macOS updates,Disabling automatic update checks on macOS can leave the system vulnerable to threats. This test verifies that automatic update checks are enabled.
+SWUAutomaticUpdateAppStoreCheckingEnabled,macOS AppStore updates,"Deactivating AppStore updates can result in out-of-date applications, increasing the risk of security breaches. This test verifies if AppStore update checks are enabled."
 SWURecommendedUpdatesAvailable,macOS recommended updates,Provides a list of pending recommended macOS software updates.
-SWUInstallSecurityResponsesAndSystemFilesEnabled,macOS security response updates,Checks whether the automatic installation of security responses and system files is enabled.
