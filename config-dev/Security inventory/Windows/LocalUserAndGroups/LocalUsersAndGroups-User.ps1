@@ -249,7 +249,7 @@ function Get-vlLocalUsersAndGroupsCheck {
       $Output += [PSCustomObject]@{
          Name         = "LUUIsAdmin"
          DisplayName  = "Local user is admin"
-         Description  = "This test determines whether the local user is a member of the local Administrators group."
+         Description  = "Windows: This test determines whether the local user is a member of the local Administrators group.\nmacOS: This test determines if the current user is a member of the group 'admin'."
          Score        = $isLocalAdmin.Score
          ResultData   = $isLocalAdmin.Result
          RiskScore    = $isLocalAdmin.RiskScore
