@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - develop
-      - "version/7.1" # don't use a glob-pattern here! Config-archives
-        # are only supported starting uberAgent 7.1
+      - "version/7.1"    # don't use a glob-pattern here! Config-archives
+                         # are only supported starting uberAgent 7.1
     paths-ignore:
       - "config-dist/**" # avoid recursion
   pull_request:
@@ -127,7 +127,7 @@ jobs:
 
       - name: "validate configuration uAConfigCheck"
         run: |
-          .\uAConfigCheck.exe -t -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_FILE}}"
+          .\uAConfigCheck.exe -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_FILE}}"
         continue-on-error: false
 
   publish-archive:
@@ -154,7 +154,7 @@ jobs:
           ls  "$TARGET_DIR_PATH"
 
       - name: Commit archive
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Updated config archive
           commit_user_name: vastlimits
