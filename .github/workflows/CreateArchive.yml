@@ -154,7 +154,7 @@ jobs:
           ls  "$TARGET_DIR_PATH"
 
       - name: Commit archive
-        uses: stefanzweifel/git-auto-commit-action@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Updated config archive
           commit_user_name: vastlimits
