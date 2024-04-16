@@ -9,42 +9,60 @@ vlCheckWiFiSecurity()
   local testDescription="WiFi connections can potentially compromise a machine's security and therefore should be encrypted. This test checks which kind of encryption the WiFi connection uses."
   local testScore=1
   local riskScore=90
-   
-  # Define path to the airport command-line utility
-  AIRPORT="/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport"
-   
+
   # Check if Wi-Fi is enabled
-  WIFI_STATUS=$($AIRPORT -I | grep 'AirPort: Off')
-  if [ -n "$WIFI_STATUS" ]; then
+  WIFI_DEVICE=$(networksetup -listallhardwareports | awk '/Wi-Fi|Airport/{getline; print $2}')
+  if [ -z "$WIFI_DEVICE" ]; then
       return 0
   fi
-   
+
+  WIFI_STATUS=$(networksetup -getairportpower $WIFI_DEVICE | awk '{print $4}')
+  if [ "$WIFI_STATUS" = "Off" ]; then
+      return 0
+  fi
+
   local security="unknown"
-  # Get Wi-Fi security information
-  SECURITY_INFO=$($AIRPORT -I | awk '/link auth/ {print $3}')
-  
-  # Check if the security is one of the secure types
+  # Get current SSID
+  CURRENT_SSID=$(networksetup -getairportnetwork $WIFI_DEVICE | cut -d ":" -f 2 | xargs)
+  if [ -z "$CURRENT_SSID" ]; then
+    echo "No current SSID found, WiFi may be disconnected."
+    return 0
+  fi
+
+  # Get WiFi security information for the current network
+  SECURITY_INFO=$(system_profiler SPAirPortDataType | awk -v SSID="$CURRENT_SSID" '
+  /Current Network Information:/ {
+    getline; # move to next line which should be the SSID
+    if ($0 ~ SSID) {
+      # keep reading lines until we find the security line
+      while ($0 !~ /Security: /) {
+        getline;
+      }
+      print $2; # Output the security type
+      exit;
+    }
+  }')
+
+  # Map the output to security types
   case "$SECURITY_INFO" in
-      wpa2-psk)
+      WPA2)
           security="WPA2"
           testScore=7
           ;;
-      wpa3-sae | wpa3-psk | wpa2/wpa3-psk)
+      WPA3)
           security="WPA3"
           testScore=10
           ;;
-      none | open)
+      None)
           security="none"
           testScore=0
           ;;
-      unknown)
+      *)
           security="unknown"
           testScore=0
           ;;
-      *)
-          ;;
   esac
-   
+
   resultData=$(vlAddResultValue "{}" "Security type" "$security")
 
   # Create the result object 
@@ -195,7 +213,6 @@ vlCheckAirplayReceiver()
   for user_home in /Users/*; do
     # Extract the username from the home directory path
     user=$(basename "$user_home")
-    
     resultObj=""
     
     # Skip the "Shared" and "Library" directories
@@ -224,6 +241,7 @@ vlCheckAirplayReceiver()
       resultObj=$(vlAddResultValue "{}" "User" "$user")
       resultObj=$(vlAddResultValue "$resultObj" "Status" "enabled")  
       resultData=$(vlAddResultValue "$resultData" "" "[$resultObj]")
+      testScore=3
     fi
   done
   
