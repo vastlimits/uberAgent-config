@@ -41,7 +41,8 @@ vlCheckLocalUserIsAdmin()
     testScore=4
   fi
   
-  resultData=$(vlAddResultValue "{}" "Current user admin" "$isUserAdmin")
+  resultData=$(vlAddResultValue "{}" "IsLocalAdmin" "$isUserAdmin")
+  resultData=$(vlAddResultValue "$resultData" "Username" "$originalUser")  
   
   # Create the result object 
   vlCreateResultObject "$testName" "$testDisplayName" "$testDescription" "$testScore" "$riskScore" "$resultData"
