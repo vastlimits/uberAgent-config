@@ -25,7 +25,6 @@ vlCheckWiFiSecurity()
   # Get current SSID
   CURRENT_SSID=$(networksetup -getairportnetwork $WIFI_DEVICE | cut -d ":" -f 2 | xargs)
   if [ -z "$CURRENT_SSID" ]; then
-    echo "No current SSID found, WiFi may be disconnected."
     return 0
   fi
 
