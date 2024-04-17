@@ -210,7 +210,7 @@ vlShouldIgnoreCertificate()
   shift 1
 
   for ignoredCN in "$@"; do
-    if [[ "$commonName" = "$ignoredCN" ]]; then
+    if [[ "$cn" = "$ignoredCN" ]]; then
       return 0
     fi
   done
