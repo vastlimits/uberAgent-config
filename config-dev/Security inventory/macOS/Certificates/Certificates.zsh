@@ -78,8 +78,14 @@ vlCheckUserKeychains()
 
   # In UNIX-based systems like macOS, user accounts with a UID less than 500 are typically system accounts.
   for username in $(dscl . -list /Users UniqueID | awk '$2 > 500 { print $1 }'); do
-    vlBuildCertTrustMap "$(su -l $username -c 'security dump-trust-settings 2>/dev/null')"
-    vlCheckKeychains "$username" "$( su -l $username -c 'security list-keychains -d user' )"
+    # Users with a new password required policy will block the su(1) command execution, so skip
+    local pwdPolicy="$( pwpolicy -u $username -getpolicy | grep newPasswordRequired )"
+    if [[ -z "$pwdPolicy" ]] \
+      || [[ "$pwdPolicy" = "newPasswordRequired=0" ]]
+    then
+      vlBuildCertTrustMap "$(su -l $username -c 'security dump-trust-settings 2>/dev/null')"
+      vlCheckKeychains "$username" "$( su -l $username -c 'security list-keychains -d user' )"
+    fi
   done
 
   local testScore=10
