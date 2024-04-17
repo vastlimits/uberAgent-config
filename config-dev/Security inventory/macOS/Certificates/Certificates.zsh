@@ -4,7 +4,6 @@
 
 vlReportTrustStoreVersion()
 {
-  ## TODO: Review the testName, testDisplayName, testDescription, riskScore!
   local testName="CertTSVerRep"
   local testDisplayName="Trust Store Version"
   local testDescription="This test retrieves and reports the version of the macOS Trust Store, which is an unmodifiable repository of system root certificates. The Trust Store not only validates trusted certificates but also manages blocked ones, serving as an implicit Certificate Revocation List (CRL). Keeping track of the Trust Store version helps ensure system security by verifying that the system is up-to-date with the latest trust settings."
@@ -37,7 +36,6 @@ vlReportTrustStoreVersion()
 
 vlCheckSystemKeychainCerts()
 {
-  ## TODO: Review the testName, testDisplayName, testDescription, riskScore!
   local testName="CertSysKeyChk"
   local testDisplayName="System Keychain Cert Check"
   local testDescription="This test examines the system keychain for any trusted root CA certificates added by an admin. These certificates, if present, could alter the default trust settings of the system and potentially introduce security risks. The absence of admin-added certificates is considered a good state, while their presence requires further investigation to ensure system integrity."
@@ -67,7 +65,6 @@ vlCheckSystemKeychainCerts()
 
 vlCheckUserKeychains()
 {
-  ## TODO: Review the testName, testDisplayName, testDescription, riskScore!
   local testName="CertUserKeyChk"
   local testDisplayName="User Keychain Cert Check"
   local testDescription="This test checks all user keychains for any added trusted root CA certificates. Similar to the system keychain, user-added certificates in their keychains could affect the system's trust settings on a per-user basis. The absence of user-added certificates is considered a good state, while their presence could indicate potential security concerns that need to be addressed."
