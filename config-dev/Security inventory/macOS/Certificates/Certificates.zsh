@@ -36,10 +36,10 @@ vlReportTrustStoreVersion()
 
 vlCheckSystemKeychainCerts()
 {
-  local testName="CertSysKeyChk"
-  local testDisplayName="System Keychain Cert Check"
+  local testName="CMTrByMac"
+  local testDisplayName="Certificates trusted by macOS - Machine"
   local testDescription="This test examines the system keychain for any trusted root CA certificates added by an admin. These certificates, if present, could alter the default trust settings of the system and potentially introduce security risks. The absence of admin-added certificates is considered a good state, while their presence requires further investigation to ensure system integrity."
-  local riskScore=5
+  local riskScore=70
 
   keychainCheckCertCount=0
   keychainCheckResult="[]"
@@ -47,7 +47,11 @@ vlCheckSystemKeychainCerts()
 
   vlBuildCertTrustMap "$( security dump-trust-settings -d 2>/dev/null )"
   # Ignore the self-signed machine certificates installed by macOS
-  vlCheckKeychains "" "$( security list-keychains -d system)" com.apple.kerberos.kdc com.apple.systemdefault
+  vlCheckKeychains \
+    "" \
+    "$( security list-keychains -d system)" \
+    $riskScore \
+    com.apple.kerberos.kdc com.apple.systemdefault
 
   local testScore=10
   if (( keychainCheckCertCount > 0 )); then
@@ -65,10 +69,10 @@ vlCheckSystemKeychainCerts()
 
 vlCheckUserKeychains()
 {
-  local testName="CertUserKeyChk"
-  local testDisplayName="User Keychain Cert Check"
+  local testName="CUTrByMac"
+  local testDisplayName="Certificates trusted by macOS - User"
   local testDescription="This test checks all user keychains for any added trusted root CA certificates. Similar to the system keychain, user-added certificates in their keychains could affect the system's trust settings on a per-user basis. The absence of user-added certificates is considered a good state, while their presence could indicate potential security concerns that need to be addressed."
-  local riskScore=5
+  local riskScore=70
 
   keychainCheckCertCount=0
   keychainCheckResult="[]"
@@ -81,7 +85,10 @@ vlCheckUserKeychains()
       || [[ "$pwdPolicy" = "newPasswordRequired=0" ]]
     then
       vlBuildCertTrustMap "$(su -l $username -c 'security dump-trust-settings 2>/dev/null')"
-      vlCheckKeychains "$username" "$( su -l $username -c 'security list-keychains -d user' )"
+      vlCheckKeychains \
+        "$username" \
+        "$( su -l $username -c 'security list-keychains -d user' )" \
+        $riskScore
     fi
   done
 
@@ -223,7 +230,9 @@ vlCheckKeychains()
 {
   local username="$1"
   local keychains="$2"
-  shift 2
+  local riskScore="$3"
+
+  shift 3
 
   echo "$keychains" | while IFS= read -r keychainRaw
   do
@@ -253,10 +262,47 @@ vlCheckKeychains()
         || vlIsCertTrustRootForAllUsers "$singleCertData" \
         || continue
 
-      local certObj=$( vlAddResultValue "{}" "CommonName" "$commonName" )
+      local issuer=$(echo "$singleCertData" |
+                    openssl x509 -noout -issuer 2>/dev/null |
+                    sed 's/issuer=//')
+
+      local notBefore=$(echo "$singleCertData" |
+                        openssl x509 -noout -startdate 2>/dev/null |
+                        cut -d= -f2 |
+                        xargs -I{} date -j -f "%b %d %T %Y %Z" "{}" "+%Y-%m-%dT%H:%M:%S")
+
+      local notAfter=$(echo "$singleCertData" |
+                      openssl x509 -noout -enddate 2>/dev/null |
+                      cut -d= -f2 |
+                      xargs -I{} date -j -f "%b %d %T %Y %Z" "{}" "+%Y-%m-%dT%H:%M:%S")
+
+      local subject=$(echo "$singleCertData" |
+                      openssl x509 -noout -subject 2>/dev/null |
+                      sed 's/subject=//')
+
+      local thumbprint=$(echo "$singleCertData" |
+                        openssl x509 -noout -sha1 -fingerprint 2>/dev/null |
+                        tr -d ':' |
+                        cut -d= -f2)
+
+      local certObj="{}"
       if [[ -n "$username" ]]; then
+        certObj=$( vlAddResultValue "${certObj}" "Scope" "User" )
+      else
+        certObj=$( vlAddResultValue "${certObj}" "Scope" "Machine" )
+      fi
+
+      certObj=$( vlAddResultValue "${certObj}" "SecurityScore" 5 )
+      certObj=$( vlAddResultValue "${certObj}" "RiskScore" $riskScore )
+      certObj=$( vlAddResultValue "${certObj}" "Issuer" "$issuer" )
+      certObj=$( vlAddResultValue "${certObj}" "NotAfter" "$notAfter" )
+      certObj=$( vlAddResultValue "${certObj}" "NotBefore" "$notBefore" )
+      certObj=$( vlAddResultValue "${certObj}" "Subject" "$subject" )
+      certObj=$( vlAddResultValue "${certObj}" "Thumbprint" "$thumbprint" )
+
+      if [[ -n "$username" ]]; then
+        certObj=$( vlAddResultValue "${certObj}" "Username" "$username" )
         local keychainName=$( basename "$keychainPath" | cut -d"." -f1 | tr '[:upper:]' '[:lower:]' )
-        certObj=$( vlAddResultValue "${certObj}" "User" "$username" )
         certObj=$( vlAddResultValue "${certObj}" "Keychain" "$keychainName" )
       fi
 
