@@ -50,7 +50,6 @@ vlCheckSystemKeychainCerts()
   vlCheckKeychains \
     "" \
     "$( security list-keychains -d system)" \
-    $riskScore \
     com.apple.kerberos.kdc com.apple.systemdefault
 
   local testScore=10
@@ -58,13 +57,14 @@ vlCheckSystemKeychainCerts()
     testScore=5
   fi
 
-  vlCreateResultObject \
+  vlCreateResultObjectWithScope \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$keychainCheckResult"
+    "$keychainCheckResult" \
+    1
 }
 
 vlCheckUserKeychains()
@@ -87,8 +87,7 @@ vlCheckUserKeychains()
       vlBuildCertTrustMap "$(su -l $username -c 'security dump-trust-settings 2>/dev/null')"
       vlCheckKeychains \
         "$username" \
-        "$( su -l $username -c 'security list-keychains -d user' )" \
-        $riskScore
+        "$( su -l $username -c 'security list-keychains -d user' )"
     fi
   done
 
@@ -97,13 +96,14 @@ vlCheckUserKeychains()
     testScore=5
   fi
 
-  vlCreateResultObject \
+  vlCreateResultObjectWithScope \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$keychainCheckResult"
+    "$keychainCheckResult" \
+    2
 }
 
 typeset -A certTrustMap
@@ -230,9 +230,8 @@ vlCheckKeychains()
 {
   local username="$1"
   local keychains="$2"
-  local riskScore="$3"
 
-  shift 3
+  shift 2
 
   echo "$keychains" | while IFS= read -r keychainRaw
   do
@@ -286,14 +285,6 @@ vlCheckKeychains()
                         cut -d= -f2)
 
       local certObj="{}"
-      if [[ -n "$username" ]]; then
-        certObj=$( vlAddResultValue "${certObj}" "Scope" "User" )
-      else
-        certObj=$( vlAddResultValue "${certObj}" "Scope" "Machine" )
-      fi
-
-      certObj=$( vlAddResultValue "${certObj}" "SecurityScore" 5 )
-      certObj=$( vlAddResultValue "${certObj}" "RiskScore" $riskScore )
       certObj=$( vlAddResultValue "${certObj}" "Issuer" "$issuer" )
       certObj=$( vlAddResultValue "${certObj}" "NotAfter" "$notAfter" )
       certObj=$( vlAddResultValue "${certObj}" "NotBefore" "$notBefore" )
@@ -310,6 +301,10 @@ vlCheckKeychains()
       keychainCheckCertCount=$(( keychainCheckCertCount + 1 ))
     done
   done
+
+  if [[ -n "$username" ]] && (( keychainCheckCertCount == 0 )); then
+    keychainCheckResult=$(vlAddResultValue "{}" "Username" "$username" )
+  fi
 }
 
 vlCertsTests()
