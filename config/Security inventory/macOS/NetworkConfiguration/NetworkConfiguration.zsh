@@ -150,16 +150,21 @@ vlCheckAirDrop()
   local testScore=10
   local riskScore=80
   
-  local wifiEnabled="false"
+  local wifiEnabled="true"
   local blueToothEnabled="false"
   local sharingDaemonRunning="false"
   local interfaceAwdl0Active="false"
   local airdropStatus="disabled"
   
   # Check Wi-Fi Status
-  wifi_status=$(/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -I | awk '/state:/ {print $2}')
-  if [[ $wifi_status == "running" ]]; then
-      wifiEnabled="true"
+  WIFI_DEVICE=$(networksetup -listallhardwareports | awk '/Wi-Fi|Airport/{getline; print $2}')
+  if [ -z "$WIFI_DEVICE" ]; then
+      return 0
+  fi
+
+  WIFI_STATUS=$(networksetup -getairportpower $WIFI_DEVICE | awk '{print $4}')
+  if [ "$WIFI_STATUS" = "Off" ]; then
+      wifiEnabled="false"
   fi
   
   # Check Bluetooth Status using system_profiler and awk
@@ -176,10 +181,20 @@ vlCheckAirDrop()
       sharingDaemonRunning="true"
   fi
   
-  # Check the status of the awdl0 interface
-  awdl_status=$(ifconfig awdl0 | grep "status: " | awk '{print $2}')
-  if [[ $awdl_status == "active" ]]; then
-      interfaceAwdl0Active="true"
+  # Get the list of interfaces and look for "awdl0"
+  local interfaceCheck=$(ifconfig | grep "awdl0")
+  
+  # Check if the result is empty
+  if [[ -n $interfaceCheck ]]; then
+      # The interface exists, now check the status
+      awdl_status=$(ifconfig awdl0 | grep "status: " | awk '{print $2}')
+      if [[ $awdl_status == "active" ]]; then
+          interfaceAwdl0Active="true"
+      else
+          interfaceAwdl0Active="false"
+      fi
+  else
+      interfaceAwdl0Active="false"
   fi
   
   # Infer AirDrop status based on above checks
