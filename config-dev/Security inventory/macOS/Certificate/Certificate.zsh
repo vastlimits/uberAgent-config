@@ -229,12 +229,12 @@ vlUnescapeCommas()
 
 # Convert the RFC2253 CN fields from LibreSSL:
 #
-#   'subject= CN=ad-DC1-CA,DC=ad,DC=int,DC=vastlimits,DC=com'
+#   'subject= CN=my-CA,DC=ad,DC=mycompany,DC=com'
 #
 # to the certificate summary that Apple uses to identify the trust
 # settings (and display in the UI):
 #
-#   'ad-DC1-CA'
+#   'my-CA'
 vlNormalizeDnSummary()
 {
   perl -ne 'if(/CN=((?:[^,\\]|\\.)*)/){print "$1\n"; exit}' | vlUnescapeCommas
@@ -242,11 +242,11 @@ vlNormalizeDnSummary()
 
 # Convert the RFC2253 CN fields from LibreSSL:
 #
-#   'subject= CN=ad-DC1-CA,DC=ad,DC=int,DC=vastlimits,DC=com'
+#   'subject= CN=my-CA,DC=ad,DC=mycompany,DC=com'
 #
 # to comma-separated names the Windows implementation uses:
 #
-#   'CN=ad-DC1-CA, DC=ad, DC=int, DC=vastlimits, DC=com'
+#   'CN=my-CA, DC=ad, DC=mycompany, DC=com'
 vlNormalizeDn()
 {
   awk -F'[,/]' '{
