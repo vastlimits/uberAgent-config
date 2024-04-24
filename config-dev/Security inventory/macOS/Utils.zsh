@@ -129,35 +129,6 @@ vlCreateResultObject() {
           }'
 }
 
-vlCreateResultObjectWithScope() {
-    local testName="$1"
-    local testDisplayName="$2"
-    local testDescription="$3"
-    local testScore="$4"  # Assuming this is a numeric value
-    local riskScore="$5"  # Assuming this is a numeric value
-    local resultData="$6"
-    local testScope="$7"
-
-    shift 7
-
-    "$JQ" $JQFLAGS -c -n \
-        --arg name "$testName" \
-        --arg displayName "$testDisplayName" \
-        --arg description "$testDescription" \
-        --argjson score "$testScore" \
-        --argjson riskScore "$riskScore" \
-        --arg resultData "$resultData" \
-        --argjson scope "$testScope" \
-        $'{ Name: $name, \
-            DisplayName: $displayName, \
-            Description: $description, \
-            Score: $score, \
-            RiskScore: $riskScore, \
-            Scope: $scope, \
-            ResultData: $resultData \
-          }'
-}
-
 vlReportErrorJson()
 {
     local name="$1"
@@ -166,7 +137,7 @@ vlReportErrorJson()
     local errorCode="$4"
     local errorMsg=$( printf "$5" | awk '{$1=$1};1' ) # trim whitespace
 
-    "$JQ" $JQFLAGS -c -n \
+    "$JQ" $JQFLAGS -n \
         --arg name "$name" \
         --argjson errorCode "$errorCode" \
         --arg displayName "$displayName" \
