@@ -57,14 +57,13 @@ vlCheckSystemKeychainCerts()
     testScore=5
   fi
 
-  vlCreateResultObjectWithScope \
+  vlCreateResultObject \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$keychainCheckResult" \
-    1
+    "$keychainCheckResult"
 }
 
 vlCheckUserKeychains()
@@ -96,14 +95,13 @@ vlCheckUserKeychains()
     testScore=5
   fi
 
-  vlCreateResultObjectWithScope \
+  vlCreateResultObject \
     "$testName" \
     "$testDisplayName" \
     "$testDescription" \
     "$testScore" \
     "$riskScore" \
-    "$keychainCheckResult" \
-    2
+    "$keychainCheckResult"
 }
 
 typeset -A certTrustMap
