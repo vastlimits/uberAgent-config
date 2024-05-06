@@ -55,7 +55,7 @@ vlCheckForDefaultPasswordPolicy()
 {
   local testName="DefaultPasswordPolicyUsed"
   local testDisplayName="Default Password Policy Used"
-  local testDescription="This test determines if the default macOS password policy is used. This policy allows empty passwords (on unencrypted devices) and passwords with a minimum length of four characters (on devices with FileVault enabled)."
+  local testDescription="This test determines if the default macOS password policy is used. This policy allows empty passwords and passwords with a minimum length of four characters."
   local testScore=10
   local riskScore=100
   
@@ -63,7 +63,7 @@ vlCheckForDefaultPasswordPolicy()
   local policyOutput=$(pwpolicy -getaccountpolicies)
   
   # Define the string that identifies the default password policy
-  local defaultPolicyIdentifier="<string>com.apple.defaultpasswordpolicy"
+  local defaultPolicyIdentifier="<string>com.apple.defaultpasswordpolicy</string>"
   
   # Check if the default policy identifier is in the policy output
   local defaultPolicyUsed="true"
