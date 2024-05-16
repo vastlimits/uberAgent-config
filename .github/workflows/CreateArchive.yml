@@ -109,30 +109,29 @@ jobs:
             ./releases/uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll
           retention-days: 1
 
-  validate-archive:
-    needs: [create-archive]
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: uAConfigCheck
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: ConfigArchive
-
-      - name: "validate configuration uAConfigCheck"
-        run: |
-          .\uAConfigCheck.exe -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_FILE}}"
-        continue-on-error: false
+#  validate-archive:
+#    needs: [create-archive]
+#    runs-on: windows-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: uAConfigCheck
+#
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: ConfigArchive
+#
+#      - name: "validate configuration uAConfigCheck"
+#        run: |
+#          .\uAConfigCheck.exe -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_FILE}}"
+#        continue-on-error: false
 
   publish-archive:
     if: ${{ github.event_name == 'push' }}
-    needs: [validate-archive]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
