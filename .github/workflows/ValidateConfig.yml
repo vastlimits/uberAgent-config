@@ -2,7 +2,6 @@ name: Validate configuration
 on:
   pull_request:
     branches:
-    - develop
     - "main"
     - "version/*"
 
