@@ -562,6 +562,24 @@ function Get-vlTimeString {
 }
 
 function Get-vlIsCmdletAvailable {
+   <#
+   .SYNOPSIS
+      Checks if a cmdlet is available in the current session.
+
+   .DESCRIPTION
+      The Get-vlIsCmdletAvailable function checks if a cmdlet is available in the current session. It returns a boolean value indicating whether the cmdlet is available.
+
+   .PARAMETER CmdletName
+      Specifies the name of the cmdlet to check for availability. This parameter is mandatory.
+
+   .OUTPUTS
+      The function outputs a boolean value indicating whether the cmdlet is available.
+
+   .EXAMPLE
+      Get-vlIsCmdletAvailable -CmdletName "Get-Process"
+      Returns $true if the Get-Process cmdlet is available in the current session; otherwise, returns $false.
+   #>
+
    [CmdletBinding()]
    [OutputType([bool])]
    param (
@@ -582,6 +600,40 @@ function Get-vlIsCmdletAvailable {
       return $false
    }
 
+}
+
+function Get-vlUACState {
+   <#
+   .SYNOPSIS
+      Checks the status of the User Account Control (UAC) setting.
+
+   .DESCRIPTION
+      The Get-vlUACState function checks the status of the User Account Control (UAC) setting. It returns a boolean value indicating whether UAC is enabled or disabled.
+
+   .OUTPUTS
+      The function outputs a boolean value indicating whether UAC is enabled or disabled.
+
+   .EXAMPLE
+      Get-vlUACState
+      Returns $true if UAC is enabled; otherwise, returns $false.
+   #>
+
+   [CmdletBinding()]
+   [OutputType([bool])]
+   param ()
+
+   try {
+      $uacStatus = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Value "EnableLUA"
+      if ($null -ne $uacStatus) {
+         return $uacStatus -eq 1
+      }
+      else {
+         return $null
+      }
+   }
+   catch {
+      return $null
+   }
 }
 
 ##### Debugging utilities #####

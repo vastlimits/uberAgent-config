@@ -26,7 +26,7 @@ $WinBioStatus = @{
    PASSWORD           = 0x80000000
 }
 
-function Get-vlUACState {
+function Get-vlCheckUACState {
    <#
     .SYNOPSIS
         Function that checks if the UAC is enabled.
@@ -45,8 +45,8 @@ function Get-vlUACState {
    $riskScore = 60
 
    try {
-      $uac = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Value "EnableLUA"
-      if ($uac -eq 1) {
+      $uac = Get-vlUACState
+      if ($uac -eq $true) {
          $result = [PSCustomObject]@{
             UACEnabled = $true
          }
@@ -394,7 +394,7 @@ function Get-vlLocalUsersAndGroupsCheck {
    $Output = @()
 
    if ($params.Contains("all") -or $params.Contains("LUMUac")) {
-      $uac = Get-vlUACState
+      $uac = Get-vlCheckUACState
       $Output += [PSCustomObject]@{
          Name         = "LUMUac"
          DisplayName  = "User account control"
