@@ -132,6 +132,7 @@ jobs:
 
   publish-archive:
     if: ${{ github.event_name == 'push' }}
+    needs: [create-archive]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
