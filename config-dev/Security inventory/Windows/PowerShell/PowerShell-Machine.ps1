@@ -486,7 +486,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMV2"
          DisplayName  = "PowerShell V2"
-         Description  = "This test verifies the status of PowerShell version 2. PowerShell V2 is an deprecated version of the scripting language and is known to contain several security vulnerabilities and weaknesses in security design."
+         Description  = "This test verifies the status of PowerShell version 2. PowerShell V2 is a deprecated version of the scripting language and is known to contain several security vulnerabilities and weaknesses in security design."
          Score        = $powerShellV2.Score
          ResultData   = $powerShellV2.Result
          RiskScore    = $powerShellV2.RiskScore
