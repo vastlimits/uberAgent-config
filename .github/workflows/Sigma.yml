@@ -31,6 +31,13 @@ jobs:
             pypi-host: "https://pypi.org/simple"
             converter-ref: "main"
 
+          - branch: version/7.2
+            pipeline_version: "uberagent-7.2.0"
+            backend-version: ""
+            copy_rules_args: ""
+            pypi-host: "https://pypi.org/simple"
+            converter-ref: "main"
+
           - branch: develop
             pipeline_version: "uberagent-develop"
             backend-version: "develop"
