@@ -214,7 +214,7 @@ function Get-WindowsConfigurationCheck {
       $Output += [PSCustomObject]@{
          Name         = "WCCURecallStatus"
          DisplayName  = "WindowsConfiguration Recall status - User"
-         Description  = "This test determines the status of Windows Recall, a feature introduced with Windows 11 24H2 that creates a timeline of user activity by capturing desktop screenshots. Attackers could potentially exploit the collected data by extracting sensitive information."
+         Description  = "[Experimental] This test determines the status of Windows Recall, a feature introduced with Windows 11 24H2 that creates a timeline of user activity by capturing desktop screenshots. Attackers could potentially exploit the collected data by extracting sensitive information."
          Score        = $checkWindowsRecallStatus.Score
          ResultData   = $checkWindowsRecallStatus.Result
          RiskScore    = $checkWindowsRecallStatus.RiskScore
