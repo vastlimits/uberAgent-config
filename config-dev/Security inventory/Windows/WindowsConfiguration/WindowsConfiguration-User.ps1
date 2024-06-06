@@ -141,21 +141,47 @@ function Get-vlCheckWindowsRecallStatusCU {
       #>
       $riskScore = 50
 
-      $value = Get-vlRegValue -Hive "HKCU" -Path "SOFTWARE\Microsoft\Windows\WindowsAI" -Value "DisableAIDataAnalysis" -IncludePolicies $true
+      if (Test-Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI") {
+         $value = Get-vlRegValue -Hive "HKCU" -Path "SOFTWARE\Policies\Microsoft\Windows\WindowsAI" -Value "DisableAIDataAnalysis"
 
-      if ($value -and $value -eq 0) {
-         $result = [PSCustomObject]@{
-            Enabled = $true
-         }
+         if ($null -eq $value -or $value -eq 0) {
+            $result = [PSCustomObject]@{
+               Enabled = $true
+            }
 
-         return New-vlResultObject -result $result -score 0 -riskScore $riskScore
-      }
-      else {
-         $result = [PSCustomObject]@{
-            Enabled = $false
+            return New-vlResultObject -result $result -score 0 -riskScore $riskScore
          }
-         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+         else {
+            $result = [PSCustomObject]@{
+               Enabled = $false
+            }
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+         }
       }
+
+      if (Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\WindowsAI") {
+         $value = Get-vlRegValue -Hive "HKCU" -Path "SOFTWARE\Microsoft\Windows\WindowsAI" -Value "DisableAIDataAnalysis"
+
+         if ($null -eq $value -or $value -eq 0) {
+            $result = [PSCustomObject]@{
+               Enabled = $true
+            }
+
+            return New-vlResultObject -result $result -score 0 -riskScore $riskScore
+         }
+         else {
+            $result = [PSCustomObject]@{
+               Enabled = $false
+            }
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+         }
+      }
+
+      $result = [PSCustomObject]@{
+         Enabled = $false
+      }
+
+      return New-vlResultObject -result $result -score 10 -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject -context $_

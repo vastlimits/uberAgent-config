@@ -374,26 +374,52 @@ function Get-vlCheckWindowsRecallStatusLM {
 
    try {
       <#
-         0 (Default)	Enable saving Snapshots for Windows.
+         0  Enable saving Snapshots for Windows. (Default)
          1	Disable saving Snapshots for Windows
       #>
       $riskScore = 50
 
-      $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\WindowsAI" -Value "DisableAIDataAnalysis" -IncludePolicies $true
+      if (Test-Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI") {
+         $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Policies\Microsoft\Windows\WindowsAI" -Value "DisableAIDataAnalysis"
 
-      if ($value -and $value -eq 0) {
-         $result = [PSCustomObject]@{
-            Enabled = $true
-         }
+         if ($null -eq $value -or $value -eq 0) {
+            $result = [PSCustomObject]@{
+               Enabled = $true
+            }
 
-         return New-vlResultObject -result $result -score 0 -riskScore $riskScore
-      }
-      else {
-         $result = [PSCustomObject]@{
-            Enabled = $false
+            return New-vlResultObject -result $result -score 0 -riskScore $riskScore
          }
-         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+         else {
+            $result = [PSCustomObject]@{
+               Enabled = $false
+            }
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+         }
       }
+
+      if (Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\WindowsAI") {
+         $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\WindowsAI" -Value "DisableAIDataAnalysis"
+
+         if ($null -eq $value -or $value -eq 0) {
+            $result = [PSCustomObject]@{
+               Enabled = $true
+            }
+
+            return New-vlResultObject -result $result -score 0 -riskScore $riskScore
+         }
+         else {
+            $result = [PSCustomObject]@{
+               Enabled = $false
+            }
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+         }
+      }
+
+      $result = [PSCustomObject]@{
+         Enabled = $false
+      }
+
+      return New-vlResultObject -result $result -score 10 -riskScore $riskScore
    }
    catch {
       return New-vlErrorObject -context $_
