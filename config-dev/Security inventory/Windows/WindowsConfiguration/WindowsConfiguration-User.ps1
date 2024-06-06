@@ -118,6 +118,50 @@ function Get-CheckHTAEnabled {
    }
 }
 
+function Get-vlCheckWindowsRecallStatusCU {
+   <#
+    .SYNOPSIS
+        Checks if Windows Recall is enabled for the current user.
+    .DESCRIPTION
+        Windows Recall is a feature for Copilot+ PC's that cretes a timeline of user activity by taking snapshots of the desktop and processing them using AI.
+
+        https://support.microsoft.com/en-us/windows/retrace-your-steps-with-recall-aa03f8a0-a78b-4b3e-b0a1-2eb8ac48701c
+        https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-windowsai#disableaidataanalysis
+    .OUTPUTS
+         PSCustomObject
+         enabled: true if enabled, false if not
+    .EXAMPLE
+         Get-vlCheckWindowsRecallStatusCU
+    #>
+
+   try {
+      <#
+         0 (Default)	Enable saving Snapshots for Windows.
+         1	Disable saving Snapshots for Windows
+      #>
+      $riskScore = 50
+
+      $value = Get-vlRegValue -Hive "HKCU" -Path "SOFTWARE\Microsoft\Windows\WindowsAI" -Value "DisableAIDataAnalysis" -IncludePolicies $true
+
+      if ($value -and $value -eq 0) {
+         $result = [PSCustomObject]@{
+            Enabled = $true
+         }
+
+         return New-vlResultObject -result $result -score 0 -riskScore $riskScore
+      }
+      else {
+         $result = [PSCustomObject]@{
+            Enabled = $false
+         }
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+      }
+   }
+   catch {
+      return New-vlErrorObject -context $_
+   }
+}
+
 function Get-WindowsConfigurationCheck {
    #set $params to $global:args or if empty default "all"
    $params = if ($global:args) { $global:args } else { "all" }
@@ -136,6 +180,20 @@ function Get-WindowsConfigurationCheck {
          RiskScore    = $checkHtaEnabled.RiskScore
          ErrorCode    = $checkHtaEnabled.ErrorCode
          ErrorMessage = $checkHtaEnabled.ErrorMessage
+      }
+   }
+
+   if ($params.Contains("all") -or $params.Contains("WCCURecallStatus")) {
+      $checkWindowsRecallStatus = Get-vlCheckWindowsRecallStatusCU
+      $Output += [PSCustomObject]@{
+         Name         = "WCCURecallStatus"
+         DisplayName  = "WindowsConfiguration Recall status - User"
+         Description  = "This test determines the status of Windows Recall, a feature introduced with Windows 11 24H2 that creates a timeline of user activity by capturing desktop screenshots. Attackers could potentially exploit the collected data by extracting sensitive information."
+         Score        = $checkWindowsRecallStatus.Score
+         ResultData   = $checkWindowsRecallStatus.Result
+         RiskScore    = $checkWindowsRecallStatus.RiskScore
+         ErrorCode    = $checkWindowsRecallStatus.ErrorCode
+         ErrorMessage = $checkWindowsRecallStatus.ErrorMessage
       }
    }
 

@@ -356,7 +356,49 @@ function Get-vlWindowsPersistanceCheck {
    }
 }
 
+function Get-vlCheckWindowsRecallStatusLM {
+   <#
+    .SYNOPSIS
+        Checks if Windows Recall is enabled on the system.
+    .DESCRIPTION
+        Windows Recall is a feature for Copilot+ PC's that cretes a timeline of user activity by taking snapshots of the desktop and processing them using AI.
 
+        https://support.microsoft.com/en-us/windows/retrace-your-steps-with-recall-aa03f8a0-a78b-4b3e-b0a1-2eb8ac48701c
+        https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-windowsai#disableaidataanalysis
+    .OUTPUTS
+         PSCustomObject
+         enabled: true if enabled, false if not
+    .EXAMPLE
+         Get-vlCheckWindowsRecallStatusLM
+    #>
+
+   try {
+      <#
+         0 (Default)	Enable saving Snapshots for Windows.
+         1	Disable saving Snapshots for Windows
+      #>
+      $riskScore = 50
+
+      $value = Get-vlRegValue -Hive "HKLM" -Path "SOFTWARE\Microsoft\Windows\WindowsAI" -Value "DisableAIDataAnalysis" -IncludePolicies $true
+
+      if ($value -and $value -eq 0) {
+         $result = [PSCustomObject]@{
+            Enabled = $true
+         }
+
+         return New-vlResultObject -result $result -score 0 -riskScore $riskScore
+      }
+      else {
+         $result = [PSCustomObject]@{
+            Enabled = $false
+         }
+         return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+      }
+   }
+   catch {
+      return New-vlErrorObject -context $_
+   }
+}
 
 function Get-WindowsConfigurationCheck {
    #set $params to $global:args or if empty default "all"
@@ -402,6 +444,20 @@ function Get-WindowsConfigurationCheck {
          RiskScore    = $timeProviderHijacking.RiskScore
          ErrorCode    = $timeProviderHijacking.ErrorCode
          ErrorMessage = $timeProviderHijacking.ErrorMessage
+      }
+   }
+
+   if ($params.Contains("all") -or $params.Contains("WCLMRecallStatus")) {
+      $checkWindowsRecallStatus = Get-vlCheckWindowsRecallStatusLM
+      $Output += [PSCustomObject]@{
+         Name         = "WCLMRecallStatus"
+         DisplayName  = "WindowsConfiguration Recall status - Machine"
+         Description  = "This test determines the status of Windows Recall, a feature introduced with Windows 11 24H2 that creates a timeline of user activity by capturing desktop screenshots. Attackers could potentially exploit the collected data by extracting sensitive information."
+         Score        = $checkWindowsRecallStatus.Score
+         ResultData   = $checkWindowsRecallStatus.Result
+         RiskScore    = $checkWindowsRecallStatus.RiskScore
+         ErrorCode    = $checkWindowsRecallStatus.ErrorCode
+         ErrorMessage = $checkWindowsRecallStatus.ErrorMessage
       }
    }
 
