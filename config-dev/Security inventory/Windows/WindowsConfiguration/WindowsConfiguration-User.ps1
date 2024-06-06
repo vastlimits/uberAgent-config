@@ -123,7 +123,7 @@ function Get-vlCheckWindowsRecallStatusCU {
     .SYNOPSIS
         Checks if Windows Recall is enabled for the current user.
     .DESCRIPTION
-        Windows Recall is a feature for Copilot+ PC's that cretes a timeline of user activity by taking snapshots of the desktop and processing them using AI.
+        Windows Recall is a feature for Copilot+ PCs that creates a timeline of user activity by taking snapshots of the desktop and processing them using AI.
 
         https://support.microsoft.com/en-us/windows/retrace-your-steps-with-recall-aa03f8a0-a78b-4b3e-b0a1-2eb8ac48701c
         https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-windowsai#disableaidataanalysis
