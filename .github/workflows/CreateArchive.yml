@@ -5,13 +5,14 @@ on:
     branches:
       - develop
       - "version/7.1"    # don't use a glob-pattern here! Config-archives
-                         # are only supported starting uberAgent 7.1
+      - "version/7.2"    # are only supported starting uberAgent 7.1
     paths-ignore:
       - "config-dist/**" # avoid recursion
   pull_request:
     branches:
       - develop
       - "version/7.1"
+      - "version/7.2"
     paths-ignore:
       - "config-dist/**" # avoid recursion
 

@@ -118,6 +118,76 @@ function Get-CheckHTAEnabled {
    }
 }
 
+function Get-vlCheckWindowsRecallStatusCU {
+   <#
+    .SYNOPSIS
+        Checks if Windows Recall is enabled for the current user.
+    .DESCRIPTION
+        Windows Recall is a feature for Copilot+ PCs that creates a timeline of user activity by taking snapshots of the desktop and processing them using AI.
+
+        https://support.microsoft.com/en-us/windows/retrace-your-steps-with-recall-aa03f8a0-a78b-4b3e-b0a1-2eb8ac48701c
+        https://learn.microsoft.com/en-us/windows/client-management/mdm/policy-csp-windowsai#disableaidataanalysis
+    .OUTPUTS
+         PSCustomObject
+         enabled: true if enabled, false if not
+    .EXAMPLE
+         Get-vlCheckWindowsRecallStatusCU
+    #>
+
+   try {
+      <#
+         0 (Default)	Enable saving Snapshots for Windows.
+         1	Disable saving Snapshots for Windows
+      #>
+      $riskScore = 50
+
+      if (Test-Path "HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsAI") {
+         $value = Get-vlRegValue -Hive "HKCU" -Path "SOFTWARE\Policies\Microsoft\Windows\WindowsAI" -Value "DisableAIDataAnalysis"
+
+         if ($null -eq $value -or $value -eq 0) {
+            $result = [PSCustomObject]@{
+               Enabled = $true
+            }
+
+            return New-vlResultObject -result $result -score 0 -riskScore $riskScore
+         }
+         else {
+            $result = [PSCustomObject]@{
+               Enabled = $false
+            }
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+         }
+      }
+
+      if (Test-Path "HKCU:\SOFTWARE\Microsoft\Windows\WindowsAI") {
+         $value = Get-vlRegValue -Hive "HKCU" -Path "SOFTWARE\Microsoft\Windows\WindowsAI" -Value "DisableAIDataAnalysis"
+
+         if ($null -eq $value -or $value -eq 0) {
+            $result = [PSCustomObject]@{
+               Enabled = $true
+            }
+
+            return New-vlResultObject -result $result -score 0 -riskScore $riskScore
+         }
+         else {
+            $result = [PSCustomObject]@{
+               Enabled = $false
+            }
+            return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+         }
+      }
+
+      $result = [PSCustomObject]@{
+         Enabled = $false
+      }
+
+      return New-vlResultObject -result $result -score 10 -riskScore $riskScore
+   }
+   catch {
+      return New-vlErrorObject -context $_
+   }
+}
+
 function Get-WindowsConfigurationCheck {
    #set $params to $global:args or if empty default "all"
    $params = if ($global:args) { $global:args } else { "all" }
@@ -139,6 +209,20 @@ function Get-WindowsConfigurationCheck {
       }
    }
 
+   if ($params.Contains("all") -or $params.Contains("WCCURecallStatus")) {
+      $checkWindowsRecallStatus = Get-vlCheckWindowsRecallStatusCU
+      $Output += [PSCustomObject]@{
+         Name         = "WCCURecallStatus"
+         DisplayName  = "WindowsConfiguration Recall status - User"
+         Description  = "[Experimental] This test determines the status of Windows Recall, a feature introduced with Windows 11 24H2 that creates a timeline of user activity by capturing desktop screenshots. Attackers could potentially exploit the collected data by extracting sensitive information."
+         Score        = $checkWindowsRecallStatus.Score
+         ResultData   = $checkWindowsRecallStatus.Result
+         RiskScore    = $checkWindowsRecallStatus.RiskScore
+         ErrorCode    = $checkWindowsRecallStatus.ErrorCode
+         ErrorMessage = $checkWindowsRecallStatus.ErrorMessage
+      }
+   }
+
    return $output
 }
 
@@ -155,8 +239,8 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCRnlRN4NZUkU5f
-# UwzjPmftPLFgsyuahPmo6SI8Lwb/HKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCJ6lEOpMKK0XQH
+# 4zTmI2v/8VeyWdwRAXJxB/gX8U0sRKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -233,17 +317,17 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQglXTpzwmJiutm
-# 73ibAiYV4fmJNCKIP4wcekco8yZhGkswDQYJKoZIhvcNAQEBBQAEggIAmD9QaSd0
-# iKbjBaTg0Pt6UbwECR1m2GFUIhF31Hq7ZrLMgaWxkdmHw702jSUGir8WH62LnrLQ
-# YkFVb8S842RnyVIU66cJ4Bp9JhYOFlPG14Sp8HG2XOZb6RsbAQWRnB7KmRJ12Pln
-# y/rurDJs5fQ/O1u5heZBn0qETexGjBWoCMsil8smgGyzDti5RK9rQQMfgNECdKKt
-# XehCg4f1A+cgRj2tghlZpKHnRnxw9jV8POSkun7I1OM0sb1qEHDeU4uTXM46eqob
-# rDV5Wod2Djcv8XOY6WRy+5ZlAUtLaoisT8zqibp5DxaErS5gL3dKeg9yJuMm4vh4
-# gcbDKCYeEiJ208pQHz/FYTx6VIqHfVxfz1iocJAoZ5UvcanHjpNfcCvuP+/PWNjy
-# sb1F222awy22c67R2eSLZl4Y7UtnkI+hxQH4XjtPt9iAe02NAb8gqcSGCxLoqlw5
-# otNQUlZcNg4EqG94hqDTjkU43pY2Luza51PTjoXBqda77QsD96gtl/NEuls9eGPK
-# 0p1XGRgUKMNSEVXDAEtnZiyy9Pb7k87Lih65tLrYsbpEXyEW0taOwQDcL/NAwNMO
-# PxX1+NzAcbBpimrXoaWoWWX3KhVtWxhVIWnwH2d6sLc8LyLSewon0AJ7oNW4RZ7k
-# crYiqIcX8z6ui7Q0YEh/fKD3uSZf4icvFm0=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgVqcJxnllSBHZ
+# yvLHrlC5CZInJUi2D861hLcPayNbhK4wDQYJKoZIhvcNAQEBBQAEggIAVk4nqREA
+# TdRG7ZD8l/TmRq+w4HHGDx1MFk0gVaq9x4qJZFlQH8AEe2bbY4DURZ2x/47a5GxS
+# USeHUsbnyDtAw9sRrXkUr6oMORDMTjyoNEiy3H8tIIzeRMp35RClnD5gNXRvKDiY
+# b7y7Z8u0MEFbHeZfDilZZXz8d2VYiO52ZJI9X/MX22Ck/6EVFj9XSKMblvSKmmt8
+# H9HEXZj88rg1OLT5itJEybp/IT5vmkcuXE1j0DwdLvCiRviLSHJEZgHsWaJKabWM
+# HawgC2EcuUpSdeuhCbKXR51khOATyjeiccbzK+gYZxIaXqCXpezKTJpktuof4z5R
+# HboEDYHa5ykAsONqznh6OXTSTAReMDamW5D7lggOE76tUn50Bn3idiVYNzqeQfJc
+# gNJiIm/3HGDiMYZb8DLXE+9ib8wwbBhzeYDtyLpgkhfJ1tztM9RTlGSRxsuObZsF
+# ahknqhnMJhtxrG8W10772g3vcOv8x4TYhrdOLm60LLlKrP+8k72ai/WW5bIKEtOv
+# YlfJwltqMPegzXJArfuxTj62PYUteYOisw+1Z+mDJzAX4Atg2pQ1s+wzLmEWmsE+
+# 69qP4F9mVONNx5m2CodkTDEvFBHv1Zfb/qZYHyR70ty2K+5VoFDE6d9kWkhM1j45
+# ejpqXHdsvizA3pXYeNRi8BUZfTt6FNdbbdk=
 # SIG # End signature block

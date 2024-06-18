@@ -486,7 +486,7 @@ function Get-vlPowerShellCheck {
       $Output += [PSCustomObject]@{
          Name         = "PSLMV2"
          DisplayName  = "PowerShell V2"
-         Description  = "This test verifies the status of PowerShell version 2. PowerShell V2 is an deprecated version of the scripting language and is known to contain several security vulnerabilities and weaknesses in security design."
+         Description  = "This test verifies the status of PowerShell version 2. PowerShell V2 is a deprecated version of the scripting language and is known to contain several security vulnerabilities and weaknesses in security design."
          Score        = $powerShellV2.Score
          ResultData   = $powerShellV2.Result
          RiskScore    = $powerShellV2.RiskScore
@@ -570,8 +570,8 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAHmwKe13D5+wOJ
-# KaxCE6SOHiIpkvToXutoV/0zGGQAmqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAWNxB1wjBIpSA8
+# 0FqN3bcb0NPBqAeCq6hAQi6DT8ifoKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -648,17 +648,17 @@ Write-Output (Get-vlPowerShellCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg9P4RWzZ3sf7e
-# dC/qUUoMxLzkegrAo5P13UXTD6tlHx0wDQYJKoZIhvcNAQEBBQAEggIAbCxIiQMS
-# wD2ovr70EigrlVZjeu566rEB4SznTtSdECdCkk/HP/VLSlNM5c8PqIHUs+YgS/MN
-# 0d7IeLH+zSeX1fhOlCQYMuUwz22CC20zhSGDjuSxy4NfohhTjee7ljRrG/efqJIe
-# f1BjXmyA/9KApLLCqoK4fhWBHGaaHBSpLVxLoR7Y6svuNeOUEjkhLeOzh2o+mMit
-# 2c7M7LjELLANg1xLpBD05MWOvUEqkiPBqb1p9XcuVB4xd6l6w2FMCirSV5M60VGw
-# Npc/TVaBUGnfXUDtwjCMdaaUy0bSgSAOxLyxTg5z/UypiliRhKnoZXBXV9eQxxRT
-# cBY8KdalDta4ag2SHu9KOEWlI8BxvvJFACphCXtJPHPlKyH1kO5iyRa925nkVoZ/
-# v9TNKufJNx+JZdZd6qtzJKtF+kcqqpf+pNROr6Eo1ijFgjSTvX/oqc3eeCW2JMvb
-# BVABCrX78KenopqdaZB0ydOicQHiaco5CvuHLLgIzbsdtU/pUokY4JvR2Ec9apj9
-# /9Ekt0On+XdAlilYL9xGgzQSicF8ognurpucHhOxaChTvkVRsmoSLYIlbdfDCnCX
-# Q8paFRXCgD8SKZS7q20U0XBvgyWQeZdek6QhZc/rhlcusQVE+O8fvP/xn2f1PfQy
-# SOQs/YsqAjl2t1LS5HQdj5JMt5p+VN7W2Lw=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgbO5agBOcmSel
+# bu5Vs5MWw5knPtkRTbQpqzkVi79FZxIwDQYJKoZIhvcNAQEBBQAEggIAM795aAgk
+# gNNQhcYKfLVC6lwzpISQ7G/PcZ/drvR2valaBh98ZZ0XpwamQEm7XHgueo944Png
+# Bm2Dfbg8MrVzPXO2Ht/lQCddNdODoD/H0HYt6BadWP5ej8WktSSsJl0D01FqeXAw
+# lCuu051T0KD3OEwNIhfIKERVXR3xUhOOqPx/HKMRnBjWhpsAftmknZ9DuCUJcIuW
+# zT7FVh/f2Ncip1IN2CK1g2GYuEkJmE717MnQzMbdd8c0rL7eETDpLvEBTnCHVPvf
+# exZ8fA92S6K5DHfN06xTTVSnf6xXH3MLgnvLVjEM6Bqs8tYqic2b3NLKtUVhO84w
+# mMbGrR50mzsRmqKxl4Wepcgi01nndCn7yph6N/DnxMolOrKOEjjhOYGQl6OF4V1C
+# xrdVZQvfvz6H5aNVGIttgLjXei3iQdM48/S3FNMtIzX3Uy+N0DG7xRx4Ho/JfL4B
+# 81touEkuX2h2n7afmVnROVgViGNprfCQMH5BG1w5aiU/wUc5dZT+yBTTiAGCr6lf
+# BtBONn6C8Rr6foSp5aHrLayFEO1tFOq/Fu34pafEyJ6CmadVZ3ZvyK2dMbpsYSB3
+# 0WUdvAGTU0U3JzoqH122x8+kqfw2RAU6xQHeIsID9+OGSo6GPIKLb79DaZ/ta9t2
+# Fjs2DGjhaIGGIj2WpEREzmyuMRKh+a/rC+k=
 # SIG # End signature block
