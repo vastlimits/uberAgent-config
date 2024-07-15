@@ -6,7 +6,6 @@ on:
     - "main"
     - "version/*"
 
-
 env:
   uAConfigCheck_FEED: uAConfigCheck
   uAConfigCheck_Organization: https://dev.azure.com/vastlimits
@@ -28,7 +27,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-    
+
     - name: 'Login via azure/login@v1'
       uses: azure/login@v1
       with:
@@ -43,28 +42,28 @@ jobs:
         azcliversion: 2.55.0
         inlineScript: |
           az extension add --name azure-devops
-          
+
           az artifacts universal download --organization ${{env.uAConfigCheck_Organization}} \
                                           --project uAConfigCheck --scope project --feed ${{env.uAConfigCheck_FEED}} \
                                           --name ${{env.uAConfigCheck_EXE_Artifact_Package}} \
                                           --version "${{env.uAConfigCheck_EXE_Artifact_Version}}" \
                                           --path . \
                                           --file-filter 'uAConfigCheck.exe'
-          
+
     - name: download uAConfigCheck dll
       uses: azure/CLI@v1
       with:
         azcliversion: 2.55.0
         inlineScript: |
           az extension add --name azure-devops
-          
+
           az artifacts universal download --organization ${{env.uAConfigCheck_Organization}} \
                                           --project uAConfigCheck --scope project --feed ${{env.uAConfigCheck_FEED}} \
                                           --name ${{env.uAConfigCheck_DLL_Artifact_Package}}-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} \
                                           --version "${{env.uAConfigCheck_DLL_Artifact_Version}}" \
                                           --path ./releases/ \
                                           --file-filter "uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll"
-    
+
     - uses: actions/upload-artifact@v4
       with:
         name: uAConfigCheck
@@ -78,15 +77,15 @@ jobs:
     needs: [download-config]
     runs-on: windows-latest
     steps:
-    
+
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
+
     - uses: actions/download-artifact@v4
       with:
         name: uAConfigCheck
-    
+
     - name: 'validate configuration uAConfigCheck'
       run: |
         .\uAConfigCheck.exe -t -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -f .\config\uberAgent.conf

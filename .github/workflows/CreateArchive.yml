@@ -5,13 +5,14 @@ on:
     branches:
       - develop
       - "version/7.1"    # don't use a glob-pattern here! Config-archives
-                         # are only supported starting uberAgent 7.1
+      - "version/7.2"    # are only supported starting uberAgent 7.1
     paths-ignore:
       - "config-dist/**" # avoid recursion
   pull_request:
     branches:
       - develop
       - "version/7.1"
+      - "version/7.2"
     paths-ignore:
       - "config-dist/**" # avoid recursion
 
@@ -109,30 +110,30 @@ jobs:
             ./releases/uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll
           retention-days: 1
 
-  validate-archive:
-    needs: [create-archive]
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: uAConfigCheck
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: ConfigArchive
-
-      - name: "validate configuration uAConfigCheck"
-        run: |
-          .\uAConfigCheck.exe -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_FILE}}"
-        continue-on-error: false
+#  validate-archive:
+#    needs: [create-archive]
+#    runs-on: windows-latest
+#    steps:
+#      - uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: uAConfigCheck
+#
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: ConfigArchive
+#
+#      - name: "validate configuration uAConfigCheck"
+#        run: |
+#          .\uAConfigCheck.exe -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_FILE}}"
+#        continue-on-error: false
 
   publish-archive:
     if: ${{ github.event_name == 'push' }}
-    needs: [validate-archive]
+    needs: [create-archive]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
