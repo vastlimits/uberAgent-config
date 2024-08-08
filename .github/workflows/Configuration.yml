@@ -1,4 +1,4 @@
-name: Create uberAgent.uAConfig
+name: Configuration
 
 on:
   push:
