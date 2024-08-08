@@ -111,7 +111,7 @@ jobs:
 
       - name: "validate configuration uAConfigCheck"
         run: |
-          .\uAConfigCheck.exe -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_DIR_PATH}}"
+          .\uAConfigCheck.exe -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{ env.TARGET_DIR_PATH }}${{ env.TARGET_FILE }}"
         continue-on-error: false
 
   publish-archive:
