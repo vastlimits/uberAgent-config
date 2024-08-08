@@ -119,10 +119,11 @@ jobs:
       - name: "uAConfigCheck: validate uberAgent.uAConfig"
         # Runs configuration validation tool.
         # Setting -i to ignore missing receivers (new default with 7.3)
-        # Setting -w to treat warnings as errors.env:
+        # Setting -w to treat warnings as errors
+        # Setting -t for trace logging.
         # Setting version with -v and bundle archive with -a
         run: |
-          .\uAConfigCheck.exe -i -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{ env.TARGET_DIR_PATH }}${{ env.TARGET_FILE }}"
+          .\uAConfigCheck.exe -t -i -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{ env.TARGET_DIR_PATH }}${{ env.TARGET_FILE }}"
         continue-on-error: false
 
   publish-archive:
