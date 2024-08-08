@@ -42,21 +42,11 @@ jobs:
           directory: "${{ env.SOURCE_DIR_PATH }}"
           filename: "${{ env.TARGET_FILE }}"
 
-      # also upload the archive separately, so that we can commit it
       - uses: actions/upload-artifact@v4
         with:
           name: ConfigArchive
           path: "${{ env.SOURCE_DIR_PATH }}${{ env.TARGET_FILE }}"
           retention-days: 1
-
-      - name: Move archive to target dir
-        run: |
-          # Print executed commands
-          set -x
-
-          mkdir -p "$TARGET_DIR_PATH"
-          rm -f "$TARGET_DIR_PATH$TARGET_FILE"
-          mv "$SOURCE_DIR_PATH$TARGET_FILE" "$TARGET_DIR_PATH"
 
       - name: "Login via azure/login@v1"
         uses: azure/login@v1
@@ -117,10 +107,11 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ConfigArchive
+          path: ${{ env.TARGET_DIR_PATH }}
 
       - name: "validate configuration uAConfigCheck"
         run: |
-          .\uAConfigCheck.exe -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_FILE}}"
+          .\uAConfigCheck.exe -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{env.TARGET_DIR_PATH}}"
         continue-on-error: false
 
   publish-archive:
@@ -137,14 +128,6 @@ jobs:
         with:
           name: ConfigArchive
           path: ${{ env.TARGET_DIR_PATH }}
-
-      - name: Check archive is in the target dir
-        run: |
-          # Print executed commands
-          set -x
-
-          echo "source+target:$SOURCE_DIR_PATH$TARGET_FILE\ntarget:$TARGET_DIR_PATH"
-          ls  "$TARGET_DIR_PATH"
 
       - name: Commit archive
         uses: stefanzweifel/git-auto-commit-action@v5
