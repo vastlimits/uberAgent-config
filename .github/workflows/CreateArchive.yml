@@ -50,6 +50,16 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
+      - name: Upload uAConfigCheck
+        uses: actions/upload-artifact@v4
+        with:
+          name: uAConfigCheck
+          path: |
+            ./uAConfigCheck.exe
+            ./releases/uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll
+          if-no-files-found: error
+          retention-days: 1
+
   validate-archive:
     needs: [create-archive]
     runs-on: windows-latest
