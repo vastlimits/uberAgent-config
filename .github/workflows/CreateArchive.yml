@@ -26,6 +26,10 @@ env:
 
 jobs:
   create-archive:
+    # Add "id-token" with the intended permissions.
+    permissions:
+      id-token: write
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -47,10 +51,6 @@ jobs:
           retention-days: 1
 
   validate-archive:
-    # Add "id-token" with the intended permissions.
-    permissions:
-      id-token: write
-      contents: read
     needs: [create-archive]
     runs-on: windows-latest
     steps:
