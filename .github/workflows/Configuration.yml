@@ -1,0 +1,173 @@
+name: Configuration
+
+on:
+  push:
+    branches:
+      - "version/7.1"
+    paths-ignore:
+      - "config-dist/**" # avoid recursion
+  pull_request:
+    branches:
+      - "version/7.1"
+    paths-ignore:
+      - "config-dist/**" # avoid recursion
+
+env:
+  SOURCE_DIR_PATH: config/
+  TARGET_DIR_PATH: config-dist/
+  TARGET_FILE: uberAgent.uAConfig
+  uAConfigCheck_FEED: uAConfigCheck
+  uAConfigCheck_Organization: https://dev.azure.com/vastlimits
+  uAConfigCheck_EXE_Artifact_Version: "*"
+  uAConfigCheck_EXE_Artifact_Package: uaconfigcheck
+  uAConfigCheck_DLL_Artifact_Version: "*"
+  uAConfigCheck_DLL_Artifact_ProductVersion: ${{ (github.ref == 'refs/heads/version/7.1' && '7.1.2') || 'develop' }}
+  uAConfigCheck_DLL_Artifact_Package: uberagent
+
+jobs:
+  build-archive:
+    name: Build
+    # Add "id-token" with the intended permissions.
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: "Validate uberAgent.conf <> uberAgent-data-volume-optimized.conf"
+        run: |
+          CONFIG_CHANGED="$(git diff --name-only config/uberAgent.conf)"
+          CONFIG_OPTIMIZED_CHANGED="$(git diff --name-only config/uberAgent-data-volume-optimized.conf)"
+          if ( [ -n "${CONFIG_CHANGED}" ] && [ -z "${CONFIG_OPTIMIZED_CHANGED}" ] ) || ( [ -z "${CONFIG_CHANGED}" ] && [ -n "${CONFIG_OPTIMIZED_CHANGED}" ] )
+          then
+            echo "Changes must be applied uberAgent.conf and uberAgent-data-volume-optimized.conf, too."
+            exit 1
+          fi
+          exit 0
+        continue-on-error: false
+
+      - name: Create uberAgent.uAConfig archive file
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: "zip"
+          directory: "${{ env.SOURCE_DIR_PATH }}"
+          filename: "${{ env.TARGET_FILE }}"
+
+      - name: Upload uberAgent.uAConfig
+        uses: actions/upload-artifact@v4
+        with:
+          name: ConfigArchive
+          path: "${{ env.SOURCE_DIR_PATH }}${{ env.TARGET_FILE }}"
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: "Login to Azure Devops"
+        uses: azure/login@v1
+        with:
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          allow-no-subscriptions: true
+          environment: azurecloud
+
+      - name: Download uAConfigCheck exe
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.55.0
+          inlineScript: |
+            az extension add --name azure-devops
+
+            az artifacts universal download --organization ${{env.uAConfigCheck_Organization}} \
+                                            --project uAConfigCheck --scope project --feed ${{env.uAConfigCheck_FEED}} \
+                                            --name ${{env.uAConfigCheck_EXE_Artifact_Package}} \
+                                            --version "${{env.uAConfigCheck_EXE_Artifact_Version}}" \
+                                            --path . \
+                                            --file-filter 'uAConfigCheck.exe'
+
+      - name: Download versioned uAConfigCheck dll
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.55.0
+          inlineScript: |
+            az extension add --name azure-devops
+
+            az artifacts universal download --organization ${{env.uAConfigCheck_Organization}} \
+                                            --project uAConfigCheck --scope project --feed ${{env.uAConfigCheck_FEED}} \
+                                            --name ${{env.uAConfigCheck_DLL_Artifact_Package}}-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} \
+                                            --version "${{env.uAConfigCheck_DLL_Artifact_Version}}" \
+                                            --path ./releases/ \
+                                            --file-filter "uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll"
+
+      - name: Upload uAConfigCheck
+        uses: actions/upload-artifact@v4
+        with:
+          name: uAConfigCheck
+          path: |
+            ./uAConfigCheck.exe
+            ./releases/uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll
+          if-no-files-found: error
+          retention-days: 1
+
+  validate-archive:
+    name: Validate
+    needs: [build-archive]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        name: Download uAConfigCheck
+        with:
+          name: uAConfigCheck
+
+      - uses: actions/download-artifact@v4
+        name: Download ConfigArchive
+        with:
+          name: ConfigArchive
+          path: ${{ env.TARGET_DIR_PATH }}
+
+      - name: "uAConfigCheck: validate uberAgent.uAConfig"
+        # Runs configuration validation tool.
+        # Setting -i to ignore missing receivers (new default with 7.3)
+        # Setting -w to treat warnings as errors
+        # Setting version with -v and bundle archive with -a
+        run: |
+          .\uAConfigCheck.exe -i -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{ env.TARGET_DIR_PATH }}${{ env.TARGET_FILE }}"
+        continue-on-error: false
+
+      - name: "uAConfigCheck: validate uberAgent.conf"
+        # Runs configuration validation tool.
+        # Setting -i to ignore missing receivers (new default with 7.3)
+        # Setting -w to treat warnings as errors
+        # Setting version with -v and uberAgent.conf with -f and its directory with -r
+        run: |
+          .\uAConfigCheck.exe -i -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -f "${{ github.workspace }}\\config\\uberAgent.conf" -r "${{ github.workspace }}\\config"
+        continue-on-error: false
+
+  # Publishing is limited to actual push events.
+  push-archive:
+    if: ${{ github.event_name == 'push' }}
+    name: Push
+    needs: [validate-archive]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.VLSVC_PAT }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ConfigArchive
+          path: ${{ env.TARGET_DIR_PATH }}
+
+      - name: Commit archive
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Updated config archive
+          commit_user_name: vastlimits
+          commit_user_email: devops@vastlimits.com
