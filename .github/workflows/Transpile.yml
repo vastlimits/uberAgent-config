@@ -24,11 +24,7 @@ jobs:
 
       - name: Run transpiler script for Windows
         shell: bash
-        run: python config-dev/transpile-windows.py
-
-      - name: Run transpiler script for macOS
-        shell: bash
-        run: python config-dev/transpile-macOS.py
+        run: python config-dev/transpile.py
 
       - name: Run PSScriptAnalyzer
         uses: microsoft/psscriptanalyzer-action@v1.1
