@@ -32,23 +32,25 @@ jobs:
       contents: read
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create archive file
+      - name: Create uberAgent.uAConfig archive file
         uses: thedoctor0/zip-release@0.7.1
         with:
           type: "zip"
           directory: "${{ env.SOURCE_DIR_PATH }}"
           filename: "${{ env.TARGET_FILE }}"
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload uberAgent.uAConfig
+        uses: actions/upload-artifact@v4
         with:
           name: ConfigArchive
           path: "${{ env.SOURCE_DIR_PATH }}${{ env.TARGET_FILE }}"
+          if-no-files-found: error
           retention-days: 1
 
-      - name: "Login via azure/login@v1"
+      - name: "Login to Azure Devops"
         uses: azure/login@v1
         with:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -56,7 +58,7 @@ jobs:
           allow-no-subscriptions: true
           environment: azurecloud
 
-      - name: download uAConfigCheck exe
+      - name: Download uAConfigCheck exe
         uses: azure/CLI@v1
         with:
           azcliversion: 2.55.0
@@ -70,7 +72,7 @@ jobs:
                                             --path . \
                                             --file-filter 'uAConfigCheck.exe'
 
-      - name: download uAConfigCheck dll
+      - name: Download versioned uAConfigCheck dll
         uses: azure/CLI@v1
         with:
           azcliversion: 2.55.0
@@ -84,12 +86,14 @@ jobs:
                                             --path ./releases/ \
                                             --file-filter "uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll"
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload uAConfigCheck
+        uses: actions/upload-artifact@v4
         with:
           name: uAConfigCheck
           path: |
             ./uAConfigCheck.exe
             ./releases/uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll
+          if-no-files-found: error
           retention-days: 1
 
   validate-archive:
@@ -97,19 +101,26 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        name: Checkout
         with:
           fetch-depth: 0
 
       - uses: actions/download-artifact@v4
+        name: Download uAConfigCheck
         with:
           name: uAConfigCheck
 
       - uses: actions/download-artifact@v4
+        name: Download ConfigArchive
         with:
           name: ConfigArchive
           path: ${{ env.TARGET_DIR_PATH }}
 
-      - name: "validate configuration uAConfigCheck"
+      - name: "uAConfigCheck: validate uberAgent.uAConfig"
+        # Runs configuration validation tool.
+        # Setting -i to ignore missing receivers (new default with 7.3)
+        # Setting -w to treat warnings as errors.env:
+        # Setting version with -v and bundle archive with -a
         run: |
           .\uAConfigCheck.exe -i -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{ env.TARGET_DIR_PATH }}${{ env.TARGET_FILE }}"
         continue-on-error: false
