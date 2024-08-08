@@ -1,4 +1,4 @@
-name: Transpile Script
+name: Transpile SCI Scripts
 
 on:
   push:
