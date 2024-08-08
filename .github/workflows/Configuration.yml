@@ -25,7 +25,8 @@ env:
   uAConfigCheck_DLL_Artifact_Package: uberagent
 
 jobs:
-  create-archive:
+  build-archive:
+    name: Build
     # Add "id-token" with the intended permissions.
     permissions:
       id-token: write
@@ -109,7 +110,8 @@ jobs:
           retention-days: 1
 
   validate-archive:
-    needs: [create-archive]
+    name: Validate
+    needs: [build-archive]
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -148,8 +150,10 @@ jobs:
           .\uAConfigCheck.exe -t -i -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -f "${{ github.workspace }}\\config\\uberAgent.conf" -r "${{ github.workspace }}\\config"
         continue-on-error: false
 
-  publish-archive:
+  # Publishing is limited to actual push events.
+  push-archive:
     if: ${{ github.event_name == 'push' }}
+    name: Push
     needs: [validate-archive]
     runs-on: ubuntu-latest
     steps:
