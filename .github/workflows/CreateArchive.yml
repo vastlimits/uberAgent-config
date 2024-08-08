@@ -35,6 +35,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: "Validate uberAgent.conf <> uberAgent-data-volume-optimized.conf"
+        run: |
+          CONFIG_CHANGED="$(git diff --name-only config/uberAgent.conf)"
+          CONFIG_OPTIMIZED_CHANGED="$(git diff --name-only config/uberAgent-data-volume-optimized.conf)"
+          if ( [ -n "${CONFIG_CHANGED}" ] && [ -z "${CONFIG_OPTIMIZED_CHANGED}" ] ) || ( [ -z "${CONFIG_CHANGED}" ] && [ -n "${CONFIG_OPTIMIZED_CHANGED}" ] )
+          then
+            echo "Changes must be applied uberAgent.conf and uberAgent-data-volume-optimized.conf, too."
+            exit 1
+          fi
+          exit 0
+        continue-on-error: false
+
       - name: Create uberAgent.uAConfig archive file
         uses: thedoctor0/zip-release@0.7.1
         with:
@@ -124,6 +136,16 @@ jobs:
         # Setting version with -v and bundle archive with -a
         run: |
           .\uAConfigCheck.exe -t -i -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{ env.TARGET_DIR_PATH }}${{ env.TARGET_FILE }}"
+        continue-on-error: false
+
+      - name: "uAConfigCheck: validate uberAgent.conf"
+        # Runs configuration validation tool.
+        # Setting -i to ignore missing receivers (new default with 7.3)
+        # Setting -w to treat warnings as errors
+        # Setting -t for trace logging.
+        # Setting version with -v and uberAgent.conf with -f and its directory with -r
+        run: |
+          .\uAConfigCheck.exe -t -i -w -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -f "${{ github.workspace }}\\config\\uberAgent.conf" -r "${{ github.workspace }}\\config"
         continue-on-error: false
 
   publish-archive:
