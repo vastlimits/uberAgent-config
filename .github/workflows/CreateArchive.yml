@@ -1,4 +1,4 @@
-name: Create config archive
+name: Create uberAgent.uAConfig
 
 on:
   push:
@@ -21,7 +21,7 @@ env:
   uAConfigCheck_EXE_Artifact_Version: "*"
   uAConfigCheck_EXE_Artifact_Package: uaconfigcheck
   uAConfigCheck_DLL_Artifact_Version: "*"
-  uAConfigCheck_DLL_Artifact_ProductVersion: ${{ (github.ref == 'refs/heads/version/7.3' && 'develop') || 'develop' }}
+  uAConfigCheck_DLL_Artifact_ProductVersion: ${{ (github.ref == 'refs/heads/version/7.3' && '7.2.1') || 'develop' }}
   uAConfigCheck_DLL_Artifact_Package: uberagent
 
 jobs:
