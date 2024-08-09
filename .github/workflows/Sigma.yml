@@ -19,28 +19,28 @@ jobs:
 
           - branch: version/7.0
             pipeline_version: "uberagent-7.0.0"
-            backend-version: ""
+            backend-version: "7.0.0"
             copy_rules_args: "--skip_platform"
             pypi-host: "https://pypi.org/simple"
             converter-ref: "main"
 
           - branch: version/7.1
             pipeline_version: "uberagent-7.1.0"
-            backend-version: ""
+            backend-version: "7.1.0"
             copy_rules_args: ""
             pypi-host: "https://pypi.org/simple"
             converter-ref: "main"
 
           - branch: version/7.2
             pipeline_version: "uberagent-7.2.0"
-            backend-version: ""
+            backend-version: "7.2.0"
             copy_rules_args: ""
             pypi-host: "https://pypi.org/simple"
             converter-ref: "main"
 
           - branch: version/7.3
             pipeline_version: "uberagent-7.3.0"
-            backend-version: ""
+            backend-version: "7.3.0"
             copy_rules_args: ""
             pypi-host: "https://pypi.org/simple"
             converter-ref: "main"
