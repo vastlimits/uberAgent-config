@@ -21,7 +21,7 @@ env:
   uAConfigCheck_EXE_Artifact_Version: "*"
   uAConfigCheck_EXE_Artifact_Package: uaconfigcheck
   uAConfigCheck_DLL_Artifact_Version: "*"
-  uAConfigCheck_DLL_Artifact_ProductVersion: ${{ (github.ref == 'refs/heads/version/7.1' && '7.1.2') || 'develop' }}
+  uAConfigCheck_DLL_Artifact_ProductVersion: "7.1.2"
   uAConfigCheck_DLL_Artifact_Package: uberagent
 
 jobs:
