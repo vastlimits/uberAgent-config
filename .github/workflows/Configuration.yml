@@ -136,7 +136,7 @@ jobs:
         # Setting -w to treat warnings as errors
         # Setting version with -v and bundle archive with -a
         run: |
-          .\uAConfigCheck.exe -i -t -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{ env.TARGET_DIR_PATH }}${{ env.TARGET_FILE }}"
+          .\uAConfigCheck.exe -i -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{ env.TARGET_DIR_PATH }}${{ env.TARGET_FILE }}"
         continue-on-error: false
 
       - name: "uAConfigCheck: validate uberAgent.conf"
@@ -145,7 +145,7 @@ jobs:
         # Setting -w to treat warnings as errors
         # Setting version with -v and uberAgent.conf with -f and its directory with -r
         run: |
-          .\uAConfigCheck.exe -i -t -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -f "${{ github.workspace }}\\config\\uberAgent.conf" -r "${{ github.workspace }}\\config"
+          .\uAConfigCheck.exe -i -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -f "${{ github.workspace }}\\config\\uberAgent.conf" -r "${{ github.workspace }}\\config"
         continue-on-error: false
 
   # Publishing is limited to actual push events.
