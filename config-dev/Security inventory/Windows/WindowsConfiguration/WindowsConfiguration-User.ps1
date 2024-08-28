@@ -22,7 +22,6 @@ function Get-CheckHTAEnabled {
       $score = 10
       $riskScore = 80
 
-      #$htaExecuteStatus = Run-vlHtaCode $htacode
       $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "C:\WINDOWS\System32\mshta.exe"
 
       $defaultLink = $true
