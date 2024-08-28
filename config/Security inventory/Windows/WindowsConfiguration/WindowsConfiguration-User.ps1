@@ -2,54 +2,6 @@
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 . $PSScriptRoot\..\Shared\AppLinkHelper.ps1 -Force
 
-
-function Test-vlBlockedProgram {
-   <#
-    .SYNOPSIS
-        Tests if a program is blocked by the system.
-    .DESCRIPTION
-        Tests if a program is blocked by the system.
-    .OUTPUTS
-        A [bool] indicating if the program is blocked or not
-    .EXAMPLE
-        Test-vlBlockedProgram
-    #>
-
-   Param(
-      [string]$ProgramPath
-   )
-
-   $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
-   $processStartInfo.FileName = $ProgramPath
-   $processStartInfo.RedirectStandardError = $true
-   $processStartInfo.RedirectStandardOutput = $true
-   $processStartInfo.UseShellExecute = $false
-   $processStartInfo.CreateNoWindow = $true
-
-   $process = New-Object System.Diagnostics.Process
-   $process.StartInfo = $processStartInfo
-
-   try {
-      $process.Start() | Out-Null
-      $process.WaitForExit()
-
-      $exitCode = $process.ExitCode
-
-      if ($exitCode -ne 0) {
-         # the program is blocked
-         return $true
-      }
-      else {
-         # the program is not blocked
-         return $false
-      }
-   }
-   catch {
-      # an exception occurred, indicating the program is blocked
-      return $true
-   }
-}
-
 function Get-CheckHTAEnabled {
    <#
     .SYNOPSIS
@@ -70,8 +22,7 @@ function Get-CheckHTAEnabled {
       $score = 10
       $riskScore = 80
 
-      #$htaExecuteStatus = Run-vlHtaCode $htacode
-      $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "mshta.exe"
+      $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "C:\WINDOWS\System32\mshta.exe"
 
       $defaultLink = $true
       $startCmd = [AppLinkHelper]::AssocQueryString(".hta")
@@ -97,7 +48,7 @@ function Get-CheckHTAEnabled {
          $defaultLink = $false
       }
 
-      if ($htaRunBlocked -ne $true) {
+      if ($htaRunBlocked.FileExists -and $htaRunBlocked.IsBlocked -ne $true) {
          $score -= 7
       }
 
@@ -106,7 +57,8 @@ function Get-CheckHTAEnabled {
       }
 
       $result = [PSCustomObject]@{
-         RunBlocked  = $htaRunBlocked
+         MshtaExists = $htaRunBlocked.FileExists
+         RunBlocked  = $htaRunBlocked.IsBlocked
          OpenWith    = $startProc
          DefaultLink = $defaultLink
       }
@@ -239,8 +191,8 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCJ6lEOpMKK0XQH
-# 4zTmI2v/8VeyWdwRAXJxB/gX8U0sRKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD9/gvWf6uYNlHq
+# Eou8KPMErO0Fqk0qbHTdryPYSUXek6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -317,17 +269,17 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgVqcJxnllSBHZ
-# yvLHrlC5CZInJUi2D861hLcPayNbhK4wDQYJKoZIhvcNAQEBBQAEggIAVk4nqREA
-# TdRG7ZD8l/TmRq+w4HHGDx1MFk0gVaq9x4qJZFlQH8AEe2bbY4DURZ2x/47a5GxS
-# USeHUsbnyDtAw9sRrXkUr6oMORDMTjyoNEiy3H8tIIzeRMp35RClnD5gNXRvKDiY
-# b7y7Z8u0MEFbHeZfDilZZXz8d2VYiO52ZJI9X/MX22Ck/6EVFj9XSKMblvSKmmt8
-# H9HEXZj88rg1OLT5itJEybp/IT5vmkcuXE1j0DwdLvCiRviLSHJEZgHsWaJKabWM
-# HawgC2EcuUpSdeuhCbKXR51khOATyjeiccbzK+gYZxIaXqCXpezKTJpktuof4z5R
-# HboEDYHa5ykAsONqznh6OXTSTAReMDamW5D7lggOE76tUn50Bn3idiVYNzqeQfJc
-# gNJiIm/3HGDiMYZb8DLXE+9ib8wwbBhzeYDtyLpgkhfJ1tztM9RTlGSRxsuObZsF
-# ahknqhnMJhtxrG8W10772g3vcOv8x4TYhrdOLm60LLlKrP+8k72ai/WW5bIKEtOv
-# YlfJwltqMPegzXJArfuxTj62PYUteYOisw+1Z+mDJzAX4Atg2pQ1s+wzLmEWmsE+
-# 69qP4F9mVONNx5m2CodkTDEvFBHv1Zfb/qZYHyR70ty2K+5VoFDE6d9kWkhM1j45
-# ejpqXHdsvizA3pXYeNRi8BUZfTt6FNdbbdk=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg0HtNx1DXkLlm
+# ev2llw5FvOzrtpg+ZFw4fsZ4x7ZXjc8wDQYJKoZIhvcNAQEBBQAEggIAjVw8s9AC
+# OIZcmFCGbBQRcmCgZuLedDwmuuonCAJwlDt6/Nbwziz/NlpVhZ1Lv+mT7pXhxl/E
+# 7mxcWo3hIufXVKXthrAAfn/+xZ//pnk6mOPq88Qv+GU+geeZMc2924M1JzZHhS6w
+# 3hftL5tnXeP8MB1vdNfG/ypjTBxbXPh3+4Ayk/o+l9tU3CeWMPBiTH2bh9iuvQNH
+# PxCld0ON+q7c5BrRGj1syXtVFYisAr8gBeTne1oDyITf1YrmXJaYnJvLmFby5nKc
+# jsQ6N4IPPJzw8IOGloqEcfoqR4lrgJkQC3675CoYKTXlnS1r6FFVMuKteQXR9ulb
+# I5TI5F3GZfU00vtk6vf26IETZjo2H5Fj0lvxxb/nc9A7uIcbCk1NDzhjqQ//M6yM
+# x1Th30hrYa8mTD2pmUePvYrojd5IlXMGhv6OMWnOS1OhuAAonRzfesxDfV2lVqc4
+# e29+bzIYKm7HalMZEs5WIViJJj4me/xDc+ZWbv62/xkwtfEgS8hbAsqOBeuEs7gC
+# 8490xgE++My2Ak4B7vXBml9wOOp+dh1BkBLAez2aMZM0CqdLMjF63ytd1vxk2TMo
+# wc09QdewFn62FfvBHvYALaOtsUZhH/sCtSxoQapSbjnSMKO/NYpepl1/Vu2ESvZO
+# R+F77UudpZrEjTlH28SDBoztz69y3fF/eU0=
 # SIG # End signature block
