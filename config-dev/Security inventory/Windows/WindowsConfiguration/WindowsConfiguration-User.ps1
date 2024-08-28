@@ -2,54 +2,6 @@
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 . $PSScriptRoot\..\Shared\AppLinkHelper.ps1 -Force
 
-
-function Test-vlBlockedProgram {
-   <#
-    .SYNOPSIS
-        Tests if a program is blocked by the system.
-    .DESCRIPTION
-        Tests if a program is blocked by the system.
-    .OUTPUTS
-        A [bool] indicating if the program is blocked or not
-    .EXAMPLE
-        Test-vlBlockedProgram
-    #>
-
-   Param(
-      [string]$ProgramPath
-   )
-
-   $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
-   $processStartInfo.FileName = $ProgramPath
-   $processStartInfo.RedirectStandardError = $true
-   $processStartInfo.RedirectStandardOutput = $true
-   $processStartInfo.UseShellExecute = $false
-   $processStartInfo.CreateNoWindow = $true
-
-   $process = New-Object System.Diagnostics.Process
-   $process.StartInfo = $processStartInfo
-
-   try {
-      $process.Start() | Out-Null
-      $process.WaitForExit()
-
-      $exitCode = $process.ExitCode
-
-      if ($exitCode -ne 0) {
-         # the program is blocked
-         return $true
-      }
-      else {
-         # the program is not blocked
-         return $false
-      }
-   }
-   catch {
-      # an exception occurred, indicating the program is blocked
-      return $true
-   }
-}
-
 function Get-CheckHTAEnabled {
    <#
     .SYNOPSIS
@@ -70,8 +22,7 @@ function Get-CheckHTAEnabled {
       $score = 10
       $riskScore = 80
 
-      #$htaExecuteStatus = Run-vlHtaCode $htacode
-      $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "mshta.exe"
+      $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "C:\WINDOWS\System32\mshta.exe"
 
       $defaultLink = $true
       $startCmd = [AppLinkHelper]::AssocQueryString(".hta")
@@ -97,7 +48,7 @@ function Get-CheckHTAEnabled {
          $defaultLink = $false
       }
 
-      if ($htaRunBlocked -ne $true) {
+      if ($htaRunBlocked.FileExists -and $htaRunBlocked.IsBlocked -ne $true) {
          $score -= 7
       }
 
@@ -106,7 +57,8 @@ function Get-CheckHTAEnabled {
       }
 
       $result = [PSCustomObject]@{
-         RunBlocked  = $htaRunBlocked
+         MshtaExists = $htaRunBlocked.FileExists
+         RunBlocked  = $htaRunBlocked.IsBlocked
          OpenWith    = $startProc
          DefaultLink = $defaultLink
       }
