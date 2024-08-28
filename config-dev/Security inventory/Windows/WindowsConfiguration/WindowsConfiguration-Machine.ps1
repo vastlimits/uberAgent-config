@@ -1,53 +1,6 @@
 
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
-function Test-vlBlockedProgram {
-   <#
-    .SYNOPSIS
-        Tests if a program is blocked by the system.
-    .DESCRIPTION
-        Tests if a program is blocked by the system.
-    .OUTPUTS
-        A [bool] indicating if the program is blocked or not
-    .EXAMPLE
-        Test-vlBlockedProgram
-    #>
-
-   Param(
-      [string]$ProgramPath
-   )
-
-   $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
-   $processStartInfo.FileName = $ProgramPath
-   $processStartInfo.RedirectStandardError = $true
-   $processStartInfo.RedirectStandardOutput = $true
-   $processStartInfo.UseShellExecute = $false
-   $processStartInfo.CreateNoWindow = $true
-
-   $process = New-Object System.Diagnostics.Process
-   $process.StartInfo = $processStartInfo
-
-   try {
-      $process.Start() | Out-Null
-      $process.WaitForExit()
-
-      $exitCode = $process.ExitCode
-
-      if ($exitCode -ne 0) {
-         # the program is blocked
-         return $true
-      }
-      else {
-         # the program is not blocked
-         return $false
-      }
-   }
-   catch {
-      # an exception occurred, indicating the program is blocked
-      return $true
-   }
-}
-
 function Get-vlDrives {
 
    $drives = Get-CimInstance -ClassName Win32_DiskDrive
