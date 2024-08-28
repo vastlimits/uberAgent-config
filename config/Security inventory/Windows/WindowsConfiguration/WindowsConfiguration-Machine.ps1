@@ -1,53 +1,6 @@
 
 . $PSScriptRoot\..\Shared\Helper.ps1 -Force
 
-function Test-vlBlockedProgram {
-   <#
-    .SYNOPSIS
-        Tests if a program is blocked by the system.
-    .DESCRIPTION
-        Tests if a program is blocked by the system.
-    .OUTPUTS
-        A [bool] indicating if the program is blocked or not
-    .EXAMPLE
-        Test-vlBlockedProgram
-    #>
-
-   Param(
-      [string]$ProgramPath
-   )
-
-   $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
-   $processStartInfo.FileName = $ProgramPath
-   $processStartInfo.RedirectStandardError = $true
-   $processStartInfo.RedirectStandardOutput = $true
-   $processStartInfo.UseShellExecute = $false
-   $processStartInfo.CreateNoWindow = $true
-
-   $process = New-Object System.Diagnostics.Process
-   $process.StartInfo = $processStartInfo
-
-   try {
-      $process.Start() | Out-Null
-      $process.WaitForExit()
-
-      $exitCode = $process.ExitCode
-
-      if ($exitCode -ne 0) {
-         # the program is blocked
-         return $true
-      }
-      else {
-         # the program is not blocked
-         return $false
-      }
-   }
-   catch {
-      # an exception occurred, indicating the program is blocked
-      return $true
-   }
-}
-
 function Get-vlDrives {
 
    $drives = Get-CimInstance -ClassName Win32_DiskDrive
@@ -518,8 +471,8 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDpPgxQgSmJ9LE/
-# Ow41xAo24Wzx4rd8n3Xa2l8EtZQETaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCAuIRfx4wnmn/TR
+# KmmVaZuD0Oy0Phji0acMpUg+pijdzqCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -596,17 +549,17 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgSynrhfNhij6n
-# fOJG4k5OW2cXwiD1G43Z54tz8PDBLCUwDQYJKoZIhvcNAQEBBQAEggIAeAsI6u59
-# MW+FIeTwBGZfrDonTyOChKHiPgsRAIsALSdJp4Cu3VScJ68uHlFAkHWLjgbKh+sk
-# 5tCx6i+ee971ZZOBCwZFR5AT1plr2gcLtoBpR6DvaUI3DgNmW5T9nUX3NbylY7bS
-# 10oEvYcJA4gp2Aal9cSbvneYVpMmqrrDgajHoyjipkYa3f507NKIe3yDLRobiQl0
-# w8JjAyfFWT3tDrUxukeo4qp3t7GB5YezJAUZIRb3+oVzzjBCmuIZrtg+0gOe6M+Q
-# Ep2NhhpqosrCbKZgiFVnDzFdvH5dmKozCt+OXkjK8YfuYhkBxWuJAneU7qsxxgrj
-# otFnkct1wykXSMLvGWTrtsQYNHd4ZK9hDzMRR32KfpIiBO20ykmIXt6Umwt2hQlX
-# IajVxAsm9fRG+9pw3wwhmlPpYlD8udpOphrTmyiVxByfZOnbOmDmnXOQ0PTlsgc3
-# lsjRL1y7LEwMLsfbV4Cg8WHnjIINKY2iGyaJ00Cw45+2Mvjkm+fgr7qVOtfQfLBC
-# k4Ru+QkWeq3lJE0K0aJFQAPFIV16TVktEIbkhOMe1R4O3XcQiiaQv3mbpLZrEZsC
-# g++yRS/rNUtf092DGzni8XAzddStSTQo62Z6N5V909Fqk8OXTaY+RFTRGweGKkIB
-# uqPQdwKhePkqwKxTAncnHqAPmdtDLsdtk4M=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgvIW8Woolaw/R
+# Mc27fY9lZFNwQj+KUYLBwx0Yp+rhoiQwDQYJKoZIhvcNAQEBBQAEggIAMn3Clffa
+# ZgC9qXSd+iEprxLGRgBjc8oVXjPRP7cPubamWhDfrzaWYIxTe0oY2WPQVdtIpXEE
+# rZ4zjosJWy2je7xSs0qtM+Ngt9b7YvKSuhRsiSb+3Neyrg5hG3JLDcpXEXdBI3w3
+# 6FuplwGgXxWt0ghJiW9es9Hp9pwoqVXSp4c4j2fyfCHCaJt/ktWqeAXTycYBjnTE
+# 4sB/vqjjZL0t827681lL91QZNmBq3ugA8m4vLtDyuPD1qGl9Jkxox9sUjwxnZ2i/
+# dOek92ZkQrBq5/eH8l+gWxhubh2+BqaEShhfHJMvYxCr7AhbE5z0GnJd28rklB2J
+# Zm3SLG0t62d6j7JubuIPawCYAM9EZvTz3EM0OJFAm5V7HW3Zz0tUJGrLsCiShGad
+# 1/w9vSe08qSxBFKNbkj7YU/OSxcGKBFamcxsNx2UOwllFTuZfBQysgko1DoKWHxg
+# RSYxYnfx15K65s1TSShdc2OgsBn+x9Eh4aU0KlOKSBRBkqQTbLM2VTtaJyZcFsrB
+# V1GGv85xKkw/mb2peqqT11O+MEWhxesUkKqXTVL7MzxdXLHhD4Lml72Bf2vlzF7o
+# QauYHzR8F3UJRNbNtPpErsATFLcD13QB8XHu+JaGBc0x16lW04XRmPklH7dpCfXY
+# Vt8vw3st5GY977bCmc29TFDzSQD0A0ehz/M=
 # SIG # End signature block

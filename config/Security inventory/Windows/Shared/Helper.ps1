@@ -584,6 +584,62 @@ function Get-vlIsCmdletAvailable {
 
 }
 
+function Test-vlBlockedProgram {
+   <#
+    .SYNOPSIS
+        Tests if a program is blocked by tools like AppLocker or Windows Defender Application Control.
+    .DESCRIPTION
+        Tests if a program is blocked by tools like AppLocker or Windows Defender Application Control.
+        Make sure to use the full path to the program to avoid potential security risks.
+    .OUTPUTS
+        A [bool] indicating if the program is blocked or not
+    .EXAMPLE
+        Test-vlBlockedProgram
+    #>
+
+   Param(
+      [string]$ProgramPath
+   )
+
+   $result = [PSCustomObject]@{
+      FileExists = $false
+      IsBlocked  = $null
+   }
+
+   # Check if the program exists at the specified path
+   if (-not (Test-Path $ProgramPath)) {
+      return $result
+   }
+   else {
+      $result.FileExists = $true
+   }
+
+   $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
+
+   $processStartInfo.FileName = $ProgramPath
+   $processStartInfo.RedirectStandardError = $true
+   $processStartInfo.RedirectStandardOutput = $true
+   $processStartInfo.UseShellExecute = $false
+   $processStartInfo.CreateNoWindow = $true
+
+   $process = New-Object System.Diagnostics.Process
+   $process.StartInfo = $processStartInfo
+
+   try {
+      $process.Start() | Out-Null
+      $process.WaitForExit()
+
+      # the program is not blocked
+      $result.IsBlocked = $false
+      return $result
+   }
+   catch {
+      # an exception occurred, indicating the program is blocked
+      $result.IsBlocked = $true
+      return $result
+   }
+}
+
 ##### Debugging utilities #####
 
 function Add-vlTimer {
@@ -810,8 +866,8 @@ function Write-vlTimerElapsedTime {
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCBa9Qn3HAcj/I+M
-# fGoui2QiVC3HrXDgA0tthcD+RG4nCaCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCCnHWILwS/o5mAw
+# +qkba2aHhHEyKP9k5yPslcZkOwtXdKCCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -888,17 +944,17 @@ function Write-vlTimerElapsedTime {
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgABKd9NJqYQPf
-# VON61hADj4Mecw5xSQk0e3xsdwhDT90wDQYJKoZIhvcNAQEBBQAEggIAWZKhTPZQ
-# qq9qoTxMGEE8LpzD5ApJFIx05blXNFti0u7OW1xFxl/3aXOgU0l1nuy5urb3uT4w
-# gJfNzDgrWVOIcAPmyxNQdypdCqt/mlK0qNMCyjSPEfaAdsDZAqHnCqNFRKDku+ej
-# q6UZV+DWlGQiTDXnpjD9N5YwB0MEMbDKACJwdhfyXmQjfwm3HXVZZGJ6PzVZEvvq
-# 1YCRmF16dlEdlwk2+M0v+BipX+utz41gBZcIbV6Tu4MSb+RpzcmBbAKz5aHycJ9G
-# z5gj4jVLZNqHC7xiMEI7m0G38HH7PJUREeamp8/M5cZcRtr+Ry53WGIrXmi6NM0m
-# bFkvDhx74Orw2luuSkVKJPYfVFvD/unGZIFEroIwTMflHVRqzjPDWFKrXycquJoq
-# ZqU5ixaV3jLSveP8erZ7hXFGple/WVa312RfJzD14S9Zcq3CgF8gzO5xbDPyDS8d
-# aMkHqeeNjf2fFNrDaUylvZ3L0Fwculk/Q3dav8RYE+aX9GZm83Mgqlfwul08k1HA
-# bL0CPML8/NujKZ3sfzZC9seXiBej3L0mhNYXQNbzMVGDcXv0tSiE6mVsk6WtAGnw
-# vUJ1BF9ky4g63e3GArr+rkL37ub8FH0zJxFmdRyyM+OoYpkbkOhIQyfM8fCzYQQu
-# d4OT0x5BGAObc4R5n0eP7cnHyYqd3blIcNA=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgdVfp02eoM9Eo
+# 9AjTZ9SMW8+PuB8FoUFuSkhMTqtAvn8wDQYJKoZIhvcNAQEBBQAEggIAmDXUMEBt
+# 621XNewdPfc+Pfx21W3wZqHRdNjSJa13cNYrvnUrPTlOjOQsOajCFpZ+adqcHGLz
+# Iqwuiegnre57nWNMMOeUXMEnvxMZwfH7NVzNPhOvqdTkfnxMPSoidhBZ5EZAT9Jz
+# +yrh8oZcJ0YMudu00WnEK16pDpJP6OH3+o3MTqzEGiuPDihwFiFWVgz3ehGlZIzh
+# xb+Kvp67L8x/3tik+nFkiBfLhFDH02e7pPfna7fzr/5QMIiBvKTlW6CW/LEYQtEj
+# oCg/7JzlmR6fyzTfOudzoKZNbDS9uHP6Hc5ga774rjn730wWcCoU0n9gHz3piLXz
+# UwRKpvdGtvAmRaMyHibMwruo0peqCfZ1xyfYwKFsfCktMJSfYU0lm83I0KRpDg7X
+# vU4vgNnEIccCMW3CESYG9T2XiQHhn+Ui59ePdtXKQvzOrT1GBwqvpEBt5Xuo0WA/
+# Zrsy4E1D0GiRd6J84Qu/J6BbI7cHpybSYlTL4a4vZ+80A8OJQnkc7pHtLeWqaSlB
+# nfqvFUCnGNFKm1l7xxCj6SoTHDnw50hIXwNekxaU3af0MK8uSq8lqbldwKMH4sRi
+# bbQRRTk1Yf/+Zfh1eGfGK9f56kAVvrmWkLG+CWKeBHQK/U7y1Zu7zOh1OCfalF7x
+# ZVZGrsjWYuc+vzrl/9fI2GH28oRq5qDCPUw=
 # SIG # End signature block
