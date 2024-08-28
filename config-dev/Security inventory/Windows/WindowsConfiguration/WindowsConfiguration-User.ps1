@@ -5,9 +5,9 @@
 function Get-CheckHTAEnabled {
    <#
     .SYNOPSIS
-        Checks whether mshta.exe can run or is blocked by a tool such as AppLocker.
+        Checks whether mshta.exe can be executed or is blocked by a tool such as AppLocker.
     .DESCRIPTION
-        Checks whether mshta.exe can run or is blocked by a tool such as AppLocker.
+        Checks whether mshta.exe can be executed or is blocked by a tool such as AppLocker.
     .LINK
         https://uberagent.com
     .OUTPUTS
