@@ -629,18 +629,9 @@ function Test-vlBlockedProgram {
       $process.Start() | Out-Null
       $process.WaitForExit()
 
-      $exitCode = $process.ExitCode
-
-      if ($exitCode -ne 0) {
-         # the program is blocked
-         $result.IsBlocked = $true
-         return $result
-      }
-      else {
-         # the program is not blocked
-         $result.IsBlocked = $false
-         return $result
-      }
+      # the program is not blocked
+      $result.IsBlocked = $false
+      return $result
    }
    catch {
       # an exception occurred, indicating the program is blocked
