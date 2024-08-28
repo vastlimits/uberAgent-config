@@ -584,6 +584,71 @@ function Get-vlIsCmdletAvailable {
 
 }
 
+function Test-vlBlockedProgram {
+   <#
+    .SYNOPSIS
+        Tests if a program is blocked by tools like AppLocker or Windows Defender Application Control.
+    .DESCRIPTION
+        Tests if a program is blocked by tools like AppLocker or Windows Defender Application Control.
+        Make sure to use the full path to the program to avoid potential security risks.
+    .OUTPUTS
+        A [bool] indicating if the program is blocked or not
+    .EXAMPLE
+        Test-vlBlockedProgram
+    #>
+
+   Param(
+      [string]$ProgramPath
+   )
+
+   $result = [PSCustomObject]@{
+      FileExists = $false
+      IsBlocked  = $null
+   }
+
+   # Check if the program exists at the specified path
+   if (-not (Test-Path $ProgramPath)) {
+      return $result
+   }
+   else {
+      $result.FileExists = $true
+   }
+
+   $processStartInfo = New-Object System.Diagnostics.ProcessStartInfo
+
+   $processStartInfo.FileName = $ProgramPath
+   $processStartInfo.RedirectStandardError = $true
+   $processStartInfo.RedirectStandardOutput = $true
+   $processStartInfo.UseShellExecute = $false
+   $processStartInfo.CreateNoWindow = $true
+
+   $process = New-Object System.Diagnostics.Process
+   $process.StartInfo = $processStartInfo
+
+   try {
+      $process.Start() | Out-Null
+      $process.WaitForExit()
+
+      $exitCode = $process.ExitCode
+
+      if ($exitCode -ne 0) {
+         # the program is blocked
+         $result.IsBlocked = $true
+         return $result
+      }
+      else {
+         # the program is not blocked
+         $result.IsBlocked = $false
+         return $result
+      }
+   }
+   catch {
+      # an exception occurred, indicating the program is blocked
+      $result.IsBlocked = $true
+      return $result
+   }
+}
+
 ##### Debugging utilities #####
 
 function Add-vlTimer {
