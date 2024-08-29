@@ -5,9 +5,9 @@
 function Get-CheckHTAEnabled {
    <#
     .SYNOPSIS
-        Checks if HTA is enabled on the system.
+        Checks whether mshta.exe can be executed or is blocked by a tool such as AppLocker.
     .DESCRIPTION
-        Checks if HTA is enabled on the system.
+        Checks whether mshta.exe can be executed or is blocked by a tool such as AppLocker.
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -22,7 +22,14 @@ function Get-CheckHTAEnabled {
       $score = 10
       $riskScore = 80
 
-      $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "C:\WINDOWS\System32\mshta.exe"
+      # Get Windows System directory
+      $systemDirectory = [System.Environment]::SystemDirectory
+
+      # Join the path to mshta.exe
+      $mshtaPath = Join-Path -Path $systemDirectory -ChildPath "mshta.exe"
+
+      # Check if mshta.exe exists and is blocked
+      $htaRunBlocked = Test-vlBlockedProgram -ProgramPath $mshtaPath
 
       $defaultLink = $true
       $startCmd = [AppLinkHelper]::AssocQueryString(".hta")
@@ -191,8 +198,8 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # SIG # Begin signature block
 # MIIRVgYJKoZIhvcNAQcCoIIRRzCCEUMCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
-# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCD9/gvWf6uYNlHq
-# Eou8KPMErO0Fqk0qbHTdryPYSUXek6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
+# KX7zUQIBAAIBAAIBAAIBAAIBADAxMA0GCWCGSAFlAwQCAQUABCDbnVBSeHAUfDTh
+# 2fqSKB4Tih7kH8OPdL12PY/d3t2Do6CCDW0wggZyMIIEWqADAgECAghkM1HTxzif
 # CDANBgkqhkiG9w0BAQsFADB8MQswCQYDVQQGEwJVUzEOMAwGA1UECAwFVGV4YXMx
 # EDAOBgNVBAcMB0hvdXN0b24xGDAWBgNVBAoMD1NTTCBDb3Jwb3JhdGlvbjExMC8G
 # A1UEAwwoU1NMLmNvbSBSb290IENlcnRpZmljYXRpb24gQXV0aG9yaXR5IFJTQTAe
@@ -269,17 +276,17 @@ Write-Output (Get-WindowsConfigurationCheck | ConvertTo-Json -Compress)
 # BAMMK1NTTC5jb20gQ29kZSBTaWduaW5nIEludGVybWVkaWF0ZSBDQSBSU0EgUjEC
 # EH2BzCLRJ8FqayiMJpFZrFQwDQYJYIZIAWUDBAIBBQCggYQwGAYKKwYBBAGCNwIB
 # DDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMxDAYKKwYBBAGCNwIBBDAcBgorBgEE
-# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQg0HtNx1DXkLlm
-# ev2llw5FvOzrtpg+ZFw4fsZ4x7ZXjc8wDQYJKoZIhvcNAQEBBQAEggIAjVw8s9AC
-# OIZcmFCGbBQRcmCgZuLedDwmuuonCAJwlDt6/Nbwziz/NlpVhZ1Lv+mT7pXhxl/E
-# 7mxcWo3hIufXVKXthrAAfn/+xZ//pnk6mOPq88Qv+GU+geeZMc2924M1JzZHhS6w
-# 3hftL5tnXeP8MB1vdNfG/ypjTBxbXPh3+4Ayk/o+l9tU3CeWMPBiTH2bh9iuvQNH
-# PxCld0ON+q7c5BrRGj1syXtVFYisAr8gBeTne1oDyITf1YrmXJaYnJvLmFby5nKc
-# jsQ6N4IPPJzw8IOGloqEcfoqR4lrgJkQC3675CoYKTXlnS1r6FFVMuKteQXR9ulb
-# I5TI5F3GZfU00vtk6vf26IETZjo2H5Fj0lvxxb/nc9A7uIcbCk1NDzhjqQ//M6yM
-# x1Th30hrYa8mTD2pmUePvYrojd5IlXMGhv6OMWnOS1OhuAAonRzfesxDfV2lVqc4
-# e29+bzIYKm7HalMZEs5WIViJJj4me/xDc+ZWbv62/xkwtfEgS8hbAsqOBeuEs7gC
-# 8490xgE++My2Ak4B7vXBml9wOOp+dh1BkBLAez2aMZM0CqdLMjF63ytd1vxk2TMo
-# wc09QdewFn62FfvBHvYALaOtsUZhH/sCtSxoQapSbjnSMKO/NYpepl1/Vu2ESvZO
-# R+F77UudpZrEjTlH28SDBoztz69y3fF/eU0=
+# AYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAvBgkqhkiG9w0BCQQxIgQgq0IGoIcD11KP
+# s9vNh1GSGPE4vX2um1jlKfid+QJ1hAgwDQYJKoZIhvcNAQEBBQAEggIAvtqDtdCX
+# 9dOum9e8nxo+7+HlDZmDaSNOBvBq9VDqYlXYqPQPN8Ccw+YAxlpW+K94zVFN0aaA
+# 5+bhTsXKsPRGxlilJAYktMgARroT0C7y+7fnIuRMKtbQsbNX1IlcSewqoEaZBGho
+# dBlnV3GhtBivUWg/+RnVgRs+H322IQuWWZr71/6b3R4SnzWBUdbnz0XyZIMhPezU
+# l7Q2R+bFVvfwI37UHVw2Kqdz9PWr8jgheg4lfS/vkPbADa6qDVR4EEIQVUbybFUH
+# R/9HRDn7YbKAasyAbW0XcPl4P+7L4LRcn2Ek0ZoUkJsBFLJX7x0NGgsKbDSvy6KS
+# IkQdrbKvC81WBzT2PT7tVNNnmvc4usiFXZP4giOFkRqbMffdDXI1x3E+3D+KPKfD
+# rNE/Kfm3yxLYBxW6wc9x4aFLoqZsaegSkW3N9/v9PRPgwOkdbzdDe5yKXjuSyXMz
+# mgzPUWxjOGj5AdK6+TMzPOZXiR0eGJsY00BRN6d2ebmADt91DVzxO7++e0FBJh40
+# YPjL0PHjh50NSufcvnGpVw5KBKzkorTi9Sj0tr4wiaNUgqaMjvfXnKqLO7lSGkzK
+# UBiai3xdRO2jVuUrxfT9USQysdOaiQA4ICKliJIg87o6FK+XgwzQ6GRCCZdzgoF9
+# kkI/m5anDirgP7bu0sLWRKcN4f9d6fSNxcA=
 # SIG # End signature block
