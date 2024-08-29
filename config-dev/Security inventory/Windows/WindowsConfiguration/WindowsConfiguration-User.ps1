@@ -5,9 +5,9 @@
 function Get-CheckHTAEnabled {
    <#
     .SYNOPSIS
-        Checks if HTA is enabled on the system.
+        Checks whether mshta.exe can be executed or is blocked by a tool such as AppLocker.
     .DESCRIPTION
-        Checks if HTA is enabled on the system.
+        Checks whether mshta.exe can be executed or is blocked by a tool such as AppLocker.
     .LINK
         https://uberagent.com
     .OUTPUTS
@@ -22,7 +22,14 @@ function Get-CheckHTAEnabled {
       $score = 10
       $riskScore = 80
 
-      $htaRunBlocked = Test-vlBlockedProgram -ProgramPath "C:\WINDOWS\System32\mshta.exe"
+      # Get Windows System directory
+      $systemDirectory = [System.Environment]::SystemDirectory
+
+      # Join the path to mshta.exe
+      $mshtaPath = Join-Path -Path $systemDirectory -ChildPath "mshta.exe"
+
+      # Check if mshta.exe exists and is blocked
+      $htaRunBlocked = Test-vlBlockedProgram -ProgramPath $mshtaPath
 
       $defaultLink = $true
       $startCmd = [AppLinkHelper]::AssocQueryString(".hta")
