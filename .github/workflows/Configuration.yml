@@ -35,16 +35,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: "Validate uberAgent.conf <> uberAgent-data-volume-optimized.conf"
         run: |
-          CONFIG_CHANGED="$(git diff --name-only config/uberAgent.conf)"
-          CONFIG_OPTIMIZED_CHANGED="$(git diff --name-only config/uberAgent-data-volume-optimized.conf)"
+          CONFIG_CHANGED="$(git diff origin/develop --name-only config/uberAgent.conf)"
+          CONFIG_OPTIMIZED_CHANGED="$(git diff origin/develop --name-only config/uberAgent-data-volume-optimized.conf)"
           if ( [ -n "${CONFIG_CHANGED}" ] && [ -z "${CONFIG_OPTIMIZED_CHANGED}" ] ) || ( [ -z "${CONFIG_CHANGED}" ] && [ -n "${CONFIG_OPTIMIZED_CHANGED}" ] )
           then
             echo "Changes must be applied uberAgent.conf and uberAgent-data-volume-optimized.conf, too."
             exit 1
           fi
+          echo "Changes are in sync."
           exit 0
         continue-on-error: false
 
