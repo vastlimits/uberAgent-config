@@ -21,7 +21,7 @@ env:
   uAConfigCheck_EXE_Artifact_Version: "*"
   uAConfigCheck_EXE_Artifact_Package: uaconfigcheck
   uAConfigCheck_DLL_Artifact_Version: "*"
-  uAConfigCheck_DLL_Artifact_ProductVersion: '7.3.1'
+  uAConfigCheck_DLL_Artifact_ProductVersion: 'develop' # TODO: should be changed to '7.3.1' after release
   uAConfigCheck_DLL_Artifact_Package: uberagent
 
 jobs:
