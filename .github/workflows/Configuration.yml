@@ -3,12 +3,12 @@ name: Configuration
 on:
   push:
     branches:
-      - "version/7.3"
+      - "version/7.4"
     paths-ignore:
       - "config-dist/**" # avoid recursion
   pull_request:
     branches:
-      - "version/7.3"
+      - "version/7.4"
     paths-ignore:
       - "config-dist/**" # avoid recursion
 
@@ -21,7 +21,7 @@ env:
   uAConfigCheck_EXE_Artifact_Version: "*"
   uAConfigCheck_EXE_Artifact_Package: uaconfigcheck
   uAConfigCheck_DLL_Artifact_Version: "*"
-  uAConfigCheck_DLL_Artifact_ProductVersion: ${{ (github.ref == 'refs/heads/version/7.3' && 'develop') || 'develop' }}
+  uAConfigCheck_DLL_Artifact_ProductVersion: ${{ (github.ref == 'refs/heads/version/7.4' && 'develop') || 'develop' }}
   uAConfigCheck_DLL_Artifact_Package: uberagent
 
 jobs:
