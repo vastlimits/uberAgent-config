@@ -19,6 +19,8 @@ This repository is organized in such a way that uberAgent releases are represent
 | uberAgent version | Git branch |
 | ------- | --------------------- |
 | `development (beta)` | [develop](../../tree/develop) |
+| `7.4.x` | [version/7.2](../../tree/version/7.4) |
+| `7.3.x` | [version/7.2](../../tree/version/7.3) |
 | `7.2.x` | [version/7.2](../../tree/version/7.2) |
 | `7.1.x` | [version/7.1](../../tree/version/7.1) |
 | `7.0.x` | [version/7.0](../../tree/version/7.0) |
