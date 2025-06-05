@@ -74,44 +74,6 @@ jobs:
           allow-no-subscriptions: true
           environment: azurecloud
 
-      - name: Download uAConfigCheck exe
-        uses: azure/CLI@v1
-        with:
-          azcliversion: 2.55.0
-          inlineScript: |
-            az extension add --name azure-devops
-
-            az artifacts universal download --organization ${{env.uAConfigCheck_Organization}} \
-                                            --project uAConfigCheck --scope project --feed ${{env.uAConfigCheck_FEED}} \
-                                            --name ${{env.uAConfigCheck_EXE_Artifact_Package}} \
-                                            --version "${{env.uAConfigCheck_EXE_Artifact_Version}}" \
-                                            --path . \
-                                            --file-filter 'uAConfigCheck.exe'
-
-      - name: Download versioned uAConfigCheck dll
-        uses: azure/CLI@v1
-        with:
-          azcliversion: 2.55.0
-          inlineScript: |
-            az extension add --name azure-devops
-
-            az artifacts universal download --organization ${{env.uAConfigCheck_Organization}} \
-                                            --project uAConfigCheck --scope project --feed ${{env.uAConfigCheck_FEED}} \
-                                            --name ${{env.uAConfigCheck_DLL_Artifact_Package}}-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} \
-                                            --version "${{env.uAConfigCheck_DLL_Artifact_Version}}" \
-                                            --path ./releases/ \
-                                            --file-filter "uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll"
-
-      - name: Upload uAConfigCheck
-        uses: actions/upload-artifact@v4
-        with:
-          name: uAConfigCheck
-          path: |
-            ./uAConfigCheck.exe
-            ./releases/uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll
-          if-no-files-found: error
-          retention-days: 1
-
   validate-archive:
     name: Validate
     needs: [build-archive]
