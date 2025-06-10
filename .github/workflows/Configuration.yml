@@ -64,6 +64,7 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     name: Push
     runs-on: ubuntu-latest
+    needs: [build-archive]
     steps:
       - uses: actions/checkout@v4
         with:
