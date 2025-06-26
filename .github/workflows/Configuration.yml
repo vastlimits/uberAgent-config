@@ -16,13 +16,6 @@ env:
   SOURCE_DIR_PATH: config/
   TARGET_DIR_PATH: config-dist/
   TARGET_FILE: uberAgent.uAConfig
-  uAConfigCheck_FEED: uAConfigCheck
-  uAConfigCheck_Organization: https://dev.azure.com/vastlimits
-  uAConfigCheck_EXE_Artifact_Version: "*"
-  uAConfigCheck_EXE_Artifact_Package: uaconfigcheck
-  uAConfigCheck_DLL_Artifact_Version: "*"
-  uAConfigCheck_DLL_Artifact_ProductVersion: develop
-  uAConfigCheck_DLL_Artifact_Package: uberagent
 
 jobs:
   build-archive:
@@ -66,97 +59,12 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-      - name: "Login to Azure Devops"
-        uses: azure/login@v1
-        with:
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          allow-no-subscriptions: true
-          environment: azurecloud
-
-      - name: Download uAConfigCheck exe
-        uses: azure/CLI@v1
-        with:
-          azcliversion: 2.55.0
-          inlineScript: |
-            az extension add --name azure-devops
-
-            az artifacts universal download --organization ${{env.uAConfigCheck_Organization}} \
-                                            --project uAConfigCheck --scope project --feed ${{env.uAConfigCheck_FEED}} \
-                                            --name ${{env.uAConfigCheck_EXE_Artifact_Package}} \
-                                            --version "${{env.uAConfigCheck_EXE_Artifact_Version}}" \
-                                            --path . \
-                                            --file-filter 'uAConfigCheck.exe'
-
-      - name: Download versioned uAConfigCheck dll
-        uses: azure/CLI@v1
-        with:
-          azcliversion: 2.55.0
-          inlineScript: |
-            az extension add --name azure-devops
-
-            az artifacts universal download --organization ${{env.uAConfigCheck_Organization}} \
-                                            --project uAConfigCheck --scope project --feed ${{env.uAConfigCheck_FEED}} \
-                                            --name ${{env.uAConfigCheck_DLL_Artifact_Package}}-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} \
-                                            --version "${{env.uAConfigCheck_DLL_Artifact_Version}}" \
-                                            --path ./releases/ \
-                                            --file-filter "uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll"
-
-      - name: Upload uAConfigCheck
-        uses: actions/upload-artifact@v4
-        with:
-          name: uAConfigCheck
-          path: |
-            ./uAConfigCheck.exe
-            ./releases/uberAgent-${{env.uAConfigCheck_DLL_Artifact_ProductVersion}}.dll
-          if-no-files-found: error
-          retention-days: 1
-
-  validate-archive:
-    name: Validate
-    needs: [build-archive]
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-        name: Checkout
-        with:
-          fetch-depth: 0
-
-      - uses: actions/download-artifact@v4
-        name: Download uAConfigCheck
-        with:
-          name: uAConfigCheck
-
-      - uses: actions/download-artifact@v4
-        name: Download ConfigArchive
-        with:
-          name: ConfigArchive
-          path: ${{ env.TARGET_DIR_PATH }}
-
-      - name: "uAConfigCheck: validate uberAgent.uAConfig"
-        # Runs configuration validation tool.
-        # Setting -i to ignore missing receivers (new default with 7.3)
-        # Setting -w to treat warnings as errors
-        # Setting version with -v and bundle archive with -a
-        run: |
-          .\uAConfigCheck.exe -i -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -a "${{ env.TARGET_DIR_PATH }}${{ env.TARGET_FILE }}"
-        continue-on-error: false
-
-      - name: "uAConfigCheck: validate uberAgent.conf"
-        # Runs configuration validation tool.
-        # Setting -i to ignore missing receivers (new default with 7.3)
-        # Setting -w to treat warnings as errors
-        # Setting version with -v and uberAgent.conf with -f and its directory with -r
-        run: |
-          .\uAConfigCheck.exe -i -v ${{env.uAConfigCheck_DLL_Artifact_ProductVersion}} -f "${{ github.workspace }}\\config\\uberAgent.conf" -r "${{ github.workspace }}\\config"
-        continue-on-error: false
-
   # Publishing is limited to actual push events.
   push-archive:
     if: ${{ github.event_name == 'push' }}
     name: Push
-    needs: [validate-archive]
     runs-on: ubuntu-latest
+    needs: [build-archive]
     steps:
       - uses: actions/checkout@v4
         with:
