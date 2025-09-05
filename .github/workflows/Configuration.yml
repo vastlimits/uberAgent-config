@@ -3,12 +3,12 @@ name: Configuration
 on:
   push:
     branches:
-      - develop
+      - "version/7.5"
     paths-ignore:
       - "config-dist/**" # avoid recursion
   pull_request:
     branches:
-      - develop
+      - "version/7.5"
     paths-ignore:
       - "config-dist/**" # avoid recursion
 
