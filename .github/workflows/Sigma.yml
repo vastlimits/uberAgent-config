@@ -88,13 +88,6 @@ jobs:
         path: pySigma-backend-uberAgent
         ref: ${{ matrix.converter-ref }}
 
-    - name: Checkout sigma-cli
-      uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.VLSVC_PAT }}
-        repository: SigmaHQ/sigma-cli
-        path: sigma-cli
-
     - name: Checkout sigma
       uses: actions/checkout@v4
       with:
@@ -107,22 +100,13 @@ jobs:
       with:
         python-version: "3.10"
 
-    - name: Install Poetry
-      uses: abatilo/actions-poetry@v2.0.0
-      with:
-        poetry-version: "1.4.2"
-
-    - name: Install
-      working-directory: ./sigma-cli
-      run: poetry install
-
-    - name: Install pySigma-backend-uberAgent from pyPI
-      working-directory: ./sigma-cli
+    - name: Install sigma-cli and dependencies
       env:
         PYPI_HOST: ${{ matrix.pypi-host }}
       run: |
-        poetry source add ua_package_source ${{ matrix.pypi-host }}
-        poetry add --source ua_package_source pySigma-backend-uberAgent
+        python -m pip install --upgrade pip
+        python -m pip install sigma-cli
+        python -m pip install --extra-index-url ${{ matrix.pypi-host }} pySigma-backend-uberAgent
 
     - name: Prepare Build
       run: mkdir build
@@ -134,9 +118,6 @@ jobs:
         CURRENT_BACKEND_VERSION: ${{ matrix.backend-version }}
         COPY_RULES_ARGS: ${{ matrix.copy_rules_args }}
       run: |
-        # Activate poetry shell from sigma-cli in this shell
-        . $(cd $GITHUB_WORKSPACE/sigma-cli ; poetry env info --path)/bin/activate
-
         # Copy rules
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules" $COPY_RULES_ARGS
@@ -145,9 +126,6 @@ jobs:
       if: ${{ matrix.branch == 'develop' }}
       working-directory: build
       run: |
-        # Activate poetry shell from sigma-cli in this shell
-        . $(cd $GITHUB_WORKSPACE/sigma-cli ; poetry env info --path)/bin/activate
-
         # For testing, limited to develop.
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules-threat-hunting" --skip_check_directory
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/copy-rules.py "$GITHUB_WORKSPACE/sigma/rules-emerging-threats" --skip_check_directory
@@ -159,9 +137,6 @@ jobs:
         CURRENT_BACKEND_VERSION: ${{ matrix.backend-version }}
         COPY_RULES_ARGS: ${{ matrix.copy_rules_args }}
       run: |
-        # Activate poetry shell from sigma-cli in this shell
-        . $(cd $GITHUB_WORKSPACE/sigma-cli ; poetry env info --path)/bin/activate
-
         # Convert rules
         chmod +x $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh
         $GITHUB_WORKSPACE/pySigma-backend-uberAgent/convert-rules.sh $(pwd) $CURRENT_PIPELINE_VERSION $CURRENT_BACKEND_VERSION
