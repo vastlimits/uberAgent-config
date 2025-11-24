@@ -12,7 +12,7 @@ You can find examples in the [Syntax and Examples](#syntax-and-examples) section
 - **Example 3**: you want the latest TDE rules from GitHub with a few exceptions.
 
 ## Development
-The script covers the most common use-cases. If you want to see examples for other use-cases or have ideas to extend the script, please do not hesitate to create a GitHub issue or a pull request. Or contact us via [support@uberagent.com](mailto:support@uberagent.com).
+The script covers the most common use-cases. If you want to see examples for other use-cases or have ideas to extend the script, please do not hesitate to create a GitHub issue or a pull request. Or contact us via [uberagent-info@citrix.com](mailto:uberagent-info@citrix.com).
 
 ## Syntax and Examples
 
@@ -78,7 +78,7 @@ PARAMETERS
         Creates an uberAgent.uAConfig archive from the target directory. The uberAgent.uAConfig is placed in the root 
         of the target folder.
         The archive is downloaded by the endpoint agents and applied if meaningful changes are found. See 
-        https://uberagent.com/docs/uberagent/latest/advanced-topics/auto-application-of-configuration-changes/.
+      https://docs.citrix.com/en-us/uberagent/current-release/advanced-topics/auto-application-of-configuration-changes.
         Default is true.
         
         Required?                    false
@@ -153,5 +153,6 @@ OUTPUTS
     
 RELATED LINKS
     https://github.com/vastlimits/uberAgent-config
-    uberagent.com
+    https://docs.citrix.com/en-us/uberagent/current-release/
+    https://www.citrix.com/platform/uberagent.html/
 ```

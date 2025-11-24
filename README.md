@@ -1,12 +1,12 @@
 # uberAgent Configuration
 
-This repository is the home for the [uberAgent](https://uberagent.com/) configuration. This repository contains UXM configuration settings (timers, metrics, etc.) as well as ESA Threat Detection rules and Security & Compliance Inventory tests.
+This repository is the home for the [uberAgent](https://www.citrix.com/platform/uberagent.html) configuration. This repository contains UXM configuration settings (timers, metrics, etc.) as well as ESA Threat Detection rules and Security & Compliance Inventory tests.
 
 ## Getting Started
 
 1. Select the Git branch that matches your installed uberAgent version.
 2. Clone this repository to your machine.
-3. Update the files in your [uberAgent configuration](https://uberagent.com/docs/uberagent/latest/planning/configuration-options/) 
+3. Update the files in your [uberAgent configuration](https://docs.citrix.com/en-us/uberagent/current-release/planning/configuration-options) 
    - Choose either the files from the `config` or `config-dist` folders of this repository, depending on your uberAgent version (see [uberAgent Versions & Git Branches](#uberagent-versions--git-branches)).
    - The process can be automated. See [Automating uberAgent Configuration Updates](#automating-uberagent-configuration-updates).
 
@@ -41,4 +41,4 @@ To make your life easier, we provide a PowerShell script that automates the conf
 
 ## Help and Support
 
-Please see the [uberAgent documentation portal](https://uberagent.com/docs/) for docs, help and support options.
+Please see the [uberAgent documentation portal](https://docs.citrix.com/en-us/uberagent/current-release/) for docs, help and support options.
