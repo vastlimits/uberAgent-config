@@ -18,7 +18,7 @@ List of files to be copied. Wildcards are supported. Use it when you want to dow
 
 .PARAMETER uAConfigArchive
 Creates an uberAgent.uAConfig archive from the target directory. The uberAgent.uAConfig is placed in the root of the target folder.
-The archive is downloaded by the endpoint agents and applied if meaningful changes are found. See https://uberagent.com/docs/uberagent/latest/advanced-topics/auto-application-of-configuration-changes/.
+The archive is downloaded by the endpoint agents and applied if meaningful changes are found. See https://docs.citrix.com/en-us/uberagent/current-release/advanced-topics/auto-application-of-configuration-changes.
 Default is true.
 
 .PARAMETER ForceVersionUpdate
@@ -44,7 +44,8 @@ Download all TDE rules except the informational ones from Sigma
 
 .LINK
 https://github.com/vastlimits/uberAgent-config
-uberagent.com
+https://docs.citrix.com/en-us/uberagent/current-release/
+https://www.citrix.com/platform/uberagent.html/
 #>
 
 param (
