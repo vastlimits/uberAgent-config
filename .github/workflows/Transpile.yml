@@ -2,14 +2,15 @@ name: Transpile SCI Scripts
 
 on:
   push:
-    branches-ignore:
-      - "main"
-      - "version/7.0"
-      - "version/6.2"
+    branches:
+      - develop
+      - "version/8.0"
+      - "version/7.5"
+      - "version/7.4"
 
 jobs:
   transpile:
-    runs-on: ${{ (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/')) && 'windows-latest' || 'ubuntu-latest' }}
+    runs-on: windows-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -43,13 +44,11 @@ jobs:
         run: python config-dev/analyzeLog.py --log_level note --fail_level error
 
       - name: Signing Powershell scripts
-        if: success() && (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/'))
+        if: success()
         shell: powershell
         run: |
           try {
-            # Create buffer from the BASE64 string of the PFX stored in the secret
             $buffer = [System.Convert]::FromBase64String($env:BASE64_PFX)
-            # Create new certificate object from the buffer and the certificate pass
             $certificate = [System.Security.Cryptography.X509Certificates.X509Certificate2]::New($buffer, $env:PFX_PASSWORD)
           }
           catch {
@@ -62,7 +61,6 @@ jobs:
           foreach ($script in $scripts) {
             try {
               Write-Output "Signing script `"$($script.Name)`" with certificate `"$($certificate.Thumbprint)`""
-              # sign script
               $null = Set-AuthenticodeSignature -HashAlgorithm SHA256 -Certificate $certificate -FilePath $script.FullName -TimestampServer "http://timestamp.comodoca.com/rfc3161"
             }
             catch {
@@ -81,8 +79,8 @@ jobs:
         env:
           GITHUB_REF: ${{ github.ref }}
 
-      - name: Commit everything - release branch
-        if: success() && (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/'))
+      - name: Commit everything - maintained branch
+        if: success()
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Updated transpiled output
