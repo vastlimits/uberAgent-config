@@ -16,20 +16,20 @@ This repository is the home for the [uberAgent](https://www.citrix.com/platform/
 
 This repository is organized in such a way that uberAgent releases are represented by Git branches. Each Git branch contains rules that are compatible with the matching uberAgent release.
 
-| uberAgent version | Git branch |
-| --- | --- |
-| `development (beta)` | [develop](../../tree/develop) |
-| `8.x` | [version/8.0](../../tree/version/8.0) |
-| `7.5.x` | [version/7.5](../../tree/version/7.5) |
-| `7.4.x` | [version/7.4](../../tree/version/7.4) |
+| uberAgent version    | Git branch                            |
+| -------------------- | ------------------------------------- |
+| `development (beta)` | [develop](../../tree/develop)         |
+| `8.x`                | [version/8.0](../../tree/version/8.0) |
+| `7.5.x`              | [version/7.5](../../tree/version/7.5) |
+| `7.4.x`              | [version/7.4](../../tree/version/7.4) |
 
 ### Folder Structure
 
-| Folder | Description |
-| --- | --- |
-| `config` | Compiled configuration as individual source files. Use the contents of this folder for your **deployment with any uberAgent version**. |
-| `config-dev` | Contains files that cannot be used without further processing, such as transpilation. Do not use the contents of this folder on your endpoints unless you know what you're doing. |
-| `config-dist` | Compiled configuration as configuration archive (`*.uAConfig`). Use the contents of this folder for your **deployment with uberAgent 7.1+**. |
+| Folder        | Description                                                                                                                                                                       |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config`      | Compiled configuration as individual source files. Use the contents of this folder for your **deployment with any uberAgent version**.                                            |
+| `config-dev`  | Contains files that cannot be used without further processing, such as transpilation. Do not use the contents of this folder on your endpoints unless you know what you're doing. |
+| `config-dist` | Compiled configuration as configuration archive (`*.uAConfig`). Use the contents of this folder for your **deployment with uberAgent 7.1+**.                                      |
 
 ## Automating uberAgent Configuration Updates
 
