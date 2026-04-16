@@ -4,11 +4,17 @@ on:
   push:
     branches:
       - develop
+      - "version/8.0"
+      - "version/7.5"
+      - "version/7.4"
     paths-ignore:
       - "config-dist/**" # avoid recursion
   pull_request:
     branches:
       - develop
+      - "version/8.0"
+      - "version/7.5"
+      - "version/7.4"
     paths-ignore:
       - "config-dist/**" # avoid recursion
 
@@ -20,7 +26,6 @@ env:
 jobs:
   build-archive:
     name: Build
-    # Add "id-token" with the intended permissions.
     permissions:
       id-token: write
       contents: read
@@ -32,14 +37,29 @@ jobs:
           fetch-depth: 0
 
       - name: "Validate uberAgent.conf <> uberAgent-data-volume-optimized.conf"
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
-          CONFIG_CHANGED="$(git diff origin/develop --name-only config/uberAgent.conf)"
-          CONFIG_OPTIMIZED_CHANGED="$(git diff origin/develop --name-only config/uberAgent-data-volume-optimized.conf)"
+          if [ -n "${GITHUB_BASE_REF}" ]; then
+            git fetch origin "${GITHUB_BASE_REF}" --depth=1
+            DIFF_RANGE="origin/${GITHUB_BASE_REF}...HEAD"
+          elif [ -n "${BEFORE_SHA}" ] && [ "${BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]; then
+            DIFF_RANGE="${BEFORE_SHA}..HEAD"
+          else
+            EMPTY_TREE="$(git hash-object -t tree /dev/null)"
+            DIFF_RANGE="${EMPTY_TREE}..HEAD"
+          fi
+
+          CONFIG_CHANGED="$(git diff --name-only "${DIFF_RANGE}" -- config/uberAgent.conf)"
+          CONFIG_OPTIMIZED_CHANGED="$(git diff --name-only "${DIFF_RANGE}" -- config/uberAgent-data-volume-optimized.conf)"
+
           if ( [ -n "${CONFIG_CHANGED}" ] && [ -z "${CONFIG_OPTIMIZED_CHANGED}" ] ) || ( [ -z "${CONFIG_CHANGED}" ] && [ -n "${CONFIG_OPTIMIZED_CHANGED}" ] )
           then
             echo "Changes must be applied uberAgent.conf and uberAgent-data-volume-optimized.conf, too."
             exit 1
           fi
+
           echo "Changes are in sync."
           exit 0
         continue-on-error: false
@@ -59,7 +79,6 @@ jobs:
           if-no-files-found: error
           retention-days: 1
 
-  # Publishing is limited to actual push events.
   push-archive:
     if: ${{ github.event_name == 'push' }}
     name: Push
