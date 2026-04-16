@@ -44,7 +44,7 @@ jobs:
         run: python config-dev/analyzeLog.py --log_level note --fail_level error
 
       - name: Signing Powershell scripts
-        if: success()
+        if: success() && (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/'))
         shell: powershell
         run: |
           try {
@@ -80,7 +80,7 @@ jobs:
           GITHUB_REF: ${{ github.ref }}
 
       - name: Commit everything - maintained branch
-        if: success()
+        if: success() && (startsWith(github.ref, 'refs/heads/develop') || startsWith(github.ref, 'refs/heads/version/'))
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Updated transpiled output
