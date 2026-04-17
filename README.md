@@ -22,9 +22,6 @@ This repository is organized in such a way that uberAgent releases are represent
 | `8.x`                | [version/8.0](../../tree/version/8.0) |
 | `7.5.x`              | [version/7.5](../../tree/version/7.5) |
 | `7.4.x`              | [version/7.4](../../tree/version/7.4) |
-| `7.3.x`              | [version/7.3](../../tree/version/7.3) |
-| `7.2.x`              | [version/7.2](../../tree/version/7.2) |
-| `7.1.x`              | [version/7.1](../../tree/version/7.1) |
 
 ### Folder Structure
 
