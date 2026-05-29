@@ -3,10 +3,7 @@ name: Transpile SCI Scripts
 on:
   push:
     branches:
-      - develop
-      - "version/8.0"
-      - "version/7.5"
-      - "version/7.4"
+      - "version/8.1"
 
 jobs:
   transpile:
