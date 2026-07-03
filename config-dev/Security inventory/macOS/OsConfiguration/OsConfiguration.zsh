@@ -139,7 +139,7 @@ vlCheckTmEnc()
          "$vlCommandStderr"
       return
    else
-      if echo $vlCommandStdout | grep -q "Mount Point"; then
+      if echo -E "$vlCommandStdout" | grep -q "Mount Point"; then
          local backupMountPoint=$(tmutil destinationinfo | awk -F': ' '/Mount Point/{print substr($0, index($0, $2))}')
          vlRunCommand diskutil list $backupMountPoint
          if (( $vlCommandStatus != 0 )); then
@@ -257,8 +257,8 @@ vlCheckMediaSharing()
             resultObj=$(vlAddResultValue "{}" "User" $user)
             if [[ $vlCommandStatus == 0 ]]; then
                # Parse the output to get the status of home and public sharing preferences.
-               local homeSharing=$(echo $vlCommandStdout | grep -o '"home-sharing-enabled" = [0-1];' | awk -F'= ' '{print $2}' | sed 's/;//')
-               local publicSharing=$(echo $vlCommandStdout | grep -o '"public-sharing-enabled" = [0-1];' | awk -F'= ' '{print $2}' | sed 's/;//')
+               local homeSharing=$(echo -E "$vlCommandStdout" | grep -o '"home-sharing-enabled" = [0-1];' | awk -F'= ' '{print $2}' | sed 's/;//')
+               local publicSharing=$(echo -E "$vlCommandStdout" | grep -o '"public-sharing-enabled" = [0-1];' | awk -F'= ' '{print $2}' | sed 's/;//')
                   # Check if both homeSharing and publicSharing are disabled, else consider media sharing as enabled.
                   if [[ (-z "$homeSharing" || "$homeSharing" == "0") && (-z "$publicSharing" || "$publicSharing" == "0") ]]; then
                      result="false"
