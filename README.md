@@ -1,5 +1,11 @@
 # uberAgent Configuration
 
+> [!IMPORTANT]
+> **This repository is archived and no longer maintained.**
+> The uberAgent configuration has moved to [citrix/CEI-configuration](https://github.com/citrix/CEI-configuration).
+> Please get the configuration from there and select the branch that matches your installed version.
+> Everything below is kept for reference only and does not receive updates any more.
+
 This repository is the home for the [uberAgent](https://uberagent.com/) configuration. This repository contains UXM configuration settings (timers, metrics, etc.) as well as ESA Threat Detection rules and Security & Compliance Inventory tests.
 
 ## Getting Started
